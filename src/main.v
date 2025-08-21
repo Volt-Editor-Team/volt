@@ -1,32 +1,13 @@
 module main
 
-import cursor
-import buffer
 import util
+import util.constants
+import controller
 import term.ui as tui
 import term
 import math
 
 // import os
-struct Viewport {
-mut:
-	row_offset int
-	col_offset int
-	height     int
-	width      int
-	margin     int
-}
-
-struct App {
-mut:
-	tui          &tui.Context = unsafe { nil }
-	buffer       buffer.Buffer
-	cursor       cursor.Cursor
-	saved_cursor cursor.Cursor
-	mode         util.Mode
-	cmd_buffer   string
-	viewport     Viewport
-}
 
 // attempted function to find first character
 fn first_non_whitespace_index(line string) int {
@@ -39,44 +20,26 @@ fn first_non_whitespace_index(line string) int {
 }
 
 fn event(e &tui.Event, x voidptr) {
-	mut app := unsafe { &App(x) }
-
+	mut app := controller.get_app(x)
 	mut line := app.buffer.lines[app.cursor.y].replace('\t', '    ')
+
 	if e.typ == .key_down {
 		match app.mode {
 			.normal {
 				match e.code {
 					.l {
-						app.cursor.move_right(app.buffer)
-						app.cursor.visual_x = app.buffer.visual_x(app.cursor.y, app.cursor.x)
-						app.cursor.desired_col = app.cursor.visual_x
+						app.cursor.move_right_buffer(app.buffer)
 						update_cursor(mut app)
 					}
 					.h {
-						if app.cursor.x == 0 {
-							if app.cursor.y > 0 {
-								app.cursor.y -= 1
-								app.cursor.x = app.buffer.lines[app.cursor.y].len
-							}
-						} else {
-							app.cursor.x -= 1
-						}
-						app.cursor.visual_x = app.buffer.visual_x(app.cursor.y, app.cursor.x)
-						app.cursor.desired_col = app.cursor.visual_x
+						app.cursor.move_left_buffer(app.buffer)
 						update_cursor(mut app)
 					}
 					.j {
-						if app.cursor.y < app.buffer.lines.len - 1 {
-							app.cursor.y += 1
-							app.cursor.x = app.buffer.logical_x(app.cursor.y, app.cursor.desired_col)
-							if app.cursor.y >= app.viewport.row_offset + app.viewport.height - app.viewport.margin {
-								app.viewport.row_offset += 1
-								app.tui.reset()
-							}
-						} else {
-							app.cursor.x = app.buffer.lines[app.cursor.y].len
+						app.cursor.move_down_buffer(app.buffer)
+						if app.viewport.update_offset(app.cursor.y) {
+							app.tui.reset()
 						}
-						app.cursor.visual_x = app.buffer.visual_x(app.cursor.y, app.cursor.x)
 						update_cursor(mut app)
 					}
 					.k {
@@ -168,7 +131,7 @@ fn event(e &tui.Event, x voidptr) {
 	}
 }
 
-fn update_cursor(mut app App) {
+fn update_cursor(mut app controller.App) {
 	match app.mode {
 		.command {
 			app.tui.set_cursor_position(app.cursor.x + 1, app.cursor.y + 1)
@@ -182,7 +145,7 @@ fn update_cursor(mut app App) {
 
 fn frame(x voidptr) {
 	// get app pointer, terminal size, and clear to prep for updates
-	mut app := unsafe { &App(x) }
+	mut app := controller.get_app(x)
 	width, height := term.get_terminal_size()
 	app.tui.clear()
 
@@ -190,12 +153,10 @@ fn frame(x voidptr) {
 	start_row := app.viewport.row_offset
 	end_row := math.min(app.buffer.lines.len, app.viewport.row_offset + app.viewport.height)
 
-	// tabsize := app.buffer.tabsize
-
 	// render all visual lines
 	// render all tabs as 4 spaces
 	for i, line in app.buffer.lines[start_row..end_row] {
-		visual_line := app.buffer.col_cache[start_row + i]
+		visual_line := app.buffer.visual_col[start_row + i]
 		for j, ch in line.runes() {
 			mut col := visual_line[j] // visual column from cache
 			app.tui.draw_text(col + 1, i + 1, ch.str())
@@ -203,7 +164,7 @@ fn frame(x voidptr) {
 	}
 
 	// app.tui.horizontal_separator(height - 2)
-	app.tui.set_bg_color(util.deep_indigo)
+	app.tui.set_bg_color(constants.deep_indigo)
 	app.tui.draw_line(0, height - 1, width - 1, height - 1)
 
 	command_str := util.mode_str(app.mode)
@@ -214,7 +175,7 @@ fn frame(x voidptr) {
 
 	app.tui.draw_text(5, height - 1, term.bold(command_str))
 
-	app.tui.set_bg_color(util.deep_indigo)
+	app.tui.set_bg_color(constants.deep_indigo)
 
 	app.tui.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
 	app.tui.draw_text(width - 5, height - 1, app.cursor.x.str() + ':' + app.cursor.y.str())
@@ -246,24 +207,9 @@ fn frame(x voidptr) {
 fn main() {
 	width, height := term.get_terminal_size()
 	file_path := './src/main.v'
+	tabsize := 4
 
-	mut app := &App{
-		buffer:   buffer.Buffer.new(file_path, 4)
-		cursor:   cursor.Cursor{
-			x:           0
-			y:           0
-			visual_x:    0
-			desired_col: 0
-		}
-		mode:     util.Mode.normal
-		viewport: Viewport{
-			row_offset: 0
-			col_offset: 0
-			height:     height - 2
-			width:      width
-			margin:     5
-		}
-	}
+	mut app := controller.App.new(file_path, tabsize, width, height)
 
 	app.tui = tui.init(
 		user_data:   app

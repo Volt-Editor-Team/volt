@@ -1,4 +1,4 @@
-module util
+module constants
 
 import term.ui as tui
 

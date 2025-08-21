@@ -2,7 +2,7 @@ module cursor
 
 import buffer { Buffer }
 
-pub fn (mut curs Cursor) move_right(buf Buffer) {
+pub fn (mut curs Cursor) move_right_buffer(buf Buffer) {
 	line := buf.lines[curs.y]
 
 	if curs.x < line.len {
@@ -11,9 +11,11 @@ pub fn (mut curs Cursor) move_right(buf Buffer) {
 		curs.x = 0
 		curs.y++
 	}
+	curs.visual_x = buf.visual_x(curs.y, curs.x)
+	curs.desired_col = curs.visual_x
 }
 
-pub fn (mut curs Cursor) move_left(buf Buffer) {
+pub fn (mut curs Cursor) move_left_buffer(buf Buffer) {
 	if curs.x == 0 {
 		if curs.y > 0 {
 			curs.y -= 1
@@ -22,4 +24,16 @@ pub fn (mut curs Cursor) move_left(buf Buffer) {
 	} else {
 		curs.x -= 1
 	}
+	curs.visual_x = buf.visual_x(curs.y, curs.x)
+	curs.desired_col = curs.visual_x
+}
+
+pub fn (mut curs Cursor) move_down_buffer(buf Buffer) {
+	if curs.y < buf.lines.len - 1 {
+		curs.y += 1
+		curs.x = buf.logical_x(curs.y, curs.desired_col)
+	} else {
+		curs.x = buf.lines[curs.y].len
+	}
+	curs.visual_x = buf.visual_x(curs.y, curs.x)
 }
