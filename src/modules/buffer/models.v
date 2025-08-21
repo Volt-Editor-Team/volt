@@ -27,3 +27,9 @@ pub fn Buffer.new(file_path string, tabsize int) Buffer {
 
 	return buf
 }
+
+struct DeleteResult {
+pub mut:
+	joined_line bool
+	new_x       int
+}

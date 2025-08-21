@@ -40,3 +40,12 @@ pub fn App.new(file_path string, tabsize int, width int, height int) &App {
 pub fn get_app(x voidptr) &App {
 	return unsafe { &App(x) }
 }
+
+pub fn initialize_tui(mut app &App, ui_fn fn (x voidptr)) &tui.Context {
+	return tui.init(
+		user_data:   app
+		event_fn:    event
+		frame_fn:    ui_fn
+		hide_cursor: false
+	)
+}
