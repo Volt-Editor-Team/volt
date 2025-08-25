@@ -9,10 +9,25 @@ import math
 fn update_cursor(mut app controller.App) {
 	match app.mode {
 		.command {
-			app.tui.set_cursor_position(app.cursor.x + 1, app.cursor.y + 1)
+			x_pos := app.cursor.x + 1
+			y_pos := app.cursor.y + 1
+			app.tui.set_cursor_position(x_pos, y_pos)
+			app.tui.set_bg_color(app.cursor.color)
+			app.tui.draw_rect(x_pos, y_pos, x_pos, y_pos)
+			app.tui.reset_bg_color()
 		}
 		else {
-			app.tui.set_cursor_position(app.cursor.visual_x + 1, app.cursor.y + 1 - app.viewport.row_offset)
+			visual_indexes := app.buffer.visual_col[app.cursor.y]
+			mut additional_width := 0
+			if app.cursor.x < app.buffer.lines[app.cursor.y].len - 1 {
+				additional_width += visual_indexes[app.cursor.x + 1] - visual_indexes[app.cursor.x] - 1
+			}
+			x_pos := app.cursor.visual_x + 1
+			y_pos := app.cursor.y + 1 - app.viewport.row_offset
+			app.tui.set_cursor_position(x_pos, y_pos)
+			app.tui.set_bg_color(app.cursor.color)
+			app.tui.draw_rect(x_pos, y_pos, x_pos + additional_width, y_pos)
+			app.tui.reset_bg_color()
 		}
 	}
 	app.tui.flush()
