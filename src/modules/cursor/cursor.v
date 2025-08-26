@@ -4,7 +4,10 @@ import buffer { Buffer }
 
 pub fn (mut vis_curs VisualCursor) update(buf Buffer, mut log_curs LogicalCursor) {
 	vis_curs.x, vis_curs.y = buf.get_visual_coords(log_curs.x, log_curs.y)
-	log_curs.desired_col = vis_curs.x
+}
+
+pub fn (mut log_curs LogicalCursor) update_desired_col(col int) {
+	log_curs.desired_col = col
 }
 
 pub fn (mut log_curs LogicalCursor) move_right_buffer(buf Buffer) {

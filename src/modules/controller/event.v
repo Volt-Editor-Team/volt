@@ -12,10 +12,12 @@ pub fn event(e &tui.Event, x voidptr) {
 					.l {
 						app.logical_cursor.move_right_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x)
 					}
 					.h {
 						app.logical_cursor.move_left_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x)
 					}
 					.j {
 						app.logical_cursor.move_down_buffer(app.buffer)

@@ -23,9 +23,10 @@ pub fn App.new(file_path string, tabsize int, width int, height int) &App {
 		buffer:   buffer.Buffer.new(file_path, tabsize)
 		mode:     util.Mode.normal
 		viewport: viewport.Viewport{
-			height: height - 2
-			width:  width
-			margin: 5
+			col_offset: 3
+			height:     height - 2
+			width:      width
+			margin:     5
 		}
 	}
 }

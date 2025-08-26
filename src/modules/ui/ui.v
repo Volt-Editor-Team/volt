@@ -30,24 +30,38 @@ fn frame(x voidptr) {
 		mut runes := line.runes()
 		runes << ` `
 		for j, ch in runes {
+			// draw line number
+			line_num := i + 1
+			if app.logical_cursor.y == i {
+				app.tui.set_color(app.viewport.active_line_number_color)
+			} else {
+				app.tui.set_color(app.viewport.inactive_line_number_color)
+			}
+			app.tui.draw_text(app.viewport.col_offset, line_num, line_num.str())
+			app.tui.reset_color()
+			col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap
+
+			// visual column from cache
 			mut col := if j < visual_line.len {
 				visual_line[j]
 			} else {
 				if visual_line.len > 0 { visual_line.last() + 1 } else { 0 }
-			} // visual column from cache
+			}
 			mut printed := ch
 			mut char_width := 1
 			if ch == `\t` {
 				printed = ` `
 				char_width = app.buffer.tabsize
 			}
+
+			// draw text
 			for k in 0 .. char_width {
 				if col == app.visual_cursor.x && i == app.visual_cursor.y {
 					app.tui.set_bg_color(app.visual_cursor.color)
-					app.tui.draw_text(col + k + 1, i + 1, printed.str())
+					app.tui.draw_text(col_start + col + k + 1, i + 1, printed.str())
 					app.tui.reset_bg_color()
 				} else {
-					app.tui.draw_text(col + 1, i + 1, ch.str())
+					app.tui.draw_text(col_start + col + 1, i + 1, ch.str())
 				}
 			}
 		}
@@ -68,8 +82,8 @@ fn frame(x voidptr) {
 	app.tui.set_bg_color(constants.deep_indigo)
 
 	app.tui.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
-	app.tui.draw_text(width - 5, height - 1, app.logical_cursor.x.str() + ':' +
-		app.logical_cursor.y.str())
+	app.tui.draw_text(width - 5, height - 1, (app.logical_cursor.x + 1).str() + ':' +
+		(app.logical_cursor.y + 1).str())
 
 	app.tui.reset_bg_color()
 
