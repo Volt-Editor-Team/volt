@@ -5,7 +5,7 @@ import ui
 
 fn main() {
 	width, height := ui.get_terminal_size()
-	file_path := './src/main.v'
+	file_path := './testdata/simple.txt'
 	tabsize := 4
 
 	mut app := controller.App.new(file_path, tabsize, width, height)

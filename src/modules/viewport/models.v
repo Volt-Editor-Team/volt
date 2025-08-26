@@ -27,8 +27,8 @@ pub mut:
 		g: 130
 		b: 150
 	}
+	height                     int
+	width                      int
 pub:
-	height int
-	width  int
 	margin int
 }

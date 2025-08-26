@@ -19,16 +19,19 @@ pub mut:
 }
 
 pub fn App.new(file_path string, tabsize int, width int, height int) &App {
-	return &App{
+	mut app := &App{
 		buffer:   buffer.Buffer.new(file_path, tabsize)
 		mode:     util.Mode.normal
 		viewport: viewport.Viewport{
 			col_offset: 3
 			height:     height - 2
-			width:      width
+			width:      width - 1
 			margin:     5
 		}
 	}
+	app.viewport.update_width()
+
+	return app
 }
 
 pub fn get_app(x voidptr) &App {
