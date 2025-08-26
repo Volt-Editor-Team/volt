@@ -10,20 +10,24 @@ pub fn event(e &tui.Event, x voidptr) {
 			.normal {
 				match e.code {
 					.l {
-						app.cursor.move_right_buffer(app.buffer)
+						app.logical_cursor.move_right_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					.h {
-						app.cursor.move_left_buffer(app.buffer)
+						app.logical_cursor.move_left_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					.j {
-						app.cursor.move_down_buffer(app.buffer)
-						if app.viewport.update_offset(app.cursor.y) {
+						app.logical_cursor.move_down_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						if app.viewport.update_offset(app.visual_cursor.y) {
 							app.tui.reset()
 						}
 					}
 					.k {
-						app.cursor.move_up_buffer(app.buffer)
-						if app.viewport.update_offset(app.cursor.y) {
+						app.logical_cursor.move_up_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						if app.viewport.update_offset(app.visual_cursor.y) {
 							app.tui.reset()
 						}
 					}
@@ -31,7 +35,7 @@ pub fn event(e &tui.Event, x voidptr) {
 						app.mode = .insert
 					}
 					.colon {
-						app.saved_cursor = app.cursor
+						app.saved_cursor = app.logical_cursor
 						app.mode = .command
 					}
 					else {}
@@ -43,28 +47,33 @@ pub fn event(e &tui.Event, x voidptr) {
 						app.mode = .normal
 					}
 					.backspace {
-						delete_result := app.buffer.remove_char(app.cursor.x, app.cursor.y)
+						delete_result := app.buffer.remove_char(app.logical_cursor.x,
+							app.logical_cursor.y)
 						if delete_result.joined_line {
-							app.cursor.move_up_buffer(app.buffer)
+							app.logical_cursor.move_up_buffer(app.buffer)
 						}
-						app.cursor.move_to_x(app.buffer, delete_result.new_x)
+						app.logical_cursor.move_to_x(app.buffer, delete_result.new_x)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					.enter {
-						app.buffer.insert_newline(app.cursor.x, app.cursor.y)
-						app.cursor.move_to_start_next_line_buffer(app.buffer)
+						app.buffer.insert_newline(app.logical_cursor.x, app.logical_cursor.y)
+						app.logical_cursor.move_to_start_next_line_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					else {
-						app.buffer.insert_char(app.cursor.x, app.cursor.y, e.ascii.ascii_str())
-						app.cursor.move_right_buffer(app.buffer)
+						app.buffer.insert_char(app.logical_cursor.x, app.logical_cursor.y,
+							e.ascii.ascii_str())
+						app.logical_cursor.move_right_buffer(app.buffer)
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 				}
 			}
 			.command {
 				match e.code {
 					.enter {
-						match app.cmd_buffer {
+						match app.cmd_buffer.command {
 							'q' {
-								app.cmd_buffer = ''
+								app.cmd_buffer.command = ''
 								exit(0)
 							}
 							else {}
@@ -72,17 +81,16 @@ pub fn event(e &tui.Event, x voidptr) {
 					}
 					.escape {
 						app.mode = .normal
-						app.cursor = app.saved_cursor
-						app.cmd_buffer = ''
+						app.cmd_buffer.command = ''
+						app.logical_cursor = app.saved_cursor
+						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					.backspace {
-						before := app.cmd_buffer[..app.cursor.x - 2]
-						after := app.cmd_buffer[app.cursor.x - 1..]
-						app.cmd_buffer = before + after
+						app.cmd_buffer.remove_char(app.logical_cursor.x - 1)
 					}
 					else {
 						ch := e.ascii.ascii_str()
-						app.cmd_buffer += ch
+						app.cmd_buffer.command += ch
 					}
 				}
 			}

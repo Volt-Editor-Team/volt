@@ -9,23 +9,23 @@ import math
 fn update_cursor(mut app controller.App) {
 	match app.mode {
 		.command {
-			x_pos := app.cursor.x + 1
-			y_pos := app.cursor.y + 1
+			x_pos := app.logical_cursor.x + 1
+			y_pos := app.logical_cursor.y + 1
 			app.tui.set_cursor_position(x_pos, y_pos)
-			app.tui.set_bg_color(app.cursor.color)
+			app.tui.set_bg_color(app.visual_cursor.color)
 			app.tui.draw_rect(x_pos, y_pos, x_pos, y_pos)
 			app.tui.reset_bg_color()
 		}
 		else {
-			visual_indexes := app.buffer.visual_col[app.cursor.y]
+			visual_indexes := app.buffer.visual_col[app.logical_cursor.y]
 			mut additional_width := 0
-			if app.cursor.x < app.buffer.lines[app.cursor.y].len - 1 {
-				additional_width += visual_indexes[app.cursor.x + 1] - visual_indexes[app.cursor.x] - 1
+			if app.logical_cursor.x < app.buffer.lines[app.logical_cursor.y].len - 1 {
+				additional_width += visual_indexes[app.logical_cursor.x + 1] - visual_indexes[app.logical_cursor.x] - 1
 			}
-			x_pos := app.cursor.visual_x + 1
-			y_pos := app.cursor.y + 1 - app.viewport.row_offset
+			x_pos := app.visual_cursor.x + 1
+			y_pos := app.visual_cursor.y + 1 - app.viewport.row_offset
 			app.tui.set_cursor_position(x_pos, y_pos)
-			app.tui.set_bg_color(app.cursor.color)
+			app.tui.set_bg_color(app.visual_cursor.color)
 			app.tui.draw_rect(x_pos, y_pos, x_pos + additional_width, y_pos)
 			app.tui.reset_bg_color()
 		}
@@ -68,23 +68,24 @@ fn frame(x voidptr) {
 	app.tui.set_bg_color(constants.deep_indigo)
 
 	app.tui.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
-	app.tui.draw_text(width - 5, height - 1, app.cursor.x.str() + ':' + app.cursor.y.str())
+	app.tui.draw_text(width - 5, height - 1, app.logical_cursor.x.str() + ':' +
+		app.logical_cursor.y.str())
 
 	app.tui.reset_bg_color()
 
 	// debugging
-	app.tui.draw_text(width - 30, height - 5, 'x: ' + app.cursor.x.str())
+	app.tui.draw_text(width - 30, height - 5, 'x: ' + app.logical_cursor.x.str())
 	app.tui.draw_text(width - 30, height - 4, 'viewport start: ' + app.viewport.row_offset.str())
 	app.tui.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 		app.viewport.height).str())
-	app.tui.draw_text(width - 30, height - 2, 'desired col: ' + app.cursor.desired_col.str())
+	app.tui.draw_text(width - 30, height - 2, 'desired col: ' + app.logical_cursor.desired_col.str())
 	if app.mode == util.Mode.command {
-		app.cursor.x = app.cmd_buffer.len + 1
-		app.cursor.y = height
+		app.logical_cursor.x = app.cmd_buffer.command.len + 1
+		app.logical_cursor.y = height
 
-		// app.tui.set_cursor_position(app.cmd_buffer.len + 1, height)
-		app.tui.draw_text(0, app.cursor.y, ':')
-		app.tui.draw_text(2, app.cursor.y, app.cmd_buffer)
+		// app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+		app.tui.draw_text(0, app.logical_cursor.y, ':')
+		app.tui.draw_text(2, app.logical_cursor.y, app.cmd_buffer.command)
 
 		// app.tui.flush()
 	}

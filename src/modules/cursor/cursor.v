@@ -2,68 +2,61 @@ module cursor
 
 import buffer { Buffer }
 
-pub fn (mut curs Cursor) move_right_buffer(buf Buffer) {
-	line := buf.lines[curs.y]
-
-	if curs.x < line.len {
-		curs.x++
-	} else if curs.y < buf.lines.len - 1 {
-		curs.x = 0
-		curs.y++
-	}
-	curs.visual_x = buf.visual_x(curs.y, curs.x)
-	curs.desired_col = curs.visual_x
+pub fn (mut vis_curs VisualCursor) update(buf Buffer, mut log_curs LogicalCursor) {
+	vis_curs.x, vis_curs.y = buf.get_visual_coords(log_curs.x, log_curs.y)
+	log_curs.desired_col = vis_curs.x
 }
 
-pub fn (mut curs Cursor) move_left_buffer(buf Buffer) {
-	if curs.x == 0 {
-		if curs.y > 0 {
-			curs.y -= 1
-			curs.x = buf.lines[curs.y].len
+pub fn (mut log_curs LogicalCursor) move_right_buffer(buf Buffer) {
+	line := buf.lines[log_curs.y]
+
+	if log_curs.x < line.len {
+		log_curs.x++
+	} else if log_curs.y < buf.lines.len - 1 {
+		log_curs.x = 0
+		log_curs.y++
+	}
+}
+
+pub fn (mut log_curs LogicalCursor) move_left_buffer(buf Buffer) {
+	if log_curs.x == 0 {
+		if log_curs.y > 0 {
+			log_curs.y -= 1
+			log_curs.x = buf.lines[log_curs.y].len
 		}
 	} else {
-		curs.x -= 1
+		log_curs.x -= 1
 	}
-	curs.visual_x = buf.visual_x(curs.y, curs.x)
-	curs.desired_col = curs.visual_x
 }
 
-pub fn (mut curs Cursor) move_down_buffer(buf Buffer) {
-	if curs.y < buf.lines.len - 1 {
-		curs.y += 1
-		curs.x = buf.logical_x(curs.y, curs.desired_col)
+pub fn (mut log_curs LogicalCursor) move_down_buffer(buf Buffer) {
+	if log_curs.y < buf.lines.len - 1 {
+		log_curs.y += 1
+		log_curs.x = buf.logical_x(log_curs.y, log_curs.desired_col)
 	} else {
-		curs.x = buf.lines[curs.y].len
+		log_curs.x = buf.lines[log_curs.y].len
 	}
-	curs.visual_x = buf.visual_x(curs.y, curs.x)
 }
 
-pub fn (mut curs Cursor) move_up_buffer(buf Buffer) {
-	if curs.y > 0 {
-		curs.y -= 1
-		curs.x = buf.logical_x(curs.y, curs.desired_col)
-	} else if curs.y == 0 {
-		curs.x = 0
+pub fn (mut log_curs LogicalCursor) move_up_buffer(buf Buffer) {
+	if log_curs.y > 0 {
+		log_curs.y -= 1
+		log_curs.x = buf.logical_x(log_curs.y, log_curs.desired_col)
+	} else if log_curs.y == 0 {
+		log_curs.x = 0
 	}
-	curs.visual_x = buf.visual_x(curs.y, curs.x)
 }
 
-pub fn (mut curs Cursor) move_to_start_next_line_buffer(buf Buffer) {
-	curs.x = 0
-	curs.visual_x = 0
-	curs.desired_col = curs.visual_x
-	curs.move_down_buffer(buf)
+pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(buf Buffer) {
+	log_curs.move_down_buffer(buf)
+	log_curs.x = 0
 }
 
-pub fn (mut curs Cursor) move_to_end_previous_line_buffer(buf Buffer) {
-	curs.move_up_buffer(buf)
-	curs.x = buf.lines[curs.y].len
-	curs.visual_x = buf.lines[curs.y].len
-	curs.desired_col = curs.visual_x
+pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(buf Buffer) {
+	log_curs.move_up_buffer(buf)
+	log_curs.x = buf.lines[log_curs.y].len
 }
 
-pub fn (mut curs Cursor) move_to_x(buf Buffer, x_pos int) {
-	curs.x = x_pos
-	curs.visual_x = buf.visual_x(curs.y, curs.x)
-	curs.desired_col = curs.visual_x
+pub fn (mut log_curs LogicalCursor) move_to_x(buf Buffer, x_pos int) {
+	log_curs.x = x_pos
 }

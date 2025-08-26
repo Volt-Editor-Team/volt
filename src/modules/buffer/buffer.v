@@ -16,18 +16,22 @@ pub fn (mut buf Buffer) update_line_cache(line_index int) {
 	buf.visual_col[line_index] = visual
 }
 
-pub fn (buf Buffer) visual_x(line_index int, logical_x int) int {
-	if line_index >= buf.visual_col.len || line_index < 0 {
-		return 0
+pub fn (buf Buffer) get_visual_coords(logical_x int, logical_y int) (int, int) {
+	if logical_y >= buf.visual_col.len || logical_y < 0 {
+		return 0, logical_y
 	}
 
-	visual_line := buf.visual_col[line_index]
+	visual_line := buf.visual_col[logical_y]
 
 	if logical_x >= visual_line.len {
-		return if visual_line.len > 0 { visual_line[visual_line.len - 1] + 1 } else { 0 }
+		return if visual_line.len > 0 {
+			visual_line[visual_line.len - 1] + 1, logical_y
+		} else {
+			0, logical_y
+		}
 	}
 
-	return visual_line[logical_x]
+	return visual_line[logical_x], logical_y
 }
 
 pub fn (buf Buffer) logical_x(line_index int, visual_x int) int {
