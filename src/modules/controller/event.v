@@ -56,11 +56,14 @@ pub fn event(e &tui.Event, x voidptr) {
 						}
 						app.logical_cursor.move_to_x(app.buffer, delete_result.new_x)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x)
 					}
 					.enter {
 						app.buffer.insert_newline(app.logical_cursor.x, app.logical_cursor.y)
 						app.logical_cursor.move_to_start_next_line_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+
+						app.logical_cursor.update_desired_col(app.visual_cursor.x)
 					}
 					else {
 						app.buffer.insert_char(app.logical_cursor.x, app.logical_cursor.y,

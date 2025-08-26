@@ -9,18 +9,23 @@ pub mut:
 	line_num_to_text_gap       int       = 3
 	line_bg_color              tui.Color = tui.Color{
 		r: 50
-		g: 50
-		b: 50
+		g: 60
+		b: 90
+	}
+	line_number_bg_color       tui.Color = tui.Color{
+		r: 20
+		g: 22
+		b: 35
 	}
 	active_line_number_color   tui.Color = tui.Color{
-		r: 255
-		g: 255
-		b: 255
+		r: 180
+		g: 180
+		b: 200
 	}
 	inactive_line_number_color tui.Color = tui.Color{
-		r: 50
-		g: 50
-		b: 50
+		r: 120
+		g: 130
+		b: 150
 	}
 pub:
 	height int

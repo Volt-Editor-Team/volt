@@ -26,6 +26,14 @@ fn frame(x voidptr) {
 	// render all visual lines
 	// render all tabs as 4 spaces
 	for i, line in app.buffer.lines[start_row..end_row] {
+		col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap
+		if i == app.logical_cursor.y {
+			app.tui.set_bg_color(app.viewport.line_bg_color)
+			app.tui.draw_line(0, i + 1, width - 1, i + 1)
+			app.tui.set_bg_color(app.viewport.line_number_bg_color)
+			app.tui.draw_line(0, i + 1, col_start, i + 1)
+			app.tui.reset_bg_color()
+		}
 		visual_line := app.buffer.visual_col[start_row + i]
 		mut runes := line.runes()
 		runes << ` `
@@ -33,13 +41,16 @@ fn frame(x voidptr) {
 			// draw line number
 			line_num := i + 1
 			if app.logical_cursor.y == i {
+				app.tui.set_bg_color(app.viewport.line_number_bg_color)
 				app.tui.set_color(app.viewport.active_line_number_color)
+				app.tui.draw_text(app.viewport.col_offset, line_num, line_num.str())
+				app.tui.reset_bg_color()
+				app.tui.reset_color()
 			} else {
 				app.tui.set_color(app.viewport.inactive_line_number_color)
+				app.tui.draw_text(app.viewport.col_offset, line_num, line_num.str())
+				app.tui.reset_color()
 			}
-			app.tui.draw_text(app.viewport.col_offset, line_num, line_num.str())
-			app.tui.reset_color()
-			col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap
 
 			// visual column from cache
 			mut col := if j < visual_line.len {
@@ -58,6 +69,13 @@ fn frame(x voidptr) {
 			for k in 0 .. char_width {
 				if col == app.visual_cursor.x && i == app.visual_cursor.y {
 					app.tui.set_bg_color(app.visual_cursor.color)
+
+					app.tui.set_color(app.visual_cursor.text_color)
+					app.tui.draw_text(col_start + col + k + 1, i + 1, printed.str())
+					app.tui.reset_bg_color()
+					app.tui.reset_color()
+				} else if i == app.logical_cursor.y {
+					app.tui.set_bg_color(app.viewport.line_bg_color)
 					app.tui.draw_text(col_start + col + k + 1, i + 1, printed.str())
 					app.tui.reset_bg_color()
 				} else {
