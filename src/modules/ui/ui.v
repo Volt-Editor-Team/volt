@@ -7,29 +7,9 @@ import term
 import math
 
 fn update_cursor(mut app controller.App) {
-	match app.mode {
-		.command {
-			x_pos := app.logical_cursor.x + 1
-			y_pos := app.logical_cursor.y + 1
-			app.tui.set_cursor_position(x_pos, y_pos)
-			app.tui.set_bg_color(app.visual_cursor.color)
-			app.tui.draw_rect(x_pos, y_pos, x_pos, y_pos)
-			app.tui.reset_bg_color()
-		}
-		else {
-			visual_indexes := app.buffer.visual_col[app.logical_cursor.y]
-			mut additional_width := 0
-			if app.logical_cursor.x < app.buffer.lines[app.logical_cursor.y].len - 1 {
-				additional_width += visual_indexes[app.logical_cursor.x + 1] - visual_indexes[app.logical_cursor.x] - 1
-			}
-			x_pos := app.visual_cursor.x + 1
-			y_pos := app.visual_cursor.y + 1 - app.viewport.row_offset
-			app.tui.set_cursor_position(x_pos, y_pos)
-			app.tui.set_bg_color(app.visual_cursor.color)
-			app.tui.draw_rect(x_pos, y_pos, x_pos + additional_width, y_pos)
-			app.tui.reset_bg_color()
-		}
-	}
+	x_pos := app.logical_cursor.x + 1
+	y_pos := app.logical_cursor.y + 1
+	app.tui.set_cursor_position(x_pos, y_pos)
 	app.tui.flush()
 }
 
@@ -47,9 +27,29 @@ fn frame(x voidptr) {
 	// render all tabs as 4 spaces
 	for i, line in app.buffer.lines[start_row..end_row] {
 		visual_line := app.buffer.visual_col[start_row + i]
-		for j, ch in line.runes() {
-			mut col := visual_line[j] // visual column from cache
-			app.tui.draw_text(col + 1, i + 1, ch.str())
+		mut runes := line.runes()
+		runes << ` `
+		for j, ch in runes {
+			mut col := if j < visual_line.len {
+				visual_line[j]
+			} else {
+				if visual_line.len > 0 { visual_line.last() + 1 } else { 0 }
+			} // visual column from cache
+			mut printed := ch
+			mut char_width := 1
+			if ch == `\t` {
+				printed = ` `
+				char_width = app.buffer.tabsize
+			}
+			for k in 0 .. char_width {
+				if col == app.visual_cursor.x && i == app.visual_cursor.y {
+					app.tui.set_bg_color(app.visual_cursor.color)
+					app.tui.draw_text(col + k + 1, i + 1, printed.str())
+					app.tui.reset_bg_color()
+				} else {
+					app.tui.draw_text(col + 1, i + 1, ch.str())
+				}
+			}
 		}
 	}
 
@@ -79,17 +79,23 @@ fn frame(x voidptr) {
 	app.tui.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 		app.viewport.height).str())
 	app.tui.draw_text(width - 30, height - 2, 'desired col: ' + app.logical_cursor.desired_col.str())
+
 	if app.mode == util.Mode.command {
 		app.logical_cursor.x = app.cmd_buffer.command.len + 1
 		app.logical_cursor.y = height
+
+		cursor_pos := app.cmd_buffer.command.len + 2
 
 		// app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 		app.tui.draw_text(0, app.logical_cursor.y, ':')
 		app.tui.draw_text(2, app.logical_cursor.y, app.cmd_buffer.command)
 
+		app.tui.set_bg_color(app.visual_cursor.color)
+		app.tui.draw_text(cursor_pos, app.logical_cursor.y, ' ')
+		app.tui.reset_bg_color()
+
 		// app.tui.flush()
 	}
-
 	app.tui.reset()
 
 	update_cursor(mut app)

@@ -16,8 +16,8 @@ pub mut:
 	x     int
 	y     int
 	color tui.Color = tui.Color{
-		r: 255
-		g: 255
-		b: 255
+		r: 128
+		g: 128
+		b: 128
 	}
 }
