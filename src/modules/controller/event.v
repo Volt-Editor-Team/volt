@@ -12,22 +12,45 @@ pub fn event(e &tui.Event, x voidptr) {
 					.l {
 						app.logical_cursor.move_right_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
-						app.logical_cursor.update_desired_col(app.visual_cursor.x)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					.h {
 						app.logical_cursor.move_left_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
-						app.logical_cursor.update_desired_col(app.visual_cursor.x)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					.j {
-						app.logical_cursor.move_down_buffer(app.buffer)
+						line := app.buffer.lines[app.logical_cursor.y]
+						wrap_points := app.viewport.build_wrap_points(line)
+						if wrap_points.len > 1
+							&& app.logical_cursor.x < wrap_points[wrap_points.len - 1] {
+							new_width := app.logical_cursor.x + app.viewport.width
+							if app.logical_cursor.desired_col > new_width {
+								app.logical_cursor.x = app.logical_cursor.desired_col
+							} else {
+								app.logical_cursor.x = new_width
+							}
+						} else {
+							app.logical_cursor.move_down_buffer(app.buffer)
+						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						if app.viewport.update_offset(app.visual_cursor.y) {
 							app.tui.reset()
 						}
 					}
 					.k {
-						app.logical_cursor.move_up_buffer(app.buffer)
+						line := app.buffer.lines[app.logical_cursor.y]
+						wrap_points := app.viewport.build_wrap_points(line)
+						if wrap_points.len > 1 && app.logical_cursor.x > wrap_points[1] {
+							new_width := app.logical_cursor.x - app.viewport.width
+							if app.logical_cursor.desired_col < new_width {
+								app.logical_cursor.x = app.logical_cursor.desired_col
+							} else {
+								app.logical_cursor.x = new_width
+							}
+						} else {
+							app.logical_cursor.move_up_buffer(app.buffer)
+						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						if app.viewport.update_offset(app.visual_cursor.y) {
 							app.tui.reset()
@@ -56,14 +79,14 @@ pub fn event(e &tui.Event, x voidptr) {
 						}
 						app.logical_cursor.move_to_x(app.buffer, delete_result.new_x)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
-						app.logical_cursor.update_desired_col(app.visual_cursor.x)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					.enter {
 						app.buffer.insert_newline(app.logical_cursor.x, app.logical_cursor.y)
 						app.logical_cursor.move_to_start_next_line_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 
-						app.logical_cursor.update_desired_col(app.visual_cursor.x)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					else {
 						app.buffer.insert_char(app.logical_cursor.x, app.logical_cursor.y,
