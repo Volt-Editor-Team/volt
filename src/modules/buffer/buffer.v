@@ -1,5 +1,11 @@
 module buffer
 
+pub fn (mut buf Buffer) update_all_line_cache() {
+	for i in 0 .. buf.lines.len {
+		buf.update_line_cache(i)
+	}
+}
+
 pub fn (mut buf Buffer) update_line_cache(line_index int) {
 	line := buf.lines[line_index]
 	mut visual := []int{len: line.len}
