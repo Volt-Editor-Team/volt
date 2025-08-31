@@ -129,6 +129,7 @@ fn frame(x voidptr) {
 	app.tui.draw_text(width - 30, height - 2, 'desired col: ' + app.logical_cursor.desired_col.str())
 
 	if app.mode == util.Mode.command {
+		app.logical_cursor.x = app.cmd_buffer.command.len + 2
 		app.logical_cursor.y = height
 
 		// 1. Clear the entire command line with spaces
@@ -142,9 +143,9 @@ fn frame(x voidptr) {
 		app.tui.draw_text(2, app.logical_cursor.y, app.cmd_buffer.command)
 
 		// 4. Draw the cursor block at the right position
-		cursor_pos := app.cmd_buffer.command.len + 2
+		// cursor_pos := app.cmd_buffer.command.len + 2
 		app.tui.set_bg_color(app.visual_cursor.color)
-		app.tui.draw_text(cursor_pos, app.logical_cursor.y, ' ')
+		app.tui.draw_text(app.logical_cursor.x, app.logical_cursor.y, ' ')
 		app.tui.reset_bg_color()
 	}
 

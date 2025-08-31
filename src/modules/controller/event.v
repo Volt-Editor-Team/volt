@@ -94,18 +94,20 @@ pub fn event(e &tui.Event, x voidptr) {
 							e.ascii.ascii_str())
 						app.logical_cursor.move_right_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
+						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 				}
 			}
 			.command {
+				cmd_str := app.cmd_buffer.command
 				match e.code {
 					.enter {
-						match app.cmd_buffer.command {
-							'q' {
+						match true {
+							cmd_str == 'q' || cmd_str == 'quit' {
 								app.cmd_buffer.command = ''
 								exit(0)
 							}
-							'w' {
+							cmd_str == 'w' {
 								did_write := io.write_file(app.buffer.path, app.buffer.lines)
 								if !did_write {
 									// do something
@@ -113,7 +115,7 @@ pub fn event(e &tui.Event, x voidptr) {
 									app.buffer.lines = io.read_file(app.buffer.path) or {
 										['']
 									}
-									app.buffer.update_all_line_cache()
+									// app.buffer.update_all_line_cache()
 								}
 								app.cmd_buffer.command = ''
 								app.mode = .normal
@@ -130,7 +132,10 @@ pub fn event(e &tui.Event, x voidptr) {
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 					}
 					.backspace {
-						app.cmd_buffer.remove_char(app.logical_cursor.x - 1)
+						// command string start at x = 2
+						command_str_index := app.logical_cursor.x - 2
+						// remove char before index
+						app.cmd_buffer.remove_char(command_str_index - 1)
 					}
 					else {
 						ch := e.ascii.ascii_str()
