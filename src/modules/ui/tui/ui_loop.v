@@ -1,18 +1,13 @@
-module ui
+module tui
 
-import controller
+import core.controller
 import util
 import util.constants
 import term
 import math
 
-fn update_cursor(mut app controller.App) {
-	x_pos := app.logical_cursor.x + 1
-	y_pos := app.logical_cursor.y + 1
-	app.tui.set_cursor_position(x_pos, y_pos)
-}
-
-fn frame(x voidptr) {
+fn ui_loop(x voidptr) {
+	// mut tui_app := get_tui(x)
 	// get app pointer, terminal size, and clear to prep for updates
 	mut app := controller.get_app(x)
 	width, height := term.get_terminal_size()
@@ -150,5 +145,5 @@ fn frame(x voidptr) {
 	}
 
 	app.tui.flush()
-	update_cursor(mut app)
+	update_cursor(app.logical_cursor.x, app.logical_cursor.y, mut app.tui)
 }

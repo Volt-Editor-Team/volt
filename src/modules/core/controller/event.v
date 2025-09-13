@@ -1,15 +1,17 @@
 module controller
 
 import io
-import term.ui as tui
 
-pub fn event(e &tui.Event, x voidptr) {
+pub fn event(input UserInput, x voidptr) {
 	mut app := get_app(x)
 
-	if e.typ == .key_down {
+	event := input.e
+	code := input.code
+
+	if event == .key_down {
 		match app.mode {
 			.normal {
-				match e.code {
+				match code {
 					.l {
 						app.logical_cursor.move_right_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
@@ -68,7 +70,7 @@ pub fn event(e &tui.Event, x voidptr) {
 				}
 			}
 			.insert {
-				match e.code {
+				match code {
 					.escape {
 						app.mode = .normal
 					}
@@ -91,7 +93,7 @@ pub fn event(e &tui.Event, x voidptr) {
 					}
 					else {
 						app.buffer.insert_char(app.logical_cursor.x, app.logical_cursor.y,
-							e.ascii.ascii_str())
+							u8(code).ascii_str())
 						app.logical_cursor.move_right_buffer(app.buffer)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
@@ -100,7 +102,7 @@ pub fn event(e &tui.Event, x voidptr) {
 			}
 			.command {
 				cmd_str := app.cmd_buffer.command
-				match e.code {
+				match code {
 					.enter {
 						match true {
 							cmd_str == 'q' || cmd_str == 'quit' {
@@ -138,7 +140,7 @@ pub fn event(e &tui.Event, x voidptr) {
 						app.cmd_buffer.remove_char(command_str_index - 1)
 					}
 					else {
-						ch := e.ascii.ascii_str()
+						ch := u8(code).ascii_str()
 						app.cmd_buffer.command += ch
 					}
 				}

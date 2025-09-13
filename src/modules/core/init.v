@@ -1,4 +1,4 @@
-module controller
+module core
 
 import cursor
 import buffer
@@ -32,17 +32,4 @@ pub fn App.new(file_path string, tabsize int, width int, height int) &App {
 	app.viewport.update_width()
 
 	return app
-}
-
-pub fn get_app(x voidptr) &App {
-	return unsafe { &App(x) }
-}
-
-pub fn initialize_tui(mut app App, ui_fn fn (x voidptr)) &tui.Context {
-	return tui.init(
-		user_data:   app
-		event_fn:    event
-		frame_fn:    ui_fn
-		hide_cursor: true
-	)
 }

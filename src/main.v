@@ -1,16 +1,16 @@
 module main
 
-import controller
-import ui
+import core
+import ui.tui
 
 fn main() {
-	width, height := ui.get_terminal_size()
+	width, height := tui.get_terminal_size()
 	file_path := './testdata/simple.txt'
 	tabsize := 4
 
-	mut app := controller.App.new(file_path, tabsize, width, height)
+	mut core_app := core.App.new(file_path, tabsize, width, height)
 
-	app.tui = controller.initialize_tui(mut app, ui.frame)
+	core_app.tui = tui.initialize_tui(mut core_app)
 
-	app.tui.run()!
+	core_app.tui.run()!
 }
