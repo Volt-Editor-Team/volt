@@ -1,7 +1,7 @@
 module tui
 
 import core.controller as ctl
-import term.ui
+import term.ui as t
 
 pub fn get_tui(x voidptr) &TuiApp {
 	return unsafe { &TuiApp(x) }
@@ -10,21 +10,29 @@ pub fn get_tui(x voidptr) &TuiApp {
 pub struct TuiApp {
 pub mut:
 	core voidptr
-	tui  &ui.Context = unsafe { nil }
+	tui  &t.Context = unsafe { nil }
 }
 
-pub fn initialize_tui(mut core voidptr) &ui.Context {
-	return ui.init(
-		user_data:   core
+pub fn TuiApp.new(core voidptr) &TuiApp {
+	mut tui_app := &TuiApp{}
+	tui_app.core = core
+	tui_app.initialize_tui(core)
+
+	return tui_app
+}
+
+pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
+	tui_app.tui = t.init(
+		user_data:   tui_app
 		event_fn:    event_wrapper
 		frame_fn:    ui_loop
 		hide_cursor: true
 	)
 }
 
-pub fn event_wrapper(e &ui.Event, x voidptr) {
-	app := ctl.get_app(x)
-	// tui_app := get_tui(x)
+pub fn event_wrapper(e &t.Event, x voidptr) {
+	// app := ctl.get_app(x)
+	tui_app := get_tui(x)
 	event_type := convert_event_type(e.typ)
 	key_code := convert_key_code(e.code)
 
@@ -33,10 +41,10 @@ pub fn event_wrapper(e &ui.Event, x voidptr) {
 		code: key_code
 	}
 
-	ctl.event(input, app)
+	ctl.event(input, tui_app.core)
 }
 
-fn convert_event_type(e ui.EventType) ctl.EventType {
+fn convert_event_type(e t.EventType) ctl.EventType {
 	return match e {
 		.unknown { .unknown }
 		.mouse_down { .mouse_down }
@@ -49,7 +57,7 @@ fn convert_event_type(e ui.EventType) ctl.EventType {
 	}
 }
 
-fn convert_key_code(k ui.KeyCode) ctl.KeyCode {
+fn convert_key_code(k t.KeyCode) ctl.KeyCode {
 	return match k {
 		.null { .null }
 		.tab { .tab }

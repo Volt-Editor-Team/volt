@@ -10,7 +10,7 @@ fn main() {
 
 	mut core_app := core.App.new(file_path, tabsize, width, height)
 
-	core_app.tui = tui.initialize_tui(mut core_app)
+	mut tui_app := tui.TuiApp.new(&core_app)
 
-	core_app.tui.run()!
+	tui_app.tui.run()!
 }

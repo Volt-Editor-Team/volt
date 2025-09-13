@@ -37,9 +37,9 @@ pub fn event(input UserInput, x voidptr) {
 							app.logical_cursor.move_down_buffer(app.buffer)
 						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
-						if app.viewport.update_offset(app.visual_cursor.y) {
-							app.tui.reset()
-						}
+
+						// update offset
+						app.viewport.update_offset(app.visual_cursor.y)
 					}
 					.k {
 						line := app.buffer.lines[app.logical_cursor.y]
@@ -55,9 +55,8 @@ pub fn event(input UserInput, x voidptr) {
 							app.logical_cursor.move_up_buffer(app.buffer)
 						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
-						if app.viewport.update_offset(app.visual_cursor.y) {
-							app.tui.reset()
-						}
+						// update offset
+						app.viewport.update_offset(app.visual_cursor.y)
 					}
 					.i {
 						app.mode = .insert

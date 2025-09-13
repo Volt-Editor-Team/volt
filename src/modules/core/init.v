@@ -4,11 +4,11 @@ import cursor
 import buffer
 import util
 import viewport
-import term.ui as tui
+// import term.ui as tui
 
 pub struct App {
 pub mut:
-	tui            &tui.Context = unsafe { nil }
+	// tui            &tui.Context = unsafe { nil }
 	buffer         buffer.Buffer
 	logical_cursor cursor.LogicalCursor
 	visual_cursor  cursor.VisualCursor
@@ -18,8 +18,8 @@ pub mut:
 	viewport       viewport.Viewport
 }
 
-pub fn App.new(file_path string, tabsize int, width int, height int) &App {
-	mut app := &App{
+pub fn App.new(file_path string, tabsize int, width int, height int) App {
+	mut app := App{
 		buffer:   buffer.Buffer.new(file_path, tabsize)
 		mode:     util.Mode.normal
 		viewport: viewport.Viewport{
