@@ -31,7 +31,6 @@ pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
 }
 
 pub fn event_wrapper(e &t.Event, x voidptr) {
-	// app := ctl.get_app(x)
 	tui_app := get_tui(x)
 	event_type := convert_event_type(e.typ)
 	key_code := convert_key_code(e.code)
@@ -41,7 +40,7 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 		code: key_code
 	}
 
-	ctl.event(input, tui_app.core)
+	ctl.event_loop(input, tui_app.core)
 }
 
 fn convert_event_type(e t.EventType) ctl.EventType {

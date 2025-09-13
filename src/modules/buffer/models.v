@@ -1,6 +1,6 @@
 module buffer
 
-import io
+import fs { read_file }
 
 pub struct Buffer {
 pub mut:
@@ -15,7 +15,7 @@ pub:
 }
 
 pub fn Buffer.new(file_path string, tabsize int) Buffer {
-	lines := io.read_file(file_path) or { [''] }
+	lines := read_file(file_path) or { [''] }
 	mut buf := Buffer{
 		path:       file_path
 		lines:      lines

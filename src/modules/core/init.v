@@ -4,11 +4,9 @@ import cursor
 import buffer
 import util
 import viewport
-// import term.ui as tui
 
 pub struct App {
 pub mut:
-	// tui            &tui.Context = unsafe { nil }
 	buffer         buffer.Buffer
 	logical_cursor cursor.LogicalCursor
 	visual_cursor  cursor.VisualCursor

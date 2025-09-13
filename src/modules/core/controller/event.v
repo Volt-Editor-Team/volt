@@ -1,8 +1,8 @@
 module controller
 
-import io
+import fs { read_file, write_file }
 
-pub fn event(input UserInput, x voidptr) {
+pub fn event_loop(input UserInput, x voidptr) {
 	mut app := get_app(x)
 
 	event := input.e
@@ -13,12 +13,12 @@ pub fn event(input UserInput, x voidptr) {
 			.normal {
 				match code {
 					.l {
-						app.logical_cursor.move_right_buffer(app.buffer)
+						app.logical_cursor.move_right_buffer(app.buffer.lines)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					.h {
-						app.logical_cursor.move_left_buffer(app.buffer)
+						app.logical_cursor.move_left_buffer(app.buffer.lines)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
@@ -34,7 +34,7 @@ pub fn event(input UserInput, x voidptr) {
 								app.logical_cursor.x = new_width
 							}
 						} else {
-							app.logical_cursor.move_down_buffer(app.buffer)
+							app.logical_cursor.move_down_buffer(app.buffer.lines, app.buffer.logical_x)
 						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 
@@ -52,7 +52,7 @@ pub fn event(input UserInput, x voidptr) {
 								app.logical_cursor.x = new_width
 							}
 						} else {
-							app.logical_cursor.move_up_buffer(app.buffer)
+							app.logical_cursor.move_up_buffer(app.buffer.logical_x)
 						}
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						// update offset
@@ -77,15 +77,16 @@ pub fn event(input UserInput, x voidptr) {
 						delete_result := app.buffer.remove_char(app.logical_cursor.x,
 							app.logical_cursor.y)
 						if delete_result.joined_line {
-							app.logical_cursor.move_up_buffer(app.buffer)
+							app.logical_cursor.move_up_buffer(app.buffer.logical_x)
 						}
-						app.logical_cursor.move_to_x(app.buffer, delete_result.new_x)
+						app.logical_cursor.move_to_x(delete_result.new_x)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
 					.enter {
 						app.buffer.insert_newline(app.logical_cursor.x, app.logical_cursor.y)
-						app.logical_cursor.move_to_start_next_line_buffer(app.buffer)
+						app.logical_cursor.move_to_start_next_line_buffer(app.buffer.lines,
+							app.buffer.logical_x)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
@@ -93,7 +94,7 @@ pub fn event(input UserInput, x voidptr) {
 					else {
 						app.buffer.insert_char(app.logical_cursor.x, app.logical_cursor.y,
 							u8(code).ascii_str())
-						app.logical_cursor.move_right_buffer(app.buffer)
+						app.logical_cursor.move_right_buffer(app.buffer.lines)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
@@ -109,13 +110,12 @@ pub fn event(input UserInput, x voidptr) {
 								exit(0)
 							}
 							cmd_str == 'w' {
-								did_write := io.write_file(app.buffer.path, app.buffer.lines)
-								if !did_write {
+								result, message := write_file(app.buffer.path, app.buffer.lines)
+								if result {
 									// do something
+									_ := message
 								} else {
-									app.buffer.lines = io.read_file(app.buffer.path) or {
-										['']
-									}
+									app.buffer.lines = read_file(app.buffer.path) or { [''] }
 									// app.buffer.update_all_line_cache()
 								}
 								app.cmd_buffer.command = ''
