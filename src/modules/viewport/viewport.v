@@ -21,6 +21,9 @@ pub fn (mut view Viewport) update_offset(row_pos int) bool {
 }
 
 pub fn (mut view Viewport) build_wrap_points(line string) []int {
+	if line.len == 0 {
+		return [0]
+	}
 	mut wraps := []int{}
 	for i := 0; i < line.len; i += view.width {
 		wraps << i
