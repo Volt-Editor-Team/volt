@@ -1,3 +1,5 @@
+! CHATGPT GENERATED ROADMAP !
+
 # VLang Text Editor Development Roadmap
 
 If you want to build a text editor in VLang, the best approach is to break the project into levels of difficulty so you’re not overwhelmed trying to make a “VSCode clone” right away. You’ll go from a minimal “toy” to something that actually feels usable.

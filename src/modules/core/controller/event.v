@@ -12,17 +12,17 @@ pub fn event_loop(input UserInput, x voidptr) {
 		match app.mode {
 			.normal {
 				match code {
-					.l {
+					.l, .right {
 						app.logical_cursor.move_right_buffer(app.buffer.lines)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
-					.h {
+					.h, .left {
 						app.logical_cursor.move_left_buffer(app.buffer.lines)
 						app.visual_cursor.update(app.buffer, mut app.logical_cursor)
 						app.logical_cursor.update_desired_col(app.visual_cursor.x, app.viewport.width)
 					}
-					.j {
+					.j, .down {
 						line := app.buffer.lines[app.logical_cursor.y]
 						wrap_points := app.viewport.build_wrap_points(line)
 						if wrap_points.len > 1
@@ -41,7 +41,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 						// update offset
 						app.viewport.update_offset(app.visual_cursor.y)
 					}
-					.k {
+					.k, .up {
 						line := app.buffer.lines[app.logical_cursor.y]
 						wrap_points := app.viewport.build_wrap_points(line)
 						if wrap_points.len > 1 && app.logical_cursor.x > wrap_points[1] {
