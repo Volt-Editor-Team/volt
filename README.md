@@ -7,6 +7,7 @@ If you want to build a text editor in VLang, the best approach is to break the p
 - markdown renderer
 - git integration
 - plain text/ markdown linting
+- v + v-analyzer self contained
 
 ---
 

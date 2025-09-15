@@ -104,12 +104,12 @@ pub fn event_loop(input UserInput, x voidptr) {
 				cmd_str := app.cmd_buffer.command
 				match code {
 					.enter {
-						match true {
-							cmd_str == 'q' || cmd_str == 'quit' {
+						match cmd_str {
+							'q', 'quit' {
 								app.cmd_buffer.command = ''
 								exit(0)
 							}
-							cmd_str == 'w' {
+							'w', 'write' {
 								result, message := write_file(app.buffer.path, app.buffer.lines)
 								if result {
 									// do something
