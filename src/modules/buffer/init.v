@@ -1,12 +1,16 @@
 module buffer
 
+import cursor { LogicalCursor, VisualCursor }
 import fs { read_file }
 
 pub struct Buffer {
 pub mut:
 	path string
 	// lines contains all lines of the text buffer.
-	lines []string
+	lines          []string
+	logical_cursor LogicalCursor
+	visual_cursor  VisualCursor
+	saved_cursor   LogicalCursor
 
 	// cache visual col indexes
 	visual_col [][]int

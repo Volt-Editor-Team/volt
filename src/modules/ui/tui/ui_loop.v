@@ -12,13 +12,13 @@ fn ui_loop(x voidptr) {
 	// get app pointer, terminal size, and clear to prep for updates
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
-	mut buf := app.buffer
+	mut buf := app.buffers[app.active_buffer]
 	theme := tui_app.theme
 	width, height := term.get_terminal_size()
 	ctx.clear()
 
-	y_pos := app.visual_cursor.y
-	x_pos := app.visual_cursor.x
+	y_pos := app.buffers[app.active_buffer].visual_cursor.y
+	x_pos := app.buffers[app.active_buffer].visual_cursor.x
 	col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap
 
 	mut actual_line_idx := 0 // line we’re drawing on screen
@@ -129,8 +129,8 @@ fn ui_loop(x voidptr) {
 	ctx.set_bg_color(colors.deep_indigo)
 
 	ctx.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
-	ctx.draw_text(width - 5, height - 1, (app.logical_cursor.x + 1).str() + ':' +
-		(app.logical_cursor.y + 1).str())
+	ctx.draw_text(width - 5, height - 1, (app.buffers[app.active_buffer].logical_cursor.x +
+		1).str() + ':' + (app.buffers[app.active_buffer].logical_cursor.y + 1).str())
 
 	ctx.reset_bg_color()
 
@@ -138,33 +138,34 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 8, 'new_col: ' + new_col.str())
 	// ctx.draw_text(width - 30, height - 7, 'wrap_points: ' + wrap_points.str())
 	// ctx.draw_text(width - 30, height - 6, 'wrap_offset: ' + wrap_offset.str())
-	// ctx.draw_text(width - 30, height - 5, 'x: ' + app.logical_cursor.x.str())
+	// ctx.draw_text(width - 30, height - 5, 'x: ' + app.buffers[app.active_buffer].logical_cursor.x.str())
 	// ctx.draw_text(width - 30, height - 4, 'viewport start: ' + app.viewport.row_offset.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
-	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + app.logical_cursor.desired_col.str())
+	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + app.buffers[app.active_buffer].logical_cursor.desired_col.str())
 
 	if app.mode == util.Mode.command {
-		app.logical_cursor.x = app.cmd_buffer.command.len + 2
-		app.logical_cursor.y = height
+		app.buffers[app.active_buffer].logical_cursor.x = app.cmd_buffer.command.len + 2
+		app.buffers[app.active_buffer].logical_cursor.y = height
 
 		// 1. Clear the entire command line with spaces
 		// width is the terminal width
-		ctx.draw_text(0, app.logical_cursor.y, ' '.repeat(width - 1))
+		ctx.draw_text(0, app.buffers[app.active_buffer].logical_cursor.y, ' '.repeat(width - 1))
 
 		// 2. Draw the ':' prompt
-		ctx.draw_text(0, app.logical_cursor.y, ':')
+		ctx.draw_text(0, app.buffers[app.active_buffer].logical_cursor.y, ':')
 
 		// 3. Draw the command buffer
-		ctx.draw_text(2, app.logical_cursor.y, app.cmd_buffer.command)
+		ctx.draw_text(2, app.buffers[app.active_buffer].logical_cursor.y, app.cmd_buffer.command)
 
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
 		ctx.set_bg_color(theme.cursor_color)
-		ctx.draw_text(app.logical_cursor.x, app.logical_cursor.y, ' ')
+		ctx.draw_text(app.buffers[app.active_buffer].logical_cursor.x, app.buffers[app.active_buffer].logical_cursor.y,
+			' ')
 		ctx.reset_bg_color()
 	}
 
 	ctx.flush()
-	// 	update_cursor(app.logical_cursor.x, app.logical_cursor.y, mut ctx)
+	// 	update_cursor(app.buffers[app.active_buffer].logical_cursor.x, app.buffers[app.active_buffer].logical_cursor.y, mut ctx)
 }
