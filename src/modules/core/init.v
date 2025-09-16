@@ -15,9 +15,9 @@ pub mut:
 	theme         ColorScheme
 }
 
-pub fn App.new(file_path string, tabsize int, width int, height int) App {
+pub fn App.new(file_path string, width int, height int) App {
 	mut buffers := []Buffer{}
-	buffers << Buffer.new(file_path, tabsize)
+	buffers << Buffer.new(path: file_path, tabsize: default_tabsize)
 	mut app := App{
 		buffers:       buffers
 		active_buffer: 0
@@ -29,7 +29,8 @@ pub fn App.new(file_path string, tabsize int, width int, height int) App {
 			margin:     5
 		}
 		theme:         ColorScheme{
-			cursor_color:               '#7896C8'
+			normal_cursor_color:        '#8282A0'
+			insert_cursor_color:        '#7896C8'
 			cursor_text_color:          '#141E32'
 			active_line_bg_color:       '#323C5A'
 			active_line_number_color:   '#B4B4C8'

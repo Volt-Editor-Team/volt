@@ -18,9 +18,8 @@ fn main() {
 	width, height := tui.get_terminal_size()
 	// file_path := './testdata/simple.txt'
 	file_path := './src/modules/ui/tui/ui_loop.v'
-	tabsize := 4
 
-	mut core_app := core.App.new(file_path, tabsize, width, height)
+	mut core_app := core.App.new(file_path, width, height)
 
 	mut tui_app := tui.TuiApp.new(&core_app)
 

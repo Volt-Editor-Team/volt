@@ -42,3 +42,9 @@ pub fn write_file(path string, buffer []string) (bool, string) {
 	// successfully wrote to file. no need to return a message
 	return true, ''
 }
+
+pub fn get_working_dir_paths() []string {
+	current_path := os.abs_path('.')
+	entries := os.ls(current_path) or { [] }
+	return entries
+}

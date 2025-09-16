@@ -7,7 +7,8 @@ import term.ui as t
 
 struct TuiTheme {
 mut:
-	cursor_color               t.Color
+	normal_cursor_color        t.Color
+	insert_cursor_color        t.Color
 	cursor_text_color          t.Color
 	active_line_bg_color       t.Color
 	active_line_number_color   t.Color
@@ -16,8 +17,11 @@ mut:
 
 fn TuiTheme.new(theme ui.ColorScheme) TuiTheme {
 	return TuiTheme{
-		cursor_color:               colors.hex_to_tui_color(theme.cursor_color) or {
-			colors.default_cursor_color
+		normal_cursor_color:        colors.hex_to_tui_color(theme.normal_cursor_color) or {
+			colors.default_normal_cursor_color
+		}
+		insert_cursor_color:        colors.hex_to_tui_color(theme.insert_cursor_color) or {
+			colors.default_insert_cursor_color
 		}
 		cursor_text_color:          colors.hex_to_tui_color(theme.cursor_text_color) or {
 			colors.default_cursor_text_color

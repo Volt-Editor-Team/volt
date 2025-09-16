@@ -16,10 +16,15 @@ pub fn hex_to_tui_color(hexcode string) !Color {
 	}
 }
 
-pub const default_cursor_color = Color{
+pub const default_insert_cursor_color = Color{
 	r: 120
 	g: 150
 	b: 200
+}
+pub const default_normal_cursor_color = Color{
+	r: 130
+	g: 130
+	b: 160
 }
 pub const default_cursor_text_color = Color{
 	r: 20

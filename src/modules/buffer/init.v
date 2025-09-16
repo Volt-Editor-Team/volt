@@ -5,26 +5,29 @@ import fs { read_file }
 
 pub struct Buffer {
 pub mut:
-	path string
+	path string = 'Scratch'
 	// lines contains all lines of the text buffer.
-	lines          []string
+	lines          []string = ['']
 	logical_cursor LogicalCursor
 	visual_cursor  VisualCursor
 	saved_cursor   LogicalCursor
 
 	// cache visual col indexes
 	visual_col [][]int
+
+	is_directory_buffer bool
 pub:
 	tabsize int
 }
 
-pub fn Buffer.new(file_path string, tabsize int) Buffer {
-	lines := read_file(file_path) or { [''] }
+pub fn Buffer.new(b Buffer) Buffer {
+	lines := read_file(b.path) or { b.lines }
 	mut buf := Buffer{
-		path:       file_path
-		lines:      lines
-		tabsize:    tabsize
-		visual_col: [][]int{len: lines.len}
+		path:                b.path
+		lines:               lines
+		tabsize:             b.tabsize
+		visual_col:          [][]int{len: lines.len}
+		is_directory_buffer: b.is_directory_buffer
 	}
 
 	buf.update_all_line_cache()

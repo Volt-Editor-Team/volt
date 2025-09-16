@@ -143,6 +143,23 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
 									app.buffers[app.active_buffer].logical_cursor.y)
 							}
+							'cd' {
+								app.add_directory_buffer()
+								app.mode = .normal
+								app.cmd_buffer.command = ''
+								app.viewport.row_offset = 0
+								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
+								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
+									app.buffers[app.active_buffer].logical_cursor.y)
+							}
+							'cb' {
+								app.close_buffer()
+								app.mode = .normal
+								app.cmd_buffer.command = ''
+								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
+								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
+									app.buffers[app.active_buffer].logical_cursor.y)
+							}
 							else {}
 						}
 					}
@@ -154,10 +171,12 @@ pub fn event_loop(input UserInput, x voidptr) {
 							app.buffers[app.active_buffer].logical_cursor.y)
 					}
 					.backspace {
-						// command string start at x = 2
-						command_str_index := app.buffers[app.active_buffer].logical_cursor.x - 2
+						// // command string start at x = 2
+						// command_str_index := app.buffers[app.active_buffer].logical_cursor.x - 2
 						// remove char before index
-						app.cmd_buffer.remove_char(command_str_index - 1)
+						if app.cmd_buffer.command.len > 0 {
+							app.cmd_buffer.remove_char(app.cmd_buffer.command.len - 1)
+						}
 					}
 					else {
 						ch := u8(code).ascii_str()
