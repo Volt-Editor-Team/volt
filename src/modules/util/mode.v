@@ -1,6 +1,6 @@
 module util
 
-import constants
+import colors
 import term.ui as tui
 
 pub enum Mode {
@@ -19,8 +19,8 @@ pub fn mode_str(m Mode) string {
 
 pub fn get_command_bg_color(m Mode) tui.Color {
 	return match m {
-		.normal { constants.neutral_grey }
-		.insert { constants.teal }
-		.command { constants.amber }
+		.normal { colors.neutral_grey }
+		.insert { colors.teal }
+		.command { colors.amber }
 	}
 }

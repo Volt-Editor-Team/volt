@@ -2,7 +2,7 @@ module tui
 
 import core.controller
 import util
-import util.constants
+import util.colors
 import term
 // import math
 
@@ -13,6 +13,7 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
 	mut buf := app.buffer
+	theme := tui_app.theme
 	width, height := term.get_terminal_size()
 	ctx.clear()
 
@@ -44,23 +45,23 @@ fn ui_loop(x voidptr) {
 
 			// draw line number only on first wrap row
 			if logical_idx == y_pos {
-				ctx.set_bg_color(view.line_bg_color)
-				ctx.set_color(view.active_line_number_color)
+				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.set_color(theme.active_line_number_color)
 				ctx.draw_line(0, actual_line_idx + 1, width - 1, actual_line_idx + 1)
 				ctx.reset_bg_color()
 				ctx.reset_color()
 			}
 			if wrap_row == 0 {
 				if logical_idx == y_pos {
-					ctx.set_bg_color(view.line_bg_color)
-					ctx.set_color(view.active_line_number_color)
+					ctx.set_bg_color(theme.active_line_bg_color)
+					ctx.set_color(theme.active_line_number_color)
 					ctx.draw_line(0, actual_line_idx + 1, width - 1, actual_line_idx + 1)
 					ctx.draw_text(view.col_offset, actual_line_idx + 1, alignment_spaces +
 						line_num.str())
 					ctx.reset_bg_color()
 					ctx.reset_color()
 				} else {
-					ctx.set_color(view.inactive_line_number_color)
+					ctx.set_color(theme.inactive_line_number_color)
 					ctx.draw_text(view.col_offset, actual_line_idx + 1, alignment_spaces +
 						line_num.str())
 					ctx.reset_color()
@@ -89,13 +90,13 @@ fn ui_loop(x voidptr) {
 
 				for k in 0 .. char_width {
 					if visual_col == x_pos && logical_idx == y_pos {
-						ctx.set_bg_color(app.visual_cursor.color)
-						ctx.set_color(app.visual_cursor.text_color)
+						ctx.set_bg_color(theme.cursor_color)
+						ctx.set_color(theme.cursor_text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_bg_color()
 						ctx.reset_color()
 					} else if logical_idx == y_pos {
-						ctx.set_bg_color(view.line_bg_color)
+						ctx.set_bg_color(theme.active_line_bg_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_bg_color()
 					} else {
@@ -114,7 +115,7 @@ fn ui_loop(x voidptr) {
 	}
 
 	// ctx.horizontal_separator(height - 2)
-	ctx.set_bg_color(constants.deep_indigo)
+	ctx.set_bg_color(colors.deep_indigo)
 	ctx.draw_line(0, height - 1, width - 1, height - 1)
 
 	command_str := util.mode_str(app.mode)
@@ -125,7 +126,7 @@ fn ui_loop(x voidptr) {
 
 	ctx.draw_text(5, height - 1, term.bold(command_str))
 
-	ctx.set_bg_color(constants.deep_indigo)
+	ctx.set_bg_color(colors.deep_indigo)
 
 	ctx.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
 	ctx.draw_text(width - 5, height - 1, (app.logical_cursor.x + 1).str() + ':' +
@@ -159,7 +160,7 @@ fn ui_loop(x voidptr) {
 
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
-		ctx.set_bg_color(app.visual_cursor.color)
+		ctx.set_bg_color(theme.cursor_color)
 		ctx.draw_text(app.logical_cursor.x, app.logical_cursor.y, ' ')
 		ctx.reset_bg_color()
 	}

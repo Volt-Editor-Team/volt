@@ -1,7 +1,38 @@
 module tui
 
+import util.colors
+import ui
 import core.controller as ctl
 import term.ui as t
+
+struct TuiTheme {
+mut:
+	cursor_color               t.Color
+	cursor_text_color          t.Color
+	active_line_bg_color       t.Color
+	active_line_number_color   t.Color
+	inactive_line_number_color t.Color
+}
+
+fn TuiTheme.new(theme ui.ColorScheme) TuiTheme {
+	return TuiTheme{
+		cursor_color:               colors.hex_to_tui_color(theme.cursor_color) or {
+			colors.default_cursor_color
+		}
+		cursor_text_color:          colors.hex_to_tui_color(theme.cursor_text_color) or {
+			colors.default_cursor_text_color
+		}
+		active_line_bg_color:       colors.hex_to_tui_color(theme.active_line_bg_color) or {
+			colors.default_active_line_bg_color
+		}
+		active_line_number_color:   colors.hex_to_tui_color(theme.active_line_number_color) or {
+			colors.default_active_line_number_color
+		}
+		inactive_line_number_color: colors.hex_to_tui_color(theme.inactive_line_number_color) or {
+			colors.default_inactive_line_number_color
+		}
+	}
+}
 
 pub fn get_tui(x voidptr) &TuiApp {
 	return unsafe { &TuiApp(x) }
@@ -9,19 +40,22 @@ pub fn get_tui(x voidptr) &TuiApp {
 
 pub struct TuiApp {
 pub mut:
-	core voidptr
-	tui  &t.Context = unsafe { nil }
+	core  voidptr
+	tui   &t.Context = unsafe { nil }
+	theme TuiTheme
 }
 
 pub fn TuiApp.new(core voidptr) &TuiApp {
 	mut tui_app := &TuiApp{}
-	tui_app.core = core
 	tui_app.initialize_tui(core)
 
 	return tui_app
 }
 
 pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
+	tui_app.core = core
+	app := ctl.get_app(core)
+	tui_app.theme = TuiTheme.new(app.theme)
 	tui_app.tui = t.init(
 		user_data:   tui_app
 		event_fn:    event_wrapper

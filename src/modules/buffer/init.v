@@ -1,113 +1,40 @@
 module buffer
 
-pub fn (mut buf Buffer) update_all_line_cache() {
-	for i in 0 .. buf.lines.len {
-		buf.update_line_cache(i)
-	}
+import fs { read_file }
+
+pub struct Buffer {
+pub mut:
+	path string
+	// lines contains all lines of the text buffer.
+	lines []string
+
+	// cache visual col indexes
+	visual_col [][]int
+pub:
+	tabsize int
 }
 
-pub fn (mut buf Buffer) update_line_cache(line_index int) {
-	line := buf.lines[line_index]
-	mut visual := []int{len: line.len}
-	mut col := 0
-
-	for i, ch in line.runes() {
-		visual[i] = col
-		if ch == `\t` {
-			col += buf.tabsize - (col % buf.tabsize)
-		} else {
-			col++
-		}
+pub fn Buffer.new(file_path string, tabsize int) Buffer {
+	lines := read_file(file_path) or { [''] }
+	mut buf := Buffer{
+		path:       file_path
+		lines:      lines
+		tabsize:    tabsize
+		visual_col: [][]int{len: lines.len}
 	}
-	buf.visual_col[line_index] = visual
+
+	buf.update_all_line_cache()
+
+	return buf
 }
 
-pub fn (buf Buffer) get_visual_coords(logical_x int, logical_y int) (int, int) {
-	if logical_y >= buf.visual_col.len || logical_y < 0 {
-		return 0, logical_y
-	}
-
-	visual_line := buf.visual_col[logical_y]
-
-	if logical_x >= visual_line.len {
-		return if visual_line.len > 0 {
-			visual_line[visual_line.len - 1] + 1, logical_y
-		} else {
-			0, logical_y
-		}
-	}
-
-	return visual_line[logical_x], logical_y
+struct DeleteResult {
+pub mut:
+	joined_line bool
+	new_x       int
 }
 
-pub fn (buf Buffer) logical_x(line_index int, visual_x int) int {
-	if line_index >= buf.visual_col.len || line_index < 0 {
-		return 0
-	}
-
-	visual_line := buf.visual_col[line_index]
-	mut closest := 0
-
-	for i, col in visual_line {
-		if col > visual_x {
-			break
-		}
-
-		closest = i
-	}
-
-	return closest
-}
-
-pub fn (mut buf Buffer) insert_char(x_pos int, y_pos int, ch string) {
-	mut line := buf.lines[y_pos]
-	new_line := line[..x_pos] + ch + line[x_pos..]
-	buf.lines[y_pos] = new_line
-	buf.update_line_cache(y_pos)
-}
-
-pub fn (mut buf Buffer) insert_newline(x_pos int, y_pos int) {
-	cur_line := buf.lines[y_pos]
-	left := cur_line[..x_pos]
-	right := cur_line[x_pos..]
-
-	buf.lines[y_pos] = left
-	buf.lines.insert(y_pos + 1, right)
-	buf.visual_col.insert(y_pos + 1, []int{})
-	buf.update_line_cache(y_pos)
-	buf.update_line_cache(y_pos + 1)
-}
-
-pub fn (mut buf Buffer) remove_char(x_pos int, y_pos int) DeleteResult {
-	cur_line := buf.lines[y_pos]
-	left := cur_line[..x_pos]
-	right := cur_line[x_pos..]
-
-	mut result := DeleteResult{
-		joined_line: false
-		new_x:       0
-	}
-
-	if x_pos > 0 {
-		// normal delete
-		buf.lines[y_pos] = left#[..-1] + right
-		buf.update_line_cache(y_pos)
-		result.new_x = x_pos - 1
-	} else if x_pos == 0 && y_pos > 0 {
-		// remove line
-		buf.remove_line(y_pos)
-		prev_line_index := y_pos - 1
-		new_x := buf.lines[prev_line_index].len
-		buf.lines[y_pos - 1] += right
-		buf.update_line_cache(y_pos - 1)
-
-		result.joined_line = true
-		result.new_x = new_x
-	}
-	return result
-}
-
-pub fn (mut buf Buffer) remove_line(y_pos int) {
-	buf.lines.delete(y_pos)
-	buf.visual_col.delete(y_pos)
+pub struct CommandBuffer {
+pub mut:
+	command string
 }
