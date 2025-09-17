@@ -26,7 +26,7 @@ fn ui_loop(x voidptr) {
 
 	y_pos := buf.visual_cursor.y
 	x_pos := buf.visual_cursor.x
-	col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap
+	col_start := app.viewport.col_offset + (app.viewport.line_num_to_text_gap * 2)
 
 	mut actual_line_idx := 0 // line we’re drawing on screen
 	mut logical_idx := view.row_offset // start at first visible buffer line
@@ -50,7 +50,7 @@ fn ui_loop(x voidptr) {
 		}
 
 		mut runes := line.runes()
-		runes << ` ` // ensure empty lines render
+		// runes << ` ` // ensure empty lines render
 
 		// iterate per wrap row
 		for wrap_row in 0 .. wrap_points.len {
@@ -101,7 +101,7 @@ fn ui_loop(x voidptr) {
 				}
 
 				let_draw_y := actual_line_idx + 1
-				let_draw_x := col_start + visual_col + view.line_num_to_text_gap - 1
+				let_draw_x := col_start + visual_col
 
 				for k in 0 .. char_width {
 					if visual_col == x_pos && logical_idx == y_pos {
