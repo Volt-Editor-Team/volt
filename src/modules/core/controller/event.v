@@ -17,24 +17,31 @@ pub fn event_loop(input UserInput, x voidptr) {
 					.l, .right {
 						app.buffers[app.active_buffer].logical_cursor.move_right_buffer(app.buffers[app.active_buffer].lines)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 							app.viewport.width)
 					}
 					.h, .left {
 						app.buffers[app.active_buffer].logical_cursor.move_left_buffer(app.buffers[app.active_buffer].lines)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 							app.viewport.width)
 					}
 					.j, .down {
 						line := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
+						// ch := line[app.buffers[app.active_buffer].logical_cursor.x]
+						// can't figure out accounting for tab width
+						// mut char_width := 1
+						// if ch == `\t` {
+						// 	char_width = app.buffers[app.active_buffer].tabsize - (visual_col % app.buffer[app.active_buffer].tabsize)
+						// }
+
 						wrap_points := app.viewport.build_wrap_points(line)
 						if wrap_points.len > 1
 							&& app.buffers[app.active_buffer].logical_cursor.x < wrap_points[wrap_points.len - 1] {
 							new_width := app.buffers[app.active_buffer].logical_cursor.x +
-								app.viewport.width
+								app.viewport.width - 1
 							if app.buffers[app.active_buffer].logical_cursor.desired_col > new_width {
 								app.buffers[app.active_buffer].logical_cursor.x = app.buffers[app.active_buffer].logical_cursor.desired_col
 							} else {
@@ -45,7 +52,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.buffers[app.active_buffer].logical_x)
 						}
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 
 						// update offset
 						app.viewport.update_offset(app.buffers[app.active_buffer].visual_cursor.y)
@@ -65,7 +72,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 							app.buffers[app.active_buffer].logical_cursor.move_up_buffer(app.buffers[app.active_buffer].logical_x)
 						}
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 						// update offset
 						app.viewport.update_offset(app.buffers[app.active_buffer].visual_cursor.y)
 					}
@@ -86,7 +93,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.buffers[app.active_buffer].logical_cursor.x = 0
 								app.buffers[app.active_buffer].logical_cursor.y = 0
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y)
+									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 								app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 									app.viewport.width)
 							}
@@ -100,7 +107,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 							app.buffers[app.active_buffer].logical_cursor.x = 0
 							app.buffers[app.active_buffer].logical_cursor.y = 0
 							app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-								app.buffers[app.active_buffer].logical_cursor.y)
+								app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 							app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 								app.viewport.width)
 						}
@@ -121,7 +128,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 						}
 						app.buffers[app.active_buffer].logical_cursor.move_to_x(delete_result.new_x)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 							app.viewport.width)
 					}
@@ -131,7 +138,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 						app.buffers[app.active_buffer].logical_cursor.move_to_start_next_line_buffer(app.buffers[app.active_buffer].lines,
 							app.buffers[app.active_buffer].logical_x)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 
 						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 							app.viewport.width)
@@ -142,7 +149,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 
 						app.buffers[app.active_buffer].logical_cursor.move_right_buffer(app.buffers[app.active_buffer].lines)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 							app.viewport.width)
 					}
@@ -173,7 +180,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.mode = .normal
 								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y)
+									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 							}
 							'cd' {
 								app.add_directory_buffer()
@@ -182,7 +189,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.viewport.row_offset = 0
 								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y)
+									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 							}
 							'cb' {
 								app.close_buffer()
@@ -190,7 +197,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.cmd_buffer.command = ''
 								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y)
+									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 							}
 							else {}
 						}
@@ -200,7 +207,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 						app.cmd_buffer.command = ''
 						app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 					}
 					.backspace {
 						// // command string start at x = 2

@@ -23,10 +23,14 @@ pub fn (mut log_curs LogicalCursor) move_left_buffer(lines []string) {
 }
 
 pub fn (mut log_curs LogicalCursor) move_down_buffer(lines []string, logical_x_fn fn (line_index int, visual_x int) int) {
+	// cursor is not on the last line
+	// move curse down and calculate x
 	if log_curs.y < lines.len - 1 {
 		log_curs.y += 1
 		log_curs.x = logical_x_fn(log_curs.y, log_curs.desired_col)
 	} else {
+		// cursor is on the last line
+		// move cursor the end
 		log_curs.x = lines[log_curs.y].len
 	}
 }

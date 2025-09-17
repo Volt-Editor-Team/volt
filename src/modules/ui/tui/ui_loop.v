@@ -14,13 +14,10 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	is_directory_buffer := buf.is_directory_buffer
-	command_str := if is_directory_buffer {
-		'DIRECTORY'
-	} else {
-		util.mode_str(app.mode)
-	}
 	theme := tui_app.theme
+	is_directory_buffer := buf.is_directory_buffer
+	mut command_str := util.mode_str(app.mode)
+	mut text_color := colors.white
 	width, height := term.get_terminal_size()
 	ctx.clear()
 
@@ -32,17 +29,10 @@ fn ui_loop(x voidptr) {
 	mut logical_idx := view.row_offset // start at first visible buffer line
 
 	for logical_idx < buf.lines.len && actual_line_idx < view.height {
-		mut line := buf.lines[logical_idx]
-		mut line_text_color := colors.white
+		line := buf.lines[logical_idx]
+
 		line_num := logical_idx + 1
 		alignment_spaces := ' '.repeat(buf.lines.len.str().len - line_num.str().len)
-
-		// render text and colors differently if in change directory buffer
-		if is_directory_buffer {
-			if fs.is_dir(line) {
-				line_text_color = colors.royal_blue
-			}
-		}
 
 		mut wrap_points := view.build_wrap_points(line)
 		if wrap_points.len == 0 {
@@ -50,7 +40,17 @@ fn ui_loop(x voidptr) {
 		}
 
 		mut runes := line.runes()
-		// runes << ` ` // ensure empty lines render
+		runes << ` ` // ensure empty lines render
+
+		if is_directory_buffer {
+			command_str = 'DIRECTORY'
+
+			if fs.is_dir(line) {
+				text_color = colors.royal_blue
+			} else {
+				text_color = colors.white
+			}
+		}
 
 		// iterate per wrap row
 		for wrap_row in 0 .. wrap_points.len {
@@ -101,7 +101,7 @@ fn ui_loop(x voidptr) {
 				}
 
 				let_draw_y := actual_line_idx + 1
-				let_draw_x := col_start + visual_col
+				let_draw_x := col_start + visual_col + view.line_num_to_text_gap
 
 				for k in 0 .. char_width {
 					if visual_col == x_pos && logical_idx == y_pos {
@@ -116,12 +116,12 @@ fn ui_loop(x voidptr) {
 						ctx.reset_color()
 					} else if logical_idx == y_pos {
 						ctx.set_bg_color(theme.active_line_bg_color)
-						ctx.set_color(line_text_color)
+						ctx.set_color(text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_bg_color()
 						ctx.reset_color()
 					} else {
-						ctx.set_color(line_text_color)
+						ctx.set_color(text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_color()
 					}
@@ -136,7 +136,6 @@ fn ui_loop(x voidptr) {
 		// move to next buffer line
 		logical_idx++
 	}
-
 	// ctx.horizontal_separator(height - 2)
 	ctx.set_bg_color(colors.deep_indigo)
 	ctx.draw_line(0, height - 1, width - 1, height - 1)
@@ -159,8 +158,11 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 8, 'new_col: ' + new_col.str())
 	// ctx.draw_text(width - 30, height - 7, 'wrap_points: ' + wrap_points.str())
 	// ctx.draw_text(width - 30, height - 6, 'wrap_offset: ' + wrap_offset.str())
-	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.logical_cursor.x.str())
-	// ctx.draw_text(width - 30, height - 4, 'viewport start: ' + app.viewport.row_offset.str())
+	// mut line := buf.lines[logical_idx]
+	// mut wrap_points := view.build_wrap_points(line)
+	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
+	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
+	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
 	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
