@@ -45,6 +45,35 @@ pub fn write_file(path string, buffer []string) (bool, string) {
 
 pub fn get_working_dir_paths() []string {
 	current_path := os.abs_path('.')
-	entries := os.ls(current_path) or { [] }
+	mut entries := os.ls(current_path) or { [''] }
+	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
 	return entries
+}
+
+pub fn get_paths_from_parent_dir(path string) []string {
+	abs_path := os.abs_path(path)
+	parent_dir_path := os.dir(abs_path)
+	mut entries := os.ls(parent_dir_path) or { [''] }
+	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
+	return entries
+}
+
+pub fn get_paths_from_dir(dir string) []string {
+	dir_path := os.abs_path(dir)
+	mut entries := os.ls(dir_path) or { [''] }
+	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
+	return entries
+}
+
+pub fn path_exists(path string) bool {
+	abs_path := os.abs_path(path)
+	return os.exists(abs_path)
+}
+
+pub fn is_dir(path string) bool {
+	abs_path := os.abs_path(path)
+	if os.exists(abs_path) && os.is_dir(abs_path) {
+		return true
+	}
+	return false
 }

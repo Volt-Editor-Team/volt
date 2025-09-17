@@ -75,3 +75,27 @@ pub const deep_indigo = Color{
 	g: 81
 	b: 181
 }
+
+pub const white = Color{
+	r: 255
+	g: 255
+	b: 255
+}
+
+pub const dark_blue = Color{
+	r: 0
+	g: 0
+	b: 139
+}
+
+pub const muted_dark_blue = Color{
+	r: 25
+	g: 25
+	b: 112
+}
+
+pub const royal_blue = Color{
+	r: 65
+	g: 105
+	b: 225
+}

@@ -4,6 +4,7 @@ import core.controller
 import util
 import util.colors
 import term
+import fs
 // import math
 
 fn ui_loop(x voidptr) {
@@ -13,7 +14,8 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	command_str := if buf.is_directory_buffer == true {
+	is_directory_buffer := buf.is_directory_buffer
+	command_str := if is_directory_buffer {
 		'DIRECTORY'
 	} else {
 		util.mode_str(app.mode)
@@ -30,9 +32,17 @@ fn ui_loop(x voidptr) {
 	mut logical_idx := view.row_offset // start at first visible buffer line
 
 	for logical_idx < buf.lines.len && actual_line_idx < view.height {
-		line := buf.lines[logical_idx]
+		mut line := buf.lines[logical_idx]
+		mut line_text_color := colors.white
 		line_num := logical_idx + 1
 		alignment_spaces := ' '.repeat(buf.lines.len.str().len - line_num.str().len)
+
+		// render text and colors differently if in change directory buffer
+		if is_directory_buffer {
+			if fs.is_dir(line) {
+				line_text_color = colors.royal_blue
+			}
+		}
 
 		mut wrap_points := view.build_wrap_points(line)
 		if wrap_points.len == 0 {
@@ -91,7 +101,7 @@ fn ui_loop(x voidptr) {
 				}
 
 				let_draw_y := actual_line_idx + 1
-				let_draw_x := col_start + visual_col + view.line_num_to_text_gap
+				let_draw_x := col_start + visual_col + view.line_num_to_text_gap - 1
 
 				for k in 0 .. char_width {
 					if visual_col == x_pos && logical_idx == y_pos {
@@ -106,10 +116,14 @@ fn ui_loop(x voidptr) {
 						ctx.reset_color()
 					} else if logical_idx == y_pos {
 						ctx.set_bg_color(theme.active_line_bg_color)
+						ctx.set_color(line_text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_bg_color()
+						ctx.reset_color()
 					} else {
+						ctx.set_color(line_text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
+						ctx.reset_color()
 					}
 				}
 				visual_col += char_width
@@ -135,7 +149,7 @@ fn ui_loop(x voidptr) {
 
 	ctx.set_bg_color(colors.deep_indigo)
 
-	ctx.draw_text(command_str.len + 5 + 2, height - 1, './src/main.v')
+	ctx.draw_text(command_str.len + 5 + 2, height - 1, buf.path)
 	ctx.draw_text(width - 5, height - 1, (buf.logical_cursor.x + 1).str() + ':' +
 		(buf.logical_cursor.y + 1).str())
 

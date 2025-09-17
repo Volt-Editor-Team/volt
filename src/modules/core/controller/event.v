@@ -5,6 +5,8 @@ import fs { read_file, write_file }
 pub fn event_loop(input UserInput, x voidptr) {
 	mut app := get_app(x)
 
+	// mut buf := app.buffers[app.active_buffer]
+
 	event := input.e
 	code := input.code
 
@@ -74,6 +76,35 @@ pub fn event_loop(input UserInput, x voidptr) {
 						app.buffers[app.active_buffer].saved_cursor = app.buffers[app.active_buffer].logical_cursor
 						app.mode = .command
 					}
+					.tab {
+						if app.buffers[app.active_buffer].is_directory_buffer {
+							path := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
+
+							if fs.is_dir(path) {
+								app.buffers[app.active_buffer].lines = fs.get_paths_from_dir(path)
+
+								app.buffers[app.active_buffer].logical_cursor.x = 0
+								app.buffers[app.active_buffer].logical_cursor.y = 0
+								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
+									app.buffers[app.active_buffer].logical_cursor.y)
+								app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
+									app.viewport.width)
+							}
+						}
+					}
+					.backspace {
+						if app.buffers[app.active_buffer].is_directory_buffer {
+							path := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
+							app.buffers[app.active_buffer].lines = fs.get_paths_from_parent_dir(path)
+
+							app.buffers[app.active_buffer].logical_cursor.x = 0
+							app.buffers[app.active_buffer].logical_cursor.y = 0
+							app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
+								app.buffers[app.active_buffer].logical_cursor.y)
+							app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
+								app.viewport.width)
+						}
+					}
 					else {}
 				}
 			}
@@ -108,6 +139,7 @@ pub fn event_loop(input UserInput, x voidptr) {
 					else {
 						app.buffers[app.active_buffer].insert_char(app.buffers[app.active_buffer].logical_cursor.x,
 							app.buffers[app.active_buffer].logical_cursor.y, u8(code).ascii_str())
+
 						app.buffers[app.active_buffer].logical_cursor.move_right_buffer(app.buffers[app.active_buffer].lines)
 						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
 							app.buffers[app.active_buffer].logical_cursor.y)
