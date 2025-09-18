@@ -4,7 +4,6 @@ import buffer { Buffer, CommandBuffer }
 import util { Mode }
 import viewport { Viewport }
 import ui { ColorScheme }
-import sync
 import os
 
 pub struct App {
@@ -15,13 +14,12 @@ pub mut:
 	cmd_buffer    CommandBuffer
 	viewport      Viewport
 	theme         ColorScheme
-	stats         []string
-	mu            sync.Mutex
+	stats         shared []string
 }
 
 pub fn App.new(file_path string, width int, height int) &App {
 	mut buffers := []Buffer{}
-	buffers << Buffer.new(path: file_path, tabsize: default_tabsize)
+	buffers << Buffer.new(name: os.file_name(file_path), path: file_path, tabsize: default_tabsize)
 
 	// viewport variables
 	col_offset := 3 // start of all text
@@ -54,23 +52,18 @@ pub fn App.new(file_path string, width int, height int) &App {
 	}
 	app.viewport.update_width()
 
-	go fn [mut app] () {
-		v_doctor := os.execute('v doctor')
-		stats := v_doctor.output.split_into_lines()
-		app.set_stats(stats)
-	}()
-
+	go app.get_doctor_info()
 	return app
 }
 
-pub fn (mut app App) set_stats(lines []string) {
-	app.mu.@lock()
-	app.stats = lines.clone()
-	app.mu.unlock()
+pub fn (mut app App) get_doctor_info() {
+	lock app.stats {
+		v_doctor := os.execute('v doctor')
+		stats := v_doctor.output.split_into_lines()
+		app.stats = stats
+	}
 }
 
-pub fn (mut app App) get_stats() []string {
-	app.mu.@lock()
-	defer { app.mu.unlock() }
-	return app.stats.clone()
+pub fn (mut app App) get_stats() shared []string {
+	return app.stats
 }

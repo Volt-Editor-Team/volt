@@ -88,8 +88,11 @@ pub fn event_loop(input UserInput, x voidptr) {
 						if app.buffers[app.active_buffer].is_directory_buffer {
 							path := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
 
-							if fs.is_dir(path) {
-								app.buffers[app.active_buffer].lines = fs.get_paths_from_dir(path)
+							if fs.is_dir(app.buffers[app.active_buffer].path + path) {
+								parent_dir, paths := fs.get_paths_from_dir(app.buffers[app.active_buffer].path,
+									path)
+								app.buffers[app.active_buffer].path = parent_dir
+								app.buffers[app.active_buffer].lines = paths
 
 								app.buffers[app.active_buffer].logical_cursor.x = 0
 								app.buffers[app.active_buffer].logical_cursor.y = 0
@@ -102,8 +105,9 @@ pub fn event_loop(input UserInput, x voidptr) {
 					}
 					.backspace {
 						if app.buffers[app.active_buffer].is_directory_buffer {
-							path := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
-							app.buffers[app.active_buffer].lines = fs.get_paths_from_parent_dir(path)
+							parent_dir, paths := fs.get_paths_from_parent_dir(app.buffers[app.active_buffer].path)
+							app.buffers[app.active_buffer].path = parent_dir
+							app.buffers[app.active_buffer].lines = paths
 
 							app.buffers[app.active_buffer].logical_cursor.x = 0
 							app.buffers[app.active_buffer].logical_cursor.y = 0
@@ -111,6 +115,25 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
 							app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
 								app.viewport.width)
+						}
+					}
+					// next two key bindings are bad. using them for testing
+					.b {
+						if app.buffers.len > 1 {
+							if app.active_buffer == 0 {
+								app.active_buffer = app.buffers.len - 1
+							} else {
+								app.active_buffer -= 1
+							}
+						}
+					}
+					.n {
+						if app.buffers.len > 1 {
+							if app.active_buffer == app.buffers.len - 1 {
+								app.active_buffer = 0
+							} else {
+								app.active_buffer += 1
+							}
 						}
 					}
 					else {}

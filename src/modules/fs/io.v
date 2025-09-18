@@ -43,26 +43,31 @@ pub fn write_file(path string, buffer []string) (bool, string) {
 	return true, ''
 }
 
-pub fn get_working_dir_paths() []string {
-	current_path := os.abs_path('.')
+pub fn get_working_dir() string {
+	return os.abs_path('.') + os.path_separator
+}
+
+pub fn get_working_dir_paths() (string, []string) {
+	current_path := get_working_dir()
 	mut entries := os.ls(current_path) or { [''] }
-	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
-	return entries
+	entries = entries.map(if is_dir(it) { it + os.path_separator } else { it })
+	return current_path, entries
 }
 
-pub fn get_paths_from_parent_dir(path string) []string {
-	abs_path := os.abs_path(path)
-	parent_dir_path := os.dir(abs_path)
+pub fn get_paths_from_parent_dir(path string) (string, []string) {
+	trimmed_path := path.trim_right(os.path_separator)
+	parent_dir_path := os.dir(trimmed_path)
+	base_path := parent_dir_path + os.path_separator
 	mut entries := os.ls(parent_dir_path) or { [''] }
-	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
-	return entries
+	entries = entries.map(if is_dir(base_path + it) { it + os.path_separator } else { it })
+	return base_path, entries
 }
 
-pub fn get_paths_from_dir(dir string) []string {
-	dir_path := os.abs_path(dir)
+pub fn get_paths_from_dir(base_path string, dir string) (string, []string) {
+	dir_path := base_path + dir
 	mut entries := os.ls(dir_path) or { [''] }
-	entries = entries.map(if is_dir(it) { it + '\\' } else { it })
-	return entries
+	entries = entries.map(if is_dir(dir_path + it) { it + os.path_separator } else { it })
+	return dir_path, entries
 }
 
 pub fn path_exists(path string) bool {

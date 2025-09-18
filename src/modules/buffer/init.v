@@ -5,6 +5,7 @@ import fs { read_file }
 
 pub struct Buffer {
 pub mut:
+	name string
 	path string = 'Scratch'
 	// lines contains all lines of the text buffer.
 	lines          []string = ['']
@@ -23,6 +24,7 @@ pub:
 pub fn Buffer.new(b Buffer) Buffer {
 	lines := read_file(b.path) or { b.lines }
 	mut buf := Buffer{
+		name:                b.name
 		path:                b.path
 		lines:               lines
 		tabsize:             b.tabsize

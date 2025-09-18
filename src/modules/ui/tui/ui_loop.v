@@ -26,6 +26,25 @@ fn ui_loop(x voidptr) {
 	col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap - 1
 
 	mut actual_line_idx := 0 // line we’re drawing on screen
+	// add space for buffer labels if multiple buffers
+	if app.buffers.len > 1 {
+		actual_line_idx += 2
+		// draw buffer names
+		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
+		mut starting_pos := 1
+		for i, name in buffer_names {
+			if i == app.active_buffer {
+				ctx.set_bg_color(colors.default_insert_cursor_color)
+				ctx.set_color(theme.cursor_text_color)
+				ctx.draw_text(starting_pos + 1, 1, term.bold(name))
+				ctx.reset_bg_color()
+				ctx.reset_color()
+			} else {
+				ctx.draw_text(starting_pos + 1, 1, name)
+			}
+			starting_pos += name.len
+		}
+	}
 	mut logical_idx := view.row_offset // start at first visible buffer line
 
 	for logical_idx < buf.lines.len && actual_line_idx < view.height {
@@ -45,7 +64,7 @@ fn ui_loop(x voidptr) {
 		if buf.is_directory_buffer {
 			command_str = 'DIRECTORY'
 
-			if fs.is_dir(line) {
+			if fs.is_dir(buf.path + line) {
 				text_color = colors.royal_blue
 			} else {
 				text_color = colors.white
@@ -172,7 +191,7 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
-	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
+	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + app.active_buffer.str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
