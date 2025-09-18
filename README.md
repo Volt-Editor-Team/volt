@@ -1,4 +1,4 @@
-! CHATGPT GENERATED ROADMAP !
+! CHATGPT GENERATED ROADMAP !.
 
 # VLang Text Editor Development Roadmap
 
