@@ -4,6 +4,8 @@ import buffer { Buffer, CommandBuffer }
 import util { Mode }
 import viewport { Viewport }
 import ui { ColorScheme }
+import sync
+import os
 
 pub struct App {
 pub mut:
@@ -13,9 +15,11 @@ pub mut:
 	cmd_buffer    CommandBuffer
 	viewport      Viewport
 	theme         ColorScheme
+	stats         []string
+	mu            sync.Mutex
 }
 
-pub fn App.new(file_path string, width int, height int) App {
+pub fn App.new(file_path string, width int, height int) &App {
 	mut buffers := []Buffer{}
 	buffers << Buffer.new(path: file_path, tabsize: default_tabsize)
 
@@ -28,7 +32,7 @@ pub fn App.new(file_path string, width int, height int) App {
 	view_width := width - col_offset - line_num_to_text_gap
 	margin := 5 // lines to edge visible (for scrolling)
 
-	mut app := App{
+	mut app := &App{
 		buffers:       buffers
 		active_buffer: 0
 		mode:          Mode.normal
@@ -50,5 +54,23 @@ pub fn App.new(file_path string, width int, height int) App {
 	}
 	app.viewport.update_width()
 
+	go fn [mut app] () {
+		v_doctor := os.execute('v doctor')
+		stats := v_doctor.output.split_into_lines()
+		app.set_stats(stats)
+	}()
+
 	return app
+}
+
+pub fn (mut app App) set_stats(lines []string) {
+	app.mu.@lock()
+	app.stats = lines.clone()
+	app.mu.unlock()
+}
+
+pub fn (mut app App) get_stats() []string {
+	app.mu.@lock()
+	defer { app.mu.unlock() }
+	return app.stats.clone()
 }

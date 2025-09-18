@@ -22,6 +22,11 @@ pub fn (mut app App) add_directory_buffer() {
 	app.add_new_buffer(lines: lines, is_directory_buffer: true)
 }
 
+pub fn (mut app App) add_stats_buffer() {
+	lines := app.get_stats()
+	app.add_new_buffer(lines: lines, is_directory_buffer: false)
+}
+
 pub fn (mut app App) close_buffer() {
 	app.buffers.delete(app.active_buffer)
 

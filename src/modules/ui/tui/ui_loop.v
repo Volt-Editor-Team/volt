@@ -6,24 +6,24 @@ import util.colors
 import term
 import fs
 // import math
+// import time
 
 fn ui_loop(x voidptr) {
 	mut tui_app := get_tui(x)
 	mut ctx := tui_app.tui
+	ctx.clear()
 	// get app pointer, terminal size, and clear to prep for updates
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	theme := tui_app.theme
-	is_directory_buffer := buf.is_directory_buffer
 	mut command_str := util.mode_str(app.mode)
 	mut text_color := colors.white
 	width, height := term.get_terminal_size()
-	ctx.clear()
 
 	y_pos := buf.visual_cursor.y
 	x_pos := buf.visual_cursor.x
-	col_start := app.viewport.col_offset + (app.viewport.line_num_to_text_gap * 2)
+	col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap - 1
 
 	mut actual_line_idx := 0 // line we’re drawing on screen
 	mut logical_idx := view.row_offset // start at first visible buffer line
@@ -42,7 +42,7 @@ fn ui_loop(x voidptr) {
 		mut runes := line.runes()
 		runes << ` ` // ensure empty lines render
 
-		if is_directory_buffer {
+		if buf.is_directory_buffer {
 			command_str = 'DIRECTORY'
 
 			if fs.is_dir(line) {
@@ -88,7 +88,7 @@ fn ui_loop(x voidptr) {
 			end := if wrap_row + 1 < wrap_points.len { wrap_points[wrap_row + 1] } else { runes.len }
 			mut segment := runes[start..end].clone()
 
-			segment << ` `
+			// segment << ` `
 
 			mut visual_col := 0
 
@@ -102,7 +102,6 @@ fn ui_loop(x voidptr) {
 
 				let_draw_y := actual_line_idx + 1
 				let_draw_x := col_start + visual_col + view.line_num_to_text_gap
-
 				for k in 0 .. char_width {
 					if visual_col == x_pos && logical_idx == y_pos {
 						ctx.set_bg_color(if app.mode == .normal || app.mode == .command {
@@ -146,9 +145,17 @@ fn ui_loop(x voidptr) {
 
 	ctx.draw_text(5, height - 1, term.bold(command_str))
 
+	ctx.reset_bg_color()
 	ctx.set_bg_color(colors.deep_indigo)
 
+	// buf.path
+	if buf.path.starts_with('Error') {
+		ctx.set_color(colors.dark_red)
+	} else {
+		ctx.set_color(colors.white)
+	}
 	ctx.draw_text(command_str.len + 5 + 2, height - 1, buf.path)
+	ctx.reset_color()
 	ctx.draw_text(width - 5, height - 1, (buf.logical_cursor.x + 1).str() + ':' +
 		(buf.logical_cursor.y + 1).str())
 
@@ -192,6 +199,6 @@ fn ui_loop(x voidptr) {
 		ctx.reset_bg_color()
 	}
 
+	// update_cursor(buf.logical_cursor.x, buf.logical_cursor.y, mut ctx)
 	ctx.flush()
-	// 	update_cursor(buf.logical_cursor.x, buf.logical_cursor.y, mut ctx)
 }

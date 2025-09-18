@@ -1,6 +1,7 @@
 module controller
 
 import fs { read_file, write_file }
+import time
 
 pub fn event_loop(input UserInput, x voidptr) {
 	mut app := get_app(x)
@@ -195,6 +196,24 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.close_buffer()
 								app.mode = .normal
 								app.cmd_buffer.command = ''
+								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
+								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
+									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+							}
+							'doctor' {
+								if app.stats.len == 0 {
+									go fn [mut app] () {
+										temp := app.buffers[app.active_buffer].path
+										app.buffers[app.active_buffer].path = 'Error: Stats not available'
+										time.sleep(2 * time.second)
+										app.buffers[app.active_buffer].path = temp
+									}()
+									return
+								}
+								app.add_stats_buffer()
+								app.mode = .normal
+								app.cmd_buffer.command = ''
+								app.viewport.row_offset = 0
 								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
 								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
 									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)

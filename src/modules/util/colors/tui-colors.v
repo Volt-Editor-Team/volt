@@ -99,3 +99,9 @@ pub const royal_blue = Color{
 	g: 105
 	b: 225
 }
+
+pub const dark_red = Color{
+	r: 139
+	g: 0
+	b: 0
+}
