@@ -1,0 +1,21 @@
+[editor]
+tab_width = 4
+soft_wrap = true
+line_numbers = "relative"   # "off" | "on" | "relative"
+cursor_style = "block"      # "bar" | "block" | "underline"
+
+[theme]
+fg = "white"
+bg = "black"
+accent = "cyan"
+gutter = "bright_black"
+cursor = "bright_cyan"
+statusbar_bg = "bright_black"
+statusbar_fg = "white"
+
+[keys]
+save = "ctrl+s"
+quit = "ctrl+q"
+open = "ctrl+o"
+toggle_wrap = "alt+w"
+
