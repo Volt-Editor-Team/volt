@@ -126,9 +126,25 @@ fn ui_loop(x voidptr) {
 						ctx.set_bg_color(if app.mode == .normal || app.mode == .command {
 							theme.normal_cursor_color
 						} else {
-							theme.insert_cursor_color
+							// use frame_count to similute blinking cursor
+							// every 0.5 seconds (30 * 0.5)
+							if (ctx.frame_count / 15) % 2 == 0 {
+								theme.insert_cursor_color
+							} else {
+								theme.active_line_bg_color
+							}
 						})
-						ctx.set_color(theme.cursor_text_color)
+
+						// change text color for blinking cursor
+						ctx.set_color(if app.mode == .normal || app.mode == .command {
+							theme.cursor_text_color
+						} else {
+							if (ctx.frame_count / 15) % 2 == 0 {
+								theme.cursor_text_color
+							} else {
+								colors.white
+							}
+						})
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_bg_color()
 						ctx.reset_color()
@@ -191,7 +207,7 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
-	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + app.active_buffer.str())
+	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + ctx.frame_count.str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
@@ -220,4 +236,5 @@ fn ui_loop(x voidptr) {
 
 	// update_cursor(buf.logical_cursor.x, buf.logical_cursor.y, mut ctx)
 	ctx.flush()
+	// ctx.paused = true
 }

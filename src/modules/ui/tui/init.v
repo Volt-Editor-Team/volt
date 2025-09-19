@@ -65,6 +65,7 @@ pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
 		event_fn:    event_wrapper
 		frame_fn:    ui_loop
 		hide_cursor: true
+		frame_rate:  30
 	)
 }
 
@@ -72,7 +73,6 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 	tui_app := get_tui(x)
 	event_type := convert_event_type(e.typ)
 	key_code := convert_key_code(e.code)
-
 	input := ctl.UserInput{
 		e:    event_type
 		code: key_code
