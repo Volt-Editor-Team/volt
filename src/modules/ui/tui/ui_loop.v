@@ -4,6 +4,7 @@ import core.controller
 import util
 import util.colors
 import term
+import math
 
 fn ui_loop(x voidptr) {
 	mut tui_app := get_tui(x)
@@ -15,24 +16,70 @@ fn ui_loop(x voidptr) {
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	mut command_str := util.mode_str(app.mode)
-	mut text_color := colors.white
+	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	ctx.clear()
 	// render loop
+	start_row := app.viewport.row_offset // the line index of the buffer to start rendering at
+	end_row := math.min(buf.lines.len, view.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 	mut wrap_offset := 0
 	mut wraps := 0
-	for y_index, line in buf.lines {
-		runes := line.runes()
-		wrap_points := view.build_wrap_points(line)
-		mut line_wraps := 0
-		mut char_width := 1
+	render_lines: for i, line in buf.lines[start_row..end_row] {
+		// i is the row index of the actual renders screen
+		// y_index is the position in the buffer
+		y_index := start_row + i
 
+		// values necessary for rendering aligned line numbers
+		line_num_label := (y_index + 1).str() + ' '.repeat(buf.lines.len.str().len - (y_index +
+			1).str().len)
+
+		// determine cursor colors
+		cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(app.mode, theme)
+
+		// get line indices and characters
+		line_indices := buf.visual_col[y_index] // column index for line
+		runes := line.runes() // list of characters
+
+		// highlight active line and render line numbers
+		// this is rendered first, simulating line highlight over active line
+		if y_index == buf.logical_cursor.y {
+			// calculate how many lines that this line requires
+			// (+ 1 since base is 0)
+			total_lines := if runes.len > 0 { (line_indices.last() / view.width) + 1 } else { 1 }
+
+			ctx.set_colors(theme.active_line_bg_color, theme.active_line_number_color)
+			for wrap in 0 .. total_lines {
+				active_line_index := i + wrap + wrap_offset + 1
+				if active_line_index > view.height {
+					ctx.reset_colors()
+					break render_lines
+				}
+				// not sure why +3 on end x
+				ctx.draw_line(0, active_line_index, view.width + 5, active_line_index)
+				ctx.draw_text(view.col_offset, i + wrap_offset + 1, line_num_label.str())
+			}
+			ctx.reset_colors()
+		} else {
+			if i + wrap_offset + 1 > view.height {
+				break render_lines
+			}
+			// render just line number for inactive line
+			ctx.set_color(theme.inactive_line_number_color)
+			ctx.draw_text(view.col_offset, i + wrap_offset + 1, line_num_label.str())
+			ctx.reset_color()
+		}
+
+		mut char_width := 1
 		for x_index, ch in runes {
-			visual_x_index := buf.visual_col[y_index][x_index]
+			visual_x_index := line_indices[x_index]
 			wraps = visual_x_index / view.width
-			x_pos := visual_x_index % view.width
-			y_pos := y_index + wraps + wrap_offset
+			x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
+			y_pos := i + wraps + wrap_offset
+
+			if y_pos > view.height {
+				break render_lines
+			}
 
 			mut printed := ch
 			if ch == `\t` {
@@ -41,24 +88,31 @@ fn ui_loop(x voidptr) {
 			}
 
 			if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
-				ctx.set_colors(theme.normal_cursor_color, theme.cursor_text_color)
+				ctx.set_colors(cursor_bg_color, cursor_fg_color)
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 				ctx.reset_colors()
+			} else if y_index == buf.logical_cursor.y {
+				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+				ctx.reset_bg_color()
 			} else {
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 			}
 			char_width = 1
 		}
 
-		// 🔑 Special case: cursor at end of line
+		// Special case: cursor at end of line
 		if buf.logical_cursor.y == y_index && buf.logical_cursor.x == runes.len {
 			// find last column in this line (or 0 if empty)
 			last_x := if runes.len > 0 { buf.visual_col[y_index][runes.len - 1] + 1 } else { 0 }
 			last_wraps := if runes.len > 0 { last_x / view.width } else { 0 }
-			cursor_x := last_x % view.width
-			cursor_y := y_index + last_wraps + wrap_offset
+			cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
+			cursor_y := i + last_wraps + wrap_offset
+			if cursor_y > view.height {
+				break render_lines
+			}
 
-			ctx.set_colors(theme.normal_cursor_color, theme.cursor_text_color)
+			ctx.set_colors(cursor_bg_color, cursor_fg_color)
 			ctx.draw_text(cursor_x + 1, cursor_y + 1, ' ') // or just draw a block cursor
 			ctx.reset_colors()
 		}
