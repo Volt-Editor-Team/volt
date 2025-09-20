@@ -43,6 +43,11 @@ pub fn (buf Buffer) get_visual_coords(logical_x int, logical_y int, width int) (
 	return visual_line[logical_x], logical_y
 }
 
+pub fn (mut buf Buffer) update_visual_cursor(width int) {
+	buf.visual_cursor.x, buf.visual_cursor.y = buf.get_visual_coords(buf.logical_cursor.x,
+		buf.logical_cursor.y, width)
+}
+
 pub fn (buf Buffer) logical_x(logical_y int, visual_x int) int {
 	if logical_y < 0 || logical_y >= buf.visual_col.len {
 		return 0

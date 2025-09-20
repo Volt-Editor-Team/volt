@@ -6,7 +6,7 @@ import time
 pub fn event_loop(input UserInput, x voidptr) {
 	mut app := get_app(x)
 
-	// mut buf := app.buffers[app.active_buffer]
+	mut buf := &app.buffers[app.active_buffer]
 
 	event := input.e
 	code := input.code
@@ -16,104 +16,92 @@ pub fn event_loop(input UserInput, x voidptr) {
 			.normal {
 				match code {
 					.l, .right {
-						app.buffers[app.active_buffer].logical_cursor.move_right_buffer(app.buffers[app.active_buffer].lines)
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
-							app.viewport.width)
+						buf.logical_cursor.move_right_buffer(buf.lines)
+						buf.update_visual_cursor(app.viewport.width)
+						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
 					.h, .left {
-						app.buffers[app.active_buffer].logical_cursor.move_left_buffer(app.buffers[app.active_buffer].lines)
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
-							app.viewport.width)
+						buf.logical_cursor.move_left_buffer(buf.lines)
+						buf.update_visual_cursor(app.viewport.width)
+						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
 					.j, .down {
-						line := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
-						// ch := line[app.buffers[app.active_buffer].logical_cursor.x]
+						line := buf.lines[buf.logical_cursor.y]
+						// ch := line[buf.logical_cursor.x]
 						// can't figure out accounting for tab width
 						// mut char_width := 1
 						// if ch == `\t` {
-						// 	char_width = app.buffers[app.active_buffer].tabsize - (visual_col % app.buffer[app.active_buffer].tabsize)
+						// 	char_width = buf.tabsize - (visual_col % app.buffer[app.active_buffer].tabsize)
 						// }
 
 						wrap_points := app.viewport.build_wrap_points(line)
 						if wrap_points.len > 1
-							&& app.buffers[app.active_buffer].logical_cursor.x < wrap_points[wrap_points.len - 1] {
-							new_width := app.buffers[app.active_buffer].logical_cursor.x +
-								app.viewport.width - 1
-							if app.buffers[app.active_buffer].logical_cursor.desired_col > new_width {
-								app.buffers[app.active_buffer].logical_cursor.x = app.buffers[app.active_buffer].logical_cursor.desired_col
+							&& buf.logical_cursor.x < wrap_points[wrap_points.len - 1] {
+							new_width := buf.logical_cursor.x + app.viewport.width - 1
+							if buf.logical_cursor.desired_col > new_width {
+								buf.logical_cursor.x = buf.logical_cursor.desired_col
 							} else {
-								app.buffers[app.active_buffer].logical_cursor.x = new_width
+								buf.logical_cursor.x = new_width
 							}
 						} else {
-							app.buffers[app.active_buffer].logical_cursor.move_down_buffer(app.buffers[app.active_buffer].lines,
-								app.buffers[app.active_buffer].logical_x)
+							buf.logical_cursor.move_down_buffer(buf.lines, buf.logical_x)
 						}
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+						buf.update_visual_cursor(app.viewport.width)
 
 						// update offset
-						app.viewport.update_offset(app.buffers[app.active_buffer].visual_cursor.y)
+						app.viewport.update_offset(buf.visual_cursor.y)
 					}
 					.k, .up {
-						line := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
+						line := buf.lines[buf.logical_cursor.y]
 						wrap_points := app.viewport.build_wrap_points(line)
-						if wrap_points.len > 1
-							&& app.buffers[app.active_buffer].logical_cursor.x > wrap_points[1] {
-							new_width := app.buffers[app.active_buffer].logical_cursor.x - app.viewport.width
-							if app.buffers[app.active_buffer].logical_cursor.desired_col < new_width {
-								app.buffers[app.active_buffer].logical_cursor.x = app.buffers[app.active_buffer].logical_cursor.desired_col
+						if wrap_points.len > 1 && buf.logical_cursor.x > wrap_points[1] {
+							new_width := buf.logical_cursor.x - app.viewport.width
+							if buf.logical_cursor.desired_col < new_width {
+								buf.logical_cursor.x = buf.logical_cursor.desired_col
 							} else {
-								app.buffers[app.active_buffer].logical_cursor.x = new_width
+								buf.logical_cursor.x = new_width
 							}
 						} else {
-							app.buffers[app.active_buffer].logical_cursor.move_up_buffer(app.buffers[app.active_buffer].logical_x)
+							buf.logical_cursor.move_up_buffer(buf.logical_x)
 						}
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+						buf.update_visual_cursor(app.viewport.width)
 						// update offset
-						app.viewport.update_offset(app.buffers[app.active_buffer].visual_cursor.y)
+						app.viewport.update_offset(buf.visual_cursor.y)
 					}
 					.i {
 						app.mode = .insert
 					}
 					.colon {
-						app.buffers[app.active_buffer].saved_cursor = app.buffers[app.active_buffer].logical_cursor
+						buf.saved_cursor = buf.logical_cursor
 						app.mode = .command
 					}
 					.tab {
-						if app.buffers[app.active_buffer].is_directory_buffer {
-							path := app.buffers[app.active_buffer].lines[app.buffers[app.active_buffer].logical_cursor.y]
+						if buf.is_directory_buffer {
+							path := buf.lines[buf.logical_cursor.y]
 
-							if fs.is_dir(app.buffers[app.active_buffer].path + path) {
-								parent_dir, paths := fs.get_paths_from_dir(app.buffers[app.active_buffer].path,
-									path)
-								app.buffers[app.active_buffer].path = parent_dir
-								app.buffers[app.active_buffer].lines = paths
+							if fs.is_dir(buf.path + path) {
+								parent_dir, paths := fs.get_paths_from_dir(buf.path, path)
+								buf.path = parent_dir
+								buf.lines = paths
 
-								app.buffers[app.active_buffer].logical_cursor.x = 0
-								app.buffers[app.active_buffer].logical_cursor.y = 0
-								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-								app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
+								buf.logical_cursor.x = 0
+								buf.logical_cursor.y = 0
+								buf.update_visual_cursor(app.viewport.width)
+								buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 									app.viewport.width)
 							}
 						}
 					}
 					.backspace {
-						if app.buffers[app.active_buffer].is_directory_buffer {
-							parent_dir, paths := fs.get_paths_from_parent_dir(app.buffers[app.active_buffer].path)
-							app.buffers[app.active_buffer].path = parent_dir
-							app.buffers[app.active_buffer].lines = paths
+						if buf.is_directory_buffer {
+							parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
+							buf.path = parent_dir
+							buf.lines = paths
 
-							app.buffers[app.active_buffer].logical_cursor.x = 0
-							app.buffers[app.active_buffer].logical_cursor.y = 0
-							app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-								app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-							app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
+							buf.logical_cursor.x = 0
+							buf.logical_cursor.y = 0
+							buf.update_visual_cursor(app.viewport.width)
+							buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 								app.viewport.width)
 						}
 					}
@@ -145,37 +133,27 @@ pub fn event_loop(input UserInput, x voidptr) {
 						app.mode = .normal
 					}
 					.backspace {
-						delete_result := app.buffers[app.active_buffer].remove_char(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
+						delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if delete_result.joined_line {
-							app.buffers[app.active_buffer].logical_cursor.move_up_buffer(app.buffers[app.active_buffer].logical_x)
+							buf.logical_cursor.move_up_buffer(buf.logical_x)
 						}
-						app.buffers[app.active_buffer].logical_cursor.move_to_x(delete_result.new_x)
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
-							app.viewport.width)
+						buf.logical_cursor.move_to_x(delete_result.new_x)
+						buf.update_visual_cursor(app.viewport.width)
+						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
 					.enter {
-						app.buffers[app.active_buffer].insert_newline(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y)
-						app.buffers[app.active_buffer].logical_cursor.move_to_start_next_line_buffer(app.buffers[app.active_buffer].lines,
-							app.buffers[app.active_buffer].logical_x)
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+						buf.insert_newline(buf.logical_cursor.x, buf.logical_cursor.y)
+						buf.logical_cursor.move_to_start_next_line_buffer(buf.lines, buf.logical_x)
+						buf.update_visual_cursor(app.viewport.width)
 
-						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
-							app.viewport.width)
+						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
 					else {
-						app.buffers[app.active_buffer].insert_char(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, u8(code).ascii_str())
+						buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y, u8(code).ascii_str())
 
-						app.buffers[app.active_buffer].logical_cursor.move_right_buffer(app.buffers[app.active_buffer].lines)
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
-						app.buffers[app.active_buffer].logical_cursor.update_desired_col(app.buffers[app.active_buffer].visual_cursor.x,
-							app.viewport.width)
+						buf.logical_cursor.move_right_buffer(buf.lines)
+						buf.update_visual_cursor(app.viewport.width)
+						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
 				}
 			}
@@ -189,47 +167,41 @@ pub fn event_loop(input UserInput, x voidptr) {
 								exit(0)
 							}
 							'w', 'write' {
-								result, message := write_file(app.buffers[app.active_buffer].path,
-									app.buffers[app.active_buffer].lines)
+								result, message := write_file(buf.path, buf.lines)
 								if result {
 									// do something
 									_ := message
 								} else {
-									app.buffers[app.active_buffer].lines = read_file(app.buffers[app.active_buffer].path) or {
-										['']
-									}
-									// app.buffers[app.active_buffer].update_all_line_cache()
+									buf.lines = read_file(buf.path) or { [''] }
+									// buf.update_all_line_cache()
 								}
 								app.cmd_buffer.command = ''
 								app.mode = .normal
-								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
-								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+								buf.logical_cursor = buf.saved_cursor
+								buf.update_visual_cursor(app.viewport.width)
 							}
 							'cd' {
 								app.add_directory_buffer()
 								app.mode = .normal
 								app.cmd_buffer.command = ''
 								app.viewport.row_offset = 0
-								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
-								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+								buf.logical_cursor = buf.saved_cursor
+								buf.update_visual_cursor(app.viewport.width)
 							}
 							'cb' {
 								app.close_buffer()
 								app.mode = .normal
 								app.cmd_buffer.command = ''
-								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
-								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+								buf.logical_cursor = buf.saved_cursor
+								buf.update_visual_cursor(app.viewport.width)
 							}
 							'doctor' {
 								if app.stats.len == 0 {
-									go fn [mut app] () {
-										temp := app.buffers[app.active_buffer].path
-										app.buffers[app.active_buffer].path = 'Error: Stats not available'
+									go fn [mut buf] () {
+										temp := buf.path
+										buf.path = 'Error: Stats not available'
 										time.sleep(2 * time.second)
-										app.buffers[app.active_buffer].path = temp
+										buf.path = temp
 									}()
 									return
 								}
@@ -237,9 +209,8 @@ pub fn event_loop(input UserInput, x voidptr) {
 								app.mode = .normal
 								app.cmd_buffer.command = ''
 								app.viewport.row_offset = 0
-								app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
-								app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-									app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+								buf.logical_cursor = buf.saved_cursor
+								buf.update_visual_cursor(app.viewport.width)
 							}
 							else {}
 						}
@@ -247,13 +218,12 @@ pub fn event_loop(input UserInput, x voidptr) {
 					.escape {
 						app.mode = .normal
 						app.cmd_buffer.command = ''
-						app.buffers[app.active_buffer].logical_cursor = app.buffers[app.active_buffer].saved_cursor
-						app.buffers[app.active_buffer].visual_cursor.x, app.buffers[app.active_buffer].visual_cursor.y = app.buffers[app.active_buffer].get_visual_coords(app.buffers[app.active_buffer].logical_cursor.x,
-							app.buffers[app.active_buffer].logical_cursor.y, app.viewport.width)
+						buf.logical_cursor = buf.saved_cursor
+						buf.update_visual_cursor(app.viewport.width)
 					}
 					.backspace {
 						// // command string start at x = 2
-						// command_str_index := app.buffers[app.active_buffer].logical_cursor.x - 2
+						// command_str_index := buf.logical_cursor.x - 2
 						// remove char before index
 						if app.cmd_buffer.command.len > 0 {
 							app.cmd_buffer.remove_char(app.cmd_buffer.command.len - 1)

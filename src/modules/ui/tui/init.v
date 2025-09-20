@@ -7,6 +7,7 @@ import term.ui as t
 
 struct TuiTheme {
 mut:
+	normal_text_color          t.Color
 	normal_cursor_color        t.Color
 	insert_cursor_color        t.Color
 	cursor_text_color          t.Color
@@ -17,6 +18,9 @@ mut:
 
 fn TuiTheme.new(theme ui.ColorScheme) TuiTheme {
 	return TuiTheme{
+		normal_text_color:          colors.hex_to_tui_color(theme.normal_text_color) or {
+			colors.white
+		}
 		normal_cursor_color:        colors.hex_to_tui_color(theme.normal_cursor_color) or {
 			colors.default_normal_cursor_color
 		}
@@ -45,9 +49,11 @@ pub fn get_tui(x voidptr) &TuiApp {
 pub struct TuiApp {
 pub mut:
 	core  voidptr
-	tui   &t.Context = unsafe { nil }
+	tui   &TuiContext = unsafe { nil }
 	theme TuiTheme
 }
+
+type TuiContext = t.Context
 
 pub fn TuiApp.new(core voidptr) &TuiApp {
 	mut tui_app := &TuiApp{}

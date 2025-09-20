@@ -7,6 +7,7 @@ pub enum Ui {
 
 pub struct ColorScheme {
 pub mut:
+	normal_text_color          string
 	normal_cursor_color        string
 	insert_cursor_color        string
 	cursor_text_color          string // the text color under the cursor

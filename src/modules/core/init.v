@@ -27,7 +27,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 	line_num_to_text_gap := 3 // space between line number and code
 
 	// total width available for code
-	view_width := width - col_offset - line_num_to_text_gap
+	view_width := width - (col_offset + line_num_to_text_gap) * 2
 	margin := 5 // lines to edge visible (for scrolling)
 
 	mut app := &App{
@@ -42,6 +42,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 			margin:               margin
 		}
 		theme:         ColorScheme{
+			normal_text_color:          '#ffffff'
 			normal_cursor_color:        '#8282A0'
 			insert_cursor_color:        '#7896C8'
 			cursor_text_color:          '#141E32'
@@ -50,7 +51,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 			inactive_line_number_color: '#788296'
 		}
 	}
-	app.viewport.update_width()
+	// app.viewport.update_width()
 
 	go app.get_doctor_info()
 	return app

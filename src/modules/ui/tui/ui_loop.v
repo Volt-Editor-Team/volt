@@ -4,23 +4,21 @@ import core.controller
 import util
 import util.colors
 import term
-import fs
-// import math
-// import time
 
 fn ui_loop(x voidptr) {
 	mut tui_app := get_tui(x)
 	mut ctx := tui_app.tui
-	ctx.clear()
+	theme := tui_app.theme
+
 	// get app pointer, terminal size, and clear to prep for updates
 	mut app := controller.get_app(tui_app.core)
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	theme := tui_app.theme
 	mut command_str := util.mode_str(app.mode)
 	mut text_color := colors.white
 	width, height := term.get_terminal_size()
 
+	ctx.clear()
 	y_pos := buf.visual_cursor.y
 	x_pos := buf.visual_cursor.x
 	col_start := app.viewport.col_offset + app.viewport.line_num_to_text_gap - 1
@@ -34,11 +32,9 @@ fn ui_loop(x voidptr) {
 		mut starting_pos := 1
 		for i, name in buffer_names {
 			if i == app.active_buffer {
-				ctx.set_bg_color(colors.default_insert_cursor_color)
-				ctx.set_color(theme.cursor_text_color)
+				ctx.set_colors(theme.insert_cursor_color, theme.cursor_text_color)
 				ctx.draw_text(starting_pos + 1, 1, term.bold(name))
-				ctx.reset_bg_color()
-				ctx.reset_color()
+				ctx.reset_colors()
 			} else {
 				ctx.draw_text(starting_pos + 1, 1, name)
 			}
@@ -49,26 +45,18 @@ fn ui_loop(x voidptr) {
 
 	for logical_idx < buf.lines.len && actual_line_idx < view.height {
 		line := buf.lines[logical_idx]
-
-		line_num := logical_idx + 1
-		alignment_spaces := ' '.repeat(buf.lines.len.str().len - line_num.str().len)
-
-		mut wrap_points := view.build_wrap_points(line)
-		if wrap_points.len == 0 {
-			wrap_points = [0] // guarantee empty lines draw
+		if buf.is_directory_buffer {
+			command_str = 'DIRECTORY'
+			text_color = colors.get_cd_text_color(buf.path + line)
 		}
-
 		mut runes := line.runes()
 		runes << ` ` // ensure empty lines render
 
-		if buf.is_directory_buffer {
-			command_str = 'DIRECTORY'
-
-			if fs.is_dir(buf.path + line) {
-				text_color = colors.royal_blue
-			} else {
-				text_color = colors.white
-			}
+		line_num := logical_idx + 1
+		alignment_spaces := ' '.repeat(buf.lines.len.str().len - line_num.str().len)
+		mut wrap_points := view.build_wrap_points(line)
+		if wrap_points.len == 0 {
+			wrap_points = [0] // guarantee empty lines draw
 		}
 
 		// iterate per wrap row
@@ -79,21 +67,17 @@ fn ui_loop(x voidptr) {
 
 			// draw line number only on first wrap row
 			if logical_idx == y_pos {
-				ctx.set_bg_color(theme.active_line_bg_color)
-				ctx.set_color(theme.active_line_number_color)
+				ctx.set_colors(theme.active_line_bg_color, theme.active_line_number_color)
 				ctx.draw_line(0, actual_line_idx + 1, width - 1, actual_line_idx + 1)
-				ctx.reset_bg_color()
-				ctx.reset_color()
+				ctx.reset_colors()
 			}
 			if wrap_row == 0 {
 				if logical_idx == y_pos {
-					ctx.set_bg_color(theme.active_line_bg_color)
-					ctx.set_color(theme.active_line_number_color)
+					ctx.set_colors(theme.active_line_bg_color, theme.active_line_number_color)
 					ctx.draw_line(0, actual_line_idx + 1, width - 1, actual_line_idx + 1)
 					ctx.draw_text(view.col_offset, actual_line_idx + 1, alignment_spaces +
 						line_num.str())
-					ctx.reset_bg_color()
-					ctx.reset_color()
+					ctx.reset_colors()
 				} else {
 					ctx.set_color(theme.inactive_line_number_color)
 					ctx.draw_text(view.col_offset, actual_line_idx + 1, alignment_spaces +
@@ -106,83 +90,45 @@ fn ui_loop(x voidptr) {
 			start := wrap_points[wrap_row]
 			end := if wrap_row + 1 < wrap_points.len { wrap_points[wrap_row + 1] } else { runes.len }
 			mut segment := runes[start..end].clone()
-
-			// segment << ` `
-
-			mut visual_col := 0
-
+			mut visual_index := 0
 			for _, ch in segment {
-				mut printed := ch
-				mut char_width := 1
-				if ch == `\t` {
-					printed = ` `
-					char_width = buf.tabsize - (visual_col % buf.tabsize)
-				}
+				printed, char_width := util.get_char_and_width(ch, visual_index, buf.tabsize)
 
 				let_draw_y := actual_line_idx + 1
-				let_draw_x := col_start + visual_col + view.line_num_to_text_gap
+				let_draw_x := col_start + visual_index + view.line_num_to_text_gap
 				for k in 0 .. char_width {
-					if visual_col == x_pos && logical_idx == y_pos {
-						ctx.set_bg_color(if app.mode == .normal || app.mode == .command {
-							theme.normal_cursor_color
-						} else {
-							// use frame_count to similute blinking cursor
-							// every 0.5 seconds (30 * 0.5)
-							if (ctx.frame_count / 15) % 2 == 0 {
-								theme.insert_cursor_color
-							} else {
-								theme.active_line_bg_color
-							}
-						})
-
-						// change text color for blinking cursor
-						ctx.set_color(if app.mode == .normal || app.mode == .command {
-							theme.cursor_text_color
-						} else {
-							if (ctx.frame_count / 15) % 2 == 0 {
-								theme.cursor_text_color
-							} else {
-								colors.white
-							}
-						})
-						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
-						ctx.reset_bg_color()
-						ctx.reset_color()
+					if visual_index == x_pos && logical_idx == y_pos {
+						bg_color, fg_color := ctx.get_cursor_colors(app.mode, theme)
+						ctx.draw_text_with_colors(bg_color, fg_color, let_draw_x + k,
+							let_draw_y, printed.str())
 					} else if logical_idx == y_pos {
-						ctx.set_bg_color(theme.active_line_bg_color)
-						ctx.set_color(text_color)
-						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
-						ctx.reset_bg_color()
-						ctx.reset_color()
+						ctx.draw_text_with_colors(theme.active_line_bg_color, text_color,
+							let_draw_x + k, let_draw_y, printed.str())
 					} else {
 						ctx.set_color(text_color)
 						ctx.draw_text(let_draw_x + k, let_draw_y, printed.str())
 						ctx.reset_color()
 					}
 				}
-				visual_col += char_width
+				visual_index += char_width
 			}
-
 			// increment screen row per wrap
 			actual_line_idx++
 		}
-
 		// move to next buffer line
 		logical_idx++
 	}
+
 	// ctx.horizontal_separator(height - 2)
 	ctx.set_bg_color(colors.deep_indigo)
 	ctx.draw_line(0, height - 1, width - 1, height - 1)
 
 	ctx.set_bg_color(util.get_command_bg_color(app.mode))
-
 	ctx.draw_line(4, height - 1, command_str.len + 1 + 4, height - 1)
-
 	ctx.draw_text(5, height - 1, term.bold(command_str))
-
 	ctx.reset_bg_color()
-	ctx.set_bg_color(colors.deep_indigo)
 
+	ctx.set_bg_color(colors.deep_indigo)
 	// buf.path
 	if buf.path.starts_with('Error') {
 		ctx.set_color(colors.dark_red)
@@ -207,7 +153,7 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
-	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + ctx.frame_count.str())
+	ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2

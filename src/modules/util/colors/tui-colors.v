@@ -2,6 +2,7 @@ module colors
 
 import encoding.hex
 import term.ui { Color }
+import fs
 
 pub fn hex_to_tui_color(hexcode string) !Color {
 	clean := if hexcode.starts_with('#') { hexcode[1..] } else { hexcode }
@@ -14,6 +15,13 @@ pub fn hex_to_tui_color(hexcode string) !Color {
 		g: bytes[1]
 		b: bytes[2]
 	}
+}
+
+pub fn get_cd_text_color(path string) Color {
+	if fs.is_dir(path) {
+		return royal_blue
+	}
+	return white
 }
 
 pub const default_insert_cursor_color = Color{
