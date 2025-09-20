@@ -58,7 +58,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 
 	// app.viewport.update_width()
 
-	go app.get_doctor_info()
+	// go app.get_doctor_info()
 	return app
 }
 
