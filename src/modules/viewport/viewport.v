@@ -25,7 +25,7 @@ pub fn (mut view Viewport) build_wrap_points(line string) []int {
 		return [0]
 	}
 	mut wraps := []int{}
-	for i := 0; i < line.len; i += view.width - 1 {
+	for i := 0; i < line.len; i += view.width {
 		wraps << i
 	}
 	return wraps

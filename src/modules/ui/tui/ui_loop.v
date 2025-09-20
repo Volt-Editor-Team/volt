@@ -153,7 +153,7 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
 	// 	app.viewport.height).str())
-	ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
+	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2

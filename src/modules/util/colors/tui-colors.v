@@ -113,3 +113,9 @@ pub const dark_red = Color{
 	g: 0
 	b: 0
 }
+
+pub const black = Color{
+	r: 0
+	g: 0
+	b: 0
+}
