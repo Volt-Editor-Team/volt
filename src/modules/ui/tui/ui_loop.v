@@ -25,7 +25,7 @@ fn ui_loop(x voidptr) {
 	// render tabs for multiple buffers
 	if multiple_buffers {
 		ctx.set_bg_color(colors.dark_grey_blue)
-		ctx.draw_line(0, 1, view.width + 5, 1)
+		ctx.draw_line(0, 1, width - 1, 1)
 		ctx.reset_colors()
 		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
 		mut tab_pos := 1
