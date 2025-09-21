@@ -28,7 +28,7 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 
 				wrap_points := app.viewport.build_wrap_points(line)
 				if wrap_points.len > 1 && buf.logical_cursor.x < wrap_points[wrap_points.len - 1] {
-					new_width := buf.logical_cursor.x + app.viewport.width - 1
+					new_width := buf.logical_cursor.x + app.viewport.width
 					if buf.logical_cursor.desired_col > new_width {
 						buf.logical_cursor.x = buf.logical_cursor.desired_col
 					} else {

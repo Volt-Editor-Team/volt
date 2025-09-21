@@ -31,21 +31,29 @@ fn (mut ctx TuiContext) draw_text_with_colors(bg_color ui.Color, fg_color ui.Col
 }
 
 fn (mut ctx TuiContext) get_cursor_colors(mode Mode, theme TuiTheme) (ui.Color, ui.Color) {
-	mut bg_color := theme.active_line_bg_color
-	if mode == .normal || mode == .command {
-		bg_color = theme.normal_cursor_color
-	} else if (ctx.frame_count / 15) % 2 == 0 {
-		// use frame_count to similute blinking cursor
-		// every 0.5 seconds (30 * 0.5)
-		bg_color = theme.insert_cursor_color
-	}
+	mut bg_color := theme.normal_cursor_color
+	mut fg_color := theme.cursor_text_color
+	if false {
+		// rough blinking cursor implementation
+		if mode != .normal && mode != .command {
+			bg_color = theme.active_line_bg_color
+			fg_color = theme.normal_text_color
+			if (ctx.frame_count / 10) % 2 == 0 {
+				// use frame_count to similute blinking cursor
+				// every 0.5 seconds (30 * 0.5)
+				bg_color = theme.insert_cursor_color
+				fg_color = theme.cursor_text_color
+			}
+		}
 
-	mut fg_color := theme.normal_text_color
-	if mode == .normal || mode == .command {
-		fg_color = theme.cursor_text_color
-	} else if (ctx.frame_count / 15) % 2 == 0 {
-		fg_color = theme.cursor_text_color
-	}
+		return bg_color, fg_color
+	} else {
+		// default
 
-	return bg_color, fg_color
+		if mode != .normal && mode != .command {
+			bg_color = theme.insert_cursor_color
+			fg_color = theme.cursor_text_color
+		}
+		return bg_color, fg_color
+	}
 }
