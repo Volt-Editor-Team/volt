@@ -89,6 +89,7 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 					parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
 					buf.path = parent_dir
 					buf.lines = paths
+					buf.visual_col = [][]int{len: buf.lines.len}
 					buf.update_all_line_cache()
 
 					buf.logical_cursor.x = 0
