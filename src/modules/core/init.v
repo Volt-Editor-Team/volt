@@ -8,6 +8,7 @@ import os
 
 pub struct App {
 pub mut:
+	working_dir   string
 	buffers       []Buffer
 	active_buffer int
 	mode          Mode
@@ -19,6 +20,8 @@ pub mut:
 
 pub fn App.new(file_path string, width int, height int) &App {
 	mut app := &App{}
+
+	app.working_dir = os.abs_path('.')
 
 	app.theme = ColorScheme{
 		normal_text_color:          '#ffffff'
@@ -35,7 +38,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 	view_height := height - 2 // subtract the command area
 	line_num_to_text_gap := 3 // space between line number and code
 	// total width available for code
-	view_width := width - (col_offset + line_num_to_text_gap) * 2
+	view_width := width - col_offset - line_num_to_text_gap
 	margin := 5 // lines to edge visible (for scrolling)
 	app.viewport = Viewport{
 		col_offset:           col_offset
@@ -58,7 +61,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 
 	// app.viewport.update_width()
 
-	// go app.get_doctor_info()
+	go app.get_doctor_info()
 	return app
 }
 

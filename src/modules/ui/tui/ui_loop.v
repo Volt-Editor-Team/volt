@@ -16,13 +16,36 @@ fn ui_loop(x voidptr) {
 	mut view := app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	mut command_str := util.mode_str(app.mode)
+	multiple_buffers := app.buffers.len > 1
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	ctx.clear()
+	// render tabs for multiple buffers
+	if multiple_buffers {
+		ctx.set_bg_color(colors.dark_grey_blue)
+		ctx.draw_line(0, 1, view.width + 5, 1)
+		ctx.reset_colors()
+		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
+		mut tab_pos := 1
+		for i, name in buffer_names {
+			if i == app.active_buffer {
+				ctx.set_colors(theme.insert_cursor_color, theme.cursor_text_color)
+				ctx.draw_text(tab_pos + 1, 1, term.bold(name))
+				ctx.reset_colors()
+			} else {
+				ctx.set_bg_color(colors.dark_grey_blue)
+				ctx.draw_text(tab_pos + 1, 1, name)
+				ctx.reset_colors()
+			}
+			tab_pos += name.len
+		}
+	}
+
 	// render loop
 	start_row := app.viewport.row_offset // the line index of the buffer to start rendering at
 	end_row := math.min(buf.lines.len, view.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+	mut buffer_gap := int(multiple_buffers)
 	mut wrap_offset := 0
 	mut wraps := 0
 	render_lines: for i, line in buf.lines[start_row..end_row] {
@@ -50,14 +73,14 @@ fn ui_loop(x voidptr) {
 
 			ctx.set_colors(theme.active_line_bg_color, theme.active_line_number_color)
 			for wrap in 0 .. total_lines {
-				active_line_index := i + wrap + wrap_offset + 1
+				active_line_index := i + wrap + wrap_offset + buffer_gap + 1
 				if active_line_index > view.height {
 					ctx.reset_colors()
 					break render_lines
 				}
 				// not sure why +3 on end x
 				ctx.draw_line(0, active_line_index, view.width + 5, active_line_index)
-				ctx.draw_text(view.col_offset, i + wrap_offset + 1, line_num_label.str())
+				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, term.bold(line_num_label.str()))
 			}
 			ctx.reset_colors()
 		} else {
@@ -66,7 +89,7 @@ fn ui_loop(x voidptr) {
 			}
 			// render just line number for inactive line
 			ctx.set_color(theme.inactive_line_number_color)
-			ctx.draw_text(view.col_offset, i + wrap_offset + 1, line_num_label.str())
+			ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label.str())
 			ctx.reset_color()
 		}
 
@@ -75,9 +98,9 @@ fn ui_loop(x voidptr) {
 			visual_x_index := line_indices[x_index]
 			wraps = visual_x_index / view.width
 			x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
-			y_pos := i + wraps + wrap_offset
+			y_pos := i + wraps + wrap_offset + buffer_gap
 
-			if y_pos > view.height {
+			if y_pos > view.height - buffer_gap {
 				break render_lines
 			}
 
@@ -107,8 +130,8 @@ fn ui_loop(x voidptr) {
 			last_x := if runes.len > 0 { buf.visual_col[y_index][runes.len - 1] + 1 } else { 0 }
 			last_wraps := if runes.len > 0 { last_x / view.width } else { 0 }
 			cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
-			cursor_y := i + last_wraps + wrap_offset
-			if cursor_y > view.height {
+			cursor_y := i + last_wraps + wrap_offset + buffer_gap
+			if cursor_y > view.height - buffer_gap {
 				break render_lines
 			}
 
@@ -152,9 +175,9 @@ fn ui_loop(x voidptr) {
 	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
 	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
-	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + (app.viewport.row_offset +
-	// 	app.viewport.height).str())
-	// ctx.draw_text(width - 30, height - 2, 'desired col: ' + buf.logical_cursor.desired_col.str())
+	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + .str())
+	ctx.draw_text(width - 60, height - 2, 'desired col: ' + buf.path +
+		buf.lines[buf.logical_cursor.y].str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
