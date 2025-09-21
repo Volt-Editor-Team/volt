@@ -5,6 +5,7 @@ import util
 import util.colors
 import term
 import math
+import fs
 
 fn ui_loop(x voidptr) {
 	mut tui_app := get_tui(x)
@@ -93,6 +94,12 @@ fn ui_loop(x voidptr) {
 			ctx.reset_color()
 		}
 
+		mut text_color := colors.white
+
+		if buf.is_directory_buffer && fs.is_dir(buf.path + line) {
+			text_color = colors.royal_blue
+		}
+
 		mut char_width := 1
 		for x_index, ch in runes {
 			visual_x_index := line_indices[x_index]
@@ -115,11 +122,13 @@ fn ui_loop(x voidptr) {
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 				ctx.reset_colors()
 			} else if y_index == buf.logical_cursor.y {
-				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.set_colors(theme.active_line_bg_color, text_color)
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
-				ctx.reset_bg_color()
+				ctx.reset_colors()
 			} else {
+				ctx.set_color(text_color)
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+				ctx.reset_color()
 			}
 			char_width = 1
 		}
@@ -176,8 +185,7 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
 	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
 	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + .str())
-	ctx.draw_text(width - 60, height - 2, 'desired col: ' + buf.path +
-		buf.lines[buf.logical_cursor.y].str())
+	// ctx.draw_text(width - 60, height - 2, os.join_path_single(buf.path, buf.lines[buf.logical_cursor.y]))
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
