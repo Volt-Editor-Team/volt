@@ -39,7 +39,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 	line_num_to_text_gap := 3 // space between line number and code
 	// total width available for code
 	view_width := width - col_offset - line_num_to_text_gap
-	margin := 5 // lines to edge visible (for scrolling)
+	margin := 8 // lines to edge visible (for scrolling)
 	app.viewport = Viewport{
 		col_offset:           col_offset
 		height:               view_height
@@ -61,7 +61,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 
 	// app.viewport.update_width()
 
-	go app.get_doctor_info()
+	// go app.get_doctor_info()
 	return app
 }
 

@@ -12,6 +12,7 @@ pub mut:
 	logical_cursor LogicalCursor
 	visual_cursor  VisualCursor
 	saved_cursor   LogicalCursor
+	row_offset     int
 
 	// cache visual col indexes
 	visual_col [][]int

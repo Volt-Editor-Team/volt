@@ -14,13 +14,13 @@ fn ui_loop(x voidptr) {
 
 	// get app pointer, terminal size, and clear to prep for updates
 	mut app := controller.get_app(tui_app.core)
-	mut view := app.viewport
+	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	mut command_str := util.mode_str(app.mode)
 	multiple_buffers := app.buffers.len > 1
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	ctx.clear()
 	// render tabs for multiple buffers
 	if multiple_buffers {
@@ -44,8 +44,8 @@ fn ui_loop(x voidptr) {
 	}
 
 	// render loop
-	start_row := app.viewport.row_offset // the line index of the buffer to start rendering at
-	end_row := math.min(buf.lines.len, view.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+	start_row := buf.row_offset // the line index of the buffer to start rendering at
+	end_row := math.min(buf.lines.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 	mut buffer_gap := int(multiple_buffers)
 	mut wrap_offset := 0
 	mut wraps := 0
@@ -118,6 +118,7 @@ fn ui_loop(x voidptr) {
 			}
 
 			if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
+				view.visual_wraps = wrap_offset
 				ctx.set_colors(cursor_bg_color, cursor_fg_color)
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 				ctx.reset_colors()
@@ -144,6 +145,7 @@ fn ui_loop(x voidptr) {
 				break render_lines
 			}
 
+			view.visual_wraps = wrap_offset
 			ctx.set_colors(cursor_bg_color, cursor_fg_color)
 			ctx.draw_text(cursor_x + 1, cursor_y + 1, ' ') // or just draw a block cursor
 			ctx.reset_colors()
@@ -183,9 +185,12 @@ fn ui_loop(x voidptr) {
 	// mut wrap_points := view.build_wrap_points(line)
 	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
 	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
-	// ctx.draw_text(width - 30, height - 4, 'row_wrap: ' + num_wraps.str())
-	// ctx.draw_text(width - 30, height - 3, 'viewport end: ' + .str())
-	// ctx.draw_text(width - 60, height - 2, os.join_path_single(buf.path, buf.lines[buf.logical_cursor.y]))
+	// ctx.draw_text(width - 30, height - 4, 'y_pos: ' +
+	// 	buf.visual_y(buf.visual_cursor.y, buf.visual_cursor.x, app.viewport.width).str())
+
+	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' + (view.row_offset +
+	// 	view.height - view.margin).str())
+	// ctx.draw_text(width - 30, height - 2, 'lower limit: ' + (view.row_offset + view.margin).str())
 
 	if app.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2

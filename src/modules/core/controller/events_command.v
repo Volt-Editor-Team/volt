@@ -34,7 +34,6 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						app.add_directory_buffer()
 						app.mode = .normal
 						app.cmd_buffer.command = ''
-						app.viewport.row_offset = 0
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
 					}
@@ -58,7 +57,7 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						app.add_stats_buffer()
 						app.mode = .normal
 						app.cmd_buffer.command = ''
-						app.viewport.row_offset = 0
+						buf.row_offset = 0
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
 					}

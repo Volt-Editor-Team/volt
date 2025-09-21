@@ -7,18 +7,18 @@ pub fn (mut view Viewport) update_width() {
 	view.width -= view.col_offset + view.line_num_to_text_gap
 }
 
-pub fn (mut view Viewport) update_offset(row_pos int) bool {
-	if row_pos >= view.row_offset + view.height - view.margin {
-		// increment viewport offset (starting index) if required
-		view.row_offset += 1
-		return true
-	} else if view.row_offset > 0 && row_pos <= view.row_offset + view.margin {
-		// decrement viewport offset (starting index) if required
-		view.row_offset -= 1
-		return true
-	}
-	return false
-}
+// pub fn (mut view Viewport) update_offset(row_pos int) bool {
+// 	if row_pos - view.row_offset + view.visual_wraps >= view.height - view.margin {
+// 		// increment viewport offset (starting index) if required
+// 		view.row_offset += 1
+// 		return true
+// 	} else if view.row_offset > 0 && row_pos - view.row_offset + view.visual_wraps <= view.margin {
+// 		// decrement viewport offset (starting index) if required
+// 		view.row_offset -= 1
+// 		return true
+// 	}
+// 	return false
+// }
 
 pub fn (mut view Viewport) build_wrap_points(line string) []int {
 	if line.len == 0 {

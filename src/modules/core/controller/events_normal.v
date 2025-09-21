@@ -18,46 +18,59 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 				buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 			}
 			.j, .down {
-				line := buf.lines[buf.logical_cursor.y]
-				// ch := line[buf.logical_cursor.x]
-				// can't figure out accounting for tab width
-				// mut char_width := 1
-				// if ch == `\t` {
-				// 	char_width = buf.tabsize - (visual_col % app.buffer[app.active_buffer].tabsize)
-				// }
+				line := buf.visual_col[buf.logical_cursor.y]
 
-				wrap_points := app.viewport.build_wrap_points(line)
-				if wrap_points.len > 1 && buf.logical_cursor.x < wrap_points[wrap_points.len - 1] {
-					new_width := buf.logical_cursor.x + app.viewport.width
-					if buf.logical_cursor.desired_col > new_width {
-						buf.logical_cursor.x = buf.logical_cursor.desired_col
-					} else {
-						buf.logical_cursor.x = new_width
-					}
+				// total wraps in the current line
+				mut total_wraps := 0
+				if line.len != 0 {
+					total_wraps = line[line.len - 1] / app.viewport.width
+				}
+
+				// current wrap index
+				cur_wrap := buf.visual_cursor.x / app.viewport.width
+
+				if cur_wrap < total_wraps {
+					buf.visual_cursor.x += app.viewport.width
+					buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
 				} else {
 					buf.logical_cursor.move_down_buffer(buf.lines, buf.logical_x)
 				}
+
+				// update visual cursor to match logical cursor
 				buf.update_visual_cursor(app.viewport.width)
 
-				// update offset
-				app.viewport.update_offset(buf.visual_cursor.y)
+				// update viewport offset
+				buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 			}
 			.k, .up {
-				line := buf.lines[buf.logical_cursor.y]
-				wrap_points := app.viewport.build_wrap_points(line)
-				if wrap_points.len > 1 && buf.logical_cursor.x > wrap_points[1] {
-					new_width := buf.logical_cursor.x - app.viewport.width
-					if buf.logical_cursor.desired_col < new_width {
-						buf.logical_cursor.x = buf.logical_cursor.desired_col
+				cur_wrap := buf.visual_cursor.x / app.viewport.width
+				if cur_wrap == 0 {
+					if buf.logical_cursor.y - 1 > 0 {
+						line := buf.visual_col[buf.logical_cursor.y - 1]
+
+						mut total_wraps := 0
+						if line.len != 0 {
+							total_wraps = line[line.len - 1] / app.viewport.width
+						}
+						if total_wraps > 0 {
+							buf.logical_cursor.y--
+							buf.visual_cursor.x += total_wraps * app.viewport.width
+							buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y,
+								buf.visual_cursor.x)
+						} else {
+							buf.logical_cursor.move_up_buffer(buf.logical_x)
+						}
 					} else {
-						buf.logical_cursor.x = new_width
+						buf.logical_cursor.move_up_buffer(buf.logical_x)
 					}
 				} else {
-					buf.logical_cursor.move_up_buffer(buf.logical_x)
+					buf.visual_cursor.x -= app.viewport.width
+					buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
 				}
+
 				buf.update_visual_cursor(app.viewport.width)
 				// update offset
-				app.viewport.update_offset(buf.visual_cursor.y)
+				buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 			}
 			.i {
 				app.mode = .insert
@@ -77,6 +90,7 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 
 						buf.logical_cursor.x = 0
 						buf.logical_cursor.y = 0
+						buf.visual_col = [][]int{len: buf.lines.len}
 						buf.update_all_line_cache()
 
 						buf.update_visual_cursor(app.viewport.width)
