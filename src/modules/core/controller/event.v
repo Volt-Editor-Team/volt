@@ -8,7 +8,14 @@ pub fn event_loop(input UserInput, x voidptr) {
 			handle_normal_mode_event(x, input.e, input.code)
 		}
 		.insert {
-			handle_insert_mode_event(x, input.e, input.code)
+			match input.code {
+				.up, .down, .left, .right {
+					handle_normal_mode_event(x, input.e, input.code)
+				}
+				else {
+					handle_insert_mode_event(x, input.e, input.code)
+				}
+			}
 		}
 		.command {
 			handle_command_mode_event(x, input.e, input.code)

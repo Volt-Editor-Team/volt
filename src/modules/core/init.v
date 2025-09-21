@@ -34,7 +34,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 	}
 
 	// viewport variables
-	col_offset := 3 // start of all text
+	col_offset := 4 // start of all text
 	view_height := height - 2 // subtract the command area
 	line_num_to_text_gap := 3 // space between line number and code
 	// total width available for code
