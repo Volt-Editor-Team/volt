@@ -80,7 +80,7 @@ fn ui_loop(x voidptr) {
 					break render_lines
 				}
 				// not sure why +3 on end x
-				ctx.draw_line(0, active_line_index, view.width + 5, active_line_index)
+				ctx.draw_line(0, active_line_index, width - 1, active_line_index)
 				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, term.bold(line_num_label.str()))
 			}
 			ctx.reset_colors()
