@@ -77,6 +77,8 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 
 						buf.logical_cursor.x = 0
 						buf.logical_cursor.y = 0
+						buf.update_all_line_cache()
+
 						buf.update_visual_cursor(app.viewport.width)
 						buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					}
@@ -87,6 +89,7 @@ pub fn handle_normal_mode_event(x voidptr, event EventType, key KeyCode) {
 					parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
 					buf.path = parent_dir
 					buf.lines = paths
+					buf.update_all_line_cache()
 
 					buf.logical_cursor.x = 0
 					buf.logical_cursor.y = 0

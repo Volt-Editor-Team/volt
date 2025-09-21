@@ -95,6 +95,11 @@ pub const dark_blue = Color{
 	g: 0
 	b: 139
 }
+pub const dark_grey_blue = Color{
+	r: 40
+	g: 44
+	b: 52
+}
 
 pub const muted_dark_blue = Color{
 	r: 25
