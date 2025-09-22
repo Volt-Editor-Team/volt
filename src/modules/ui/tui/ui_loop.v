@@ -18,26 +18,30 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	mut command_str := util.mode_str(buf.mode)
+	mut command_str := util.mode_str(buf.p_mode)
 	multiple_buffers := app.buffers.len > 1
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	ctx.clear()
+
+	// draw background
+	ctx.set_bg_color(theme.background_color)
+	ctx.draw_rect(1, 1, width, height)
+	ctx.reset_bg_color()
+
 	// render tabs for multiple buffers
 	if multiple_buffers {
-		ctx.set_bg_color(colors.dark_grey_blue)
+		ctx.set_bg_color(theme.tab_bar_color)
 		ctx.draw_line(0, 1, width - 1, 1)
 		ctx.reset_colors()
 		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
 		mut tab_pos := 1
 		for i, name in buffer_names {
 			if i == app.active_buffer {
-				ctx.set_colors(theme.insert_cursor_color, theme.cursor_text_color)
+				ctx.set_colors(theme.active_tab_color, theme.cursor_text_color)
 				ctx.draw_text(tab_pos + 1, 1, term.bold(name))
 				ctx.reset_colors()
 			} else {
-				ctx.set_bg_color(colors.dark_grey_blue)
+				ctx.set_bg_color(theme.tab_bar_color)
 				ctx.draw_text(tab_pos + 1, 1, name)
 				ctx.reset_colors()
 			}
@@ -114,9 +118,9 @@ fn ui_loop(x voidptr) {
 				break render_lines
 			}
 			// render just line number for inactive line
-			ctx.set_color(line_num_inactive_color)
+			ctx.set_colors(theme.background_color, line_num_inactive_color)
 			ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
-			ctx.reset_color()
+			ctx.reset_colors()
 		}
 
 		mut char_width := 1
@@ -146,9 +150,9 @@ fn ui_loop(x voidptr) {
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 				ctx.reset_colors()
 			} else {
-				ctx.set_color(text_color)
+				ctx.set_colors(theme.background_color, text_color)
 				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
-				ctx.reset_color()
+				ctx.reset_colors()
 			}
 			char_width = 1
 		}
@@ -173,29 +177,6 @@ fn ui_loop(x voidptr) {
 		wrap_offset += wraps
 	}
 
-	// ctx.horizontal_separator(height - 2)
-	ctx.set_bg_color(colors.deep_indigo)
-	ctx.draw_line(0, height - 1, width - 1, height - 1)
-
-	ctx.set_bg_color(util.get_command_bg_color(buf.mode))
-	ctx.draw_line(4, height - 1, command_str.len + 1 + 4, height - 1)
-	ctx.draw_text(5, height - 1, term.bold(command_str))
-	ctx.reset_bg_color()
-
-	ctx.set_bg_color(colors.deep_indigo)
-	// buf.path
-	if buf.path.starts_with('Error') {
-		ctx.set_color(colors.dark_red)
-	} else {
-		ctx.set_color(colors.white)
-	}
-	ctx.draw_text(command_str.len + 5 + 2, height - 1, buf.path)
-	ctx.reset_color()
-	ctx.draw_text(width - 5, height - 1, (buf.logical_cursor.x + 1).str() + ':' +
-		(buf.logical_cursor.y + 1).str())
-
-	ctx.reset_bg_color()
-
 	// debugging
 	// ctx.draw_text(width - 30, height - 8, 'new_col: ' + new_col.str())
 	// ctx.draw_text(width - 30, height - 7, 'wrap_points: ' + wrap_points.str())
@@ -211,10 +192,37 @@ fn ui_loop(x voidptr) {
 	// 	view.height - view.margin).str())
 	// ctx.draw_text(width - 30, height - 2, 'lower limit: ' + (view.row_offset + view.margin).str())
 
+	mut command_bar_y_pos := height
+
 	if buf.mode == util.Mode.command {
+		command_bar_y_pos--
+		// draw command bar
+		ctx.set_bg_color(theme.command_bar_color)
+		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
+
+		ctx.set_bg_color(util.get_command_bg_color(buf.mode))
+		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
+		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
+
+		ctx.set_bg_color(theme.command_bar_color)
+		// buf.path
+		if buf.path.starts_with('Error') {
+			ctx.set_color(colors.dark_red)
+		} else {
+			ctx.set_color(colors.white)
+		}
+		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, buf.path)
+		ctx.reset_color()
+		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
+			(buf.logical_cursor.y + 1).str())
+
+		ctx.reset_bg_color()
+
+		// draw command mode prompt
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
 		buf.logical_cursor.y = height
 
+		ctx.set_bg_color(theme.background_color)
 		// 1. Clear the entire command line with spaces
 		// width is the terminal width
 		ctx.draw_text(0, buf.logical_cursor.y, ' '.repeat(width - 1))
@@ -229,6 +237,28 @@ fn ui_loop(x voidptr) {
 		// cursor_pos := app.cmd_buffer.command.len + 2
 		ctx.set_bg_color(theme.insert_cursor_color)
 		ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
+		ctx.reset_bg_color()
+	} else {
+		// draw command bar
+		ctx.set_bg_color(theme.command_bar_color)
+		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
+
+		ctx.set_bg_color(util.get_command_bg_color(buf.mode))
+		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
+		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
+
+		ctx.set_bg_color(theme.command_bar_color)
+		// buf.path
+		if buf.path.starts_with('Error') {
+			ctx.set_color(colors.dark_red)
+		} else {
+			ctx.set_color(colors.white)
+		}
+		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, buf.path)
+		ctx.reset_color()
+		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
+			(buf.logical_cursor.y + 1).str())
+
 		ctx.reset_bg_color()
 	}
 

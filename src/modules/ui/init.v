@@ -14,4 +14,8 @@ pub mut:
 	active_line_bg_color       string
 	active_line_number_color   string
 	inactive_line_number_color string
+	background_color           string
+	command_bar_color          string
+	tab_bar_color              string
+	active_tab_color           string
 }

@@ -37,11 +37,9 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						buf.update_visual_cursor(app.viewport.width)
 					}
 					'cd' {
-						app.add_directory_buffer()
 						buf.mode = buf.p_mode
+						app.add_directory_buffer()
 						app.cmd_buffer.command = ''
-						buf.logical_cursor.x = 0
-						buf.logical_cursor.y = 0
 						buf.update_visual_cursor(app.viewport.width)
 					}
 					'cb' {
@@ -51,6 +49,7 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						buf.update_visual_cursor(app.viewport.width)
 					}
 					'doctor' {
+						buf.mode = buf.p_mode
 						if app.stats.len == 0 {
 							go fn [mut buf] () {
 								temp := buf.path
@@ -62,7 +61,6 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						}
 						app.add_stats_buffer()
 						app.cmd_buffer.command = ''
-						buf.row_offset = 0
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
 					}

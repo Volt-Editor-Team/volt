@@ -27,10 +27,14 @@ pub fn App.new(file_path string, width int, height int) &App {
 		normal_text_color:          '#ffffff'
 		normal_cursor_color:        '#8282A0'
 		insert_cursor_color:        '#7896C8'
-		cursor_text_color:          '#141E32'
+		cursor_text_color:          '#1E1E1E'
 		active_line_bg_color:       '#323C5A'
 		active_line_number_color:   '#B4B4C8'
 		inactive_line_number_color: '#788296'
+		background_color:           '#1E1E1E'
+		command_bar_color:          '#324090'
+		tab_bar_color:              '#324090'
+		active_tab_color:           '#CC8933'
 	}
 
 	// viewport variables
@@ -61,7 +65,7 @@ pub fn App.new(file_path string, width int, height int) &App {
 
 	// app.viewport.update_width()
 
-	// go app.get_doctor_info()
+	go app.get_doctor_info()
 	return app
 }
 

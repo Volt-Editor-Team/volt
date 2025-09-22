@@ -72,6 +72,12 @@ pub const amber = Color{
 	b: 64
 }
 
+pub const amber_2 = Color{
+	r: 204
+	g: 136
+	b: 51
+}
+
 pub const purple = Color{
 	r: 156
 	g: 36
@@ -82,6 +88,12 @@ pub const deep_indigo = Color{
 	r: 63
 	g: 81
 	b: 181
+}
+
+pub const deep_indigo_2 = Color{
+	r: 50
+	g: 64
+	b: 144
 }
 
 pub const white = Color{
@@ -123,4 +135,16 @@ pub const black = Color{
 	r: 0
 	g: 0
 	b: 0
+}
+
+pub const google_dark_grey = Color{
+	r: 32
+	g: 33
+	b: 36
+}
+
+pub const vscode_classic = Color{
+	r: 30
+	g: 30
+	b: 30
 }
