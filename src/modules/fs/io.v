@@ -50,7 +50,11 @@ pub fn get_working_dir() string {
 pub fn get_working_dir_paths() (string, []string) {
 	current_path := get_working_dir()
 	mut entries := os.ls(current_path) or { [''] }
-	entries = entries.map(if is_dir(it) { it + os.path_separator } else { it })
+	entries = entries.map(if is_dir(it) {
+		it + os.path_separator
+	} else {
+		it
+	})
 	return current_path, entries
 }
 

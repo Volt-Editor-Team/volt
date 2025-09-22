@@ -3,9 +3,11 @@ module tui
 import core.controller
 import util
 import util.colors
+import util.constants
 import term
 import math
 import fs
+import os
 
 fn ui_loop(x voidptr) {
 	mut tui_app := get_tui(x)
@@ -55,8 +57,10 @@ fn ui_loop(x voidptr) {
 		y_index := start_row + i
 
 		// values necessary for rendering aligned line numbers
-		line_num_label := (y_index + 1).str() + ' '.repeat(buf.lines.len.str().len - (y_index +
-			1).str().len)
+		mut line_num_label := term.bold((y_index + 1).str() +
+			' '.repeat(buf.lines.len.str().len - (y_index + 1).str().len))
+		mut line_num_inactive_color := theme.inactive_line_number_color
+		mut line_num_active_color := theme.active_line_number_color
 
 		// determine cursor colors
 		cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(app.mode, theme)
@@ -65,6 +69,27 @@ fn ui_loop(x voidptr) {
 		line_indices := buf.visual_col[y_index] // column index for line
 		runes := line.runes() // list of characters
 
+		mut text_color := colors.white
+
+		if buf.is_directory_buffer {
+			if fs.is_dir(buf.path + line) {
+				line_num_label = ' '.repeat(buf.lines.len.str().len)
+				text_color = colors.royal_blue
+			} else {
+				file_ext := os.file_ext(line)
+				if file_ext in constants.ext_icons {
+					filetype := constants.ext_icons[file_ext]
+					line_num_inactive_color = colors.hex_to_tui_color(filetype.color) or {
+						colors.white
+					}
+					line_num_active_color = line_num_inactive_color
+					line_num_label = filetype.icon +
+						' '.repeat(buf.lines.len.str().len - filetype.icon.len)
+				} else {
+					line_num_label = ' '.repeat(buf.lines.len.str().len)
+				}
+			}
+		}
 		// highlight active line and render line numbers
 		// this is rendered first, simulating line highlight over active line
 		if y_index == buf.logical_cursor.y {
@@ -72,7 +97,7 @@ fn ui_loop(x voidptr) {
 			// (+ 1 since base is 0)
 			total_lines := if runes.len > 0 { (line_indices.last() / view.width) + 1 } else { 1 }
 
-			ctx.set_colors(theme.active_line_bg_color, theme.active_line_number_color)
+			ctx.set_colors(theme.active_line_bg_color, line_num_active_color)
 			for wrap in 0 .. total_lines {
 				active_line_index := i + wrap + wrap_offset + buffer_gap + 1
 				if active_line_index > view.height {
@@ -81,7 +106,7 @@ fn ui_loop(x voidptr) {
 				}
 				// not sure why +3 on end x
 				ctx.draw_line(0, active_line_index, width - 1, active_line_index)
-				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, term.bold(line_num_label.str()))
+				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
 			}
 			ctx.reset_colors()
 		} else {
@@ -89,15 +114,9 @@ fn ui_loop(x voidptr) {
 				break render_lines
 			}
 			// render just line number for inactive line
-			ctx.set_color(theme.inactive_line_number_color)
-			ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label.str())
+			ctx.set_color(line_num_inactive_color)
+			ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
 			ctx.reset_color()
-		}
-
-		mut text_color := colors.white
-
-		if buf.is_directory_buffer && fs.is_dir(buf.path + line) {
-			text_color = colors.royal_blue
 		}
 
 		mut char_width := 1
