@@ -1,9 +1,12 @@
 module controller
 
+// buffer change command : b,n
+
 pub fn event_loop(input UserInput, x voidptr) {
 	mut app := get_app(x)
+	mut buf := &app.buffers[app.active_buffer]
 
-	match app.mode {
+	match buf.mode {
 		.normal {
 			handle_normal_mode_event(x, input.e, input.code)
 		}
@@ -19,6 +22,16 @@ pub fn event_loop(input UserInput, x voidptr) {
 		}
 		.command {
 			handle_command_mode_event(x, input.e, input.code)
+		}
+		.directory {
+			match input.code {
+				.k, .up, .j, .down, .h, .left, .l, .right, .colon, .i {
+					handle_normal_mode_event(x, input.e, input.code)
+				}
+				else {
+					handle_directory_mode_event(x, input.e, input.code)
+				}
+			}
 		}
 	}
 }

@@ -10,6 +10,12 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 	if event == .key_down {
 		cmd_str := app.cmd_buffer.command
 		match key {
+			.escape {
+				buf.mode = buf.p_mode
+				app.cmd_buffer.command = ''
+				buf.logical_cursor = buf.saved_cursor
+				buf.update_visual_cursor(app.viewport.width)
+			}
 			.enter {
 				match cmd_str {
 					'q', 'quit' {
@@ -26,20 +32,20 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 							// buf.update_all_line_cache()
 						}
 						app.cmd_buffer.command = ''
-						app.mode = .normal
+						buf.mode = buf.p_mode
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
 					}
 					'cd' {
 						app.add_directory_buffer()
-						app.mode = .normal
+						buf.mode = buf.p_mode
 						app.cmd_buffer.command = ''
-						buf.logical_cursor = buf.saved_cursor
+						buf.logical_cursor.x = 0
+						buf.logical_cursor.y = 0
 						buf.update_visual_cursor(app.viewport.width)
 					}
 					'cb' {
 						app.close_buffer()
-						app.mode = .normal
 						app.cmd_buffer.command = ''
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
@@ -55,7 +61,6 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 							return
 						}
 						app.add_stats_buffer()
-						app.mode = .normal
 						app.cmd_buffer.command = ''
 						buf.row_offset = 0
 						buf.logical_cursor = buf.saved_cursor
@@ -63,12 +68,6 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 					}
 					else {}
 				}
-			}
-			.escape {
-				app.mode = .normal
-				app.cmd_buffer.command = ''
-				buf.logical_cursor = buf.saved_cursor
-				buf.update_visual_cursor(app.viewport.width)
 			}
 			.backspace {
 				// // command string start at x = 2

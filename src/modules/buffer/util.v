@@ -2,8 +2,6 @@ module buffer
 
 import math
 
-// import math
-
 pub fn (mut buf Buffer) update_all_line_cache() {
 	for i in 0 .. buf.lines.len {
 		buf.update_line_cache(i)

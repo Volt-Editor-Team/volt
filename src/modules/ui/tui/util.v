@@ -50,7 +50,7 @@ fn (mut ctx TuiContext) get_cursor_colors(mode Mode, theme TuiTheme) (ui.Color, 
 	} else {
 		// default
 
-		if mode != .normal && mode != .command {
+		if mode == .insert {
 			bg_color = theme.insert_cursor_color
 			fg_color = theme.cursor_text_color
 		}

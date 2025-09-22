@@ -6,7 +6,7 @@ pub fn handle_insert_mode_event(x voidptr, event EventType, key KeyCode) {
 	if event == .key_down {
 		match key {
 			.escape {
-				app.mode = .normal
+				buf.mode = buf.p_mode
 			}
 			.backspace {
 				delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)

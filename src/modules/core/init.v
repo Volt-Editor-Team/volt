@@ -11,11 +11,11 @@ pub mut:
 	working_dir   string
 	buffers       []Buffer
 	active_buffer int
-	mode          Mode
-	cmd_buffer    CommandBuffer
-	viewport      Viewport
-	theme         ColorScheme
-	stats         shared []string
+	// prev_mode     Mode
+	cmd_buffer CommandBuffer
+	viewport   Viewport
+	theme      ColorScheme
+	stats      shared []string
 }
 
 pub fn App.new(file_path string, width int, height int) &App {
@@ -53,11 +53,11 @@ pub fn App.new(file_path string, width int, height int) &App {
 		name:    os.file_name(file_path)
 		path:    file_path
 		tabsize: default_tabsize
+		mode:    Mode.normal
 	})
 	app.buffers = buffers
 
 	app.active_buffer = 0
-	app.mode = Mode.normal
 
 	// app.viewport.update_width()
 

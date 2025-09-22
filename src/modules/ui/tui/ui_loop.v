@@ -18,7 +18,7 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	mut command_str := util.mode_str(app.mode)
+	mut command_str := util.mode_str(buf.mode)
 	multiple_buffers := app.buffers.len > 1
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
@@ -63,7 +63,7 @@ fn ui_loop(x voidptr) {
 		mut line_num_active_color := theme.active_line_number_color
 
 		// determine cursor colors
-		cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(app.mode, theme)
+		cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, theme)
 
 		// get line indices and characters
 		line_indices := buf.visual_col[y_index] // column index for line
@@ -71,7 +71,7 @@ fn ui_loop(x voidptr) {
 
 		mut text_color := colors.white
 
-		if buf.is_directory_buffer {
+		if buf.p_mode == .directory {
 			if fs.is_dir(buf.path + line) {
 				line_num_label = ' '.repeat(buf.lines.len.str().len)
 				text_color = colors.royal_blue
@@ -177,7 +177,7 @@ fn ui_loop(x voidptr) {
 	ctx.set_bg_color(colors.deep_indigo)
 	ctx.draw_line(0, height - 1, width - 1, height - 1)
 
-	ctx.set_bg_color(util.get_command_bg_color(app.mode))
+	ctx.set_bg_color(util.get_command_bg_color(buf.mode))
 	ctx.draw_line(4, height - 1, command_str.len + 1 + 4, height - 1)
 	ctx.draw_text(5, height - 1, term.bold(command_str))
 	ctx.reset_bg_color()
@@ -211,7 +211,7 @@ fn ui_loop(x voidptr) {
 	// 	view.height - view.margin).str())
 	// ctx.draw_text(width - 30, height - 2, 'lower limit: ' + (view.row_offset + view.margin).str())
 
-	if app.mode == util.Mode.command {
+	if buf.mode == util.Mode.command {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
 		buf.logical_cursor.y = height
 
@@ -227,11 +227,7 @@ fn ui_loop(x voidptr) {
 
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
-		ctx.set_bg_color(if app.mode == .normal {
-			theme.normal_cursor_color
-		} else {
-			theme.insert_cursor_color
-		})
+		ctx.set_bg_color(theme.insert_cursor_color)
 		ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
 		ctx.reset_bg_color()
 	}

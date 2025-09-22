@@ -1,15 +1,16 @@
 module core
 
 import buffer { Buffer }
+import util
 import fs { get_working_dir_paths }
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
 	app.buffers << Buffer.new(
-		name:                b.name
-		path:                b.path
-		lines:               b.lines
-		tabsize:             default_tabsize
-		is_directory_buffer: b.is_directory_buffer
+		name:    b.name
+		path:    b.path
+		lines:   b.lines
+		tabsize: default_tabsize
+		mode:    b.mode
 	)
 	app.change_active_buffer(app.buffers.len - 1)
 }
@@ -20,16 +21,21 @@ pub fn (mut app App) change_active_buffer(idx int) {
 
 pub fn (mut app App) add_directory_buffer() {
 	parent_dir, lines := get_working_dir_paths()
-	app.add_new_buffer(name: 'DIRECTORY', path: parent_dir, lines: lines, is_directory_buffer: true)
+	app.add_new_buffer(
+		name:  'DIRECTORY'
+		path:  parent_dir
+		lines: lines
+		mode:  util.Mode.directory
+	)
 }
 
 pub fn (mut app App) add_stats_buffer() {
 	lines := app.get_stats()
 	app.add_new_buffer(
-		name:                'DOCTOR'
-		path:                'V DOCTOR OUTPUT'
-		lines:               lines
-		is_directory_buffer: false
+		name:  'DOCTOR'
+		path:  'V DOCTOR OUTPUT'
+		lines: lines
+		mode:  util.Mode.normal
 	)
 }
 
@@ -40,6 +46,6 @@ pub fn (mut app App) close_buffer() {
 		app.active_buffer--
 	}
 	if app.buffers.len == 0 {
-		app.add_new_buffer(is_directory_buffer: false)
+		app.add_new_buffer(mode: util.Mode.normal)
 	}
 }
