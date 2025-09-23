@@ -91,12 +91,23 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 	tui_app := get_tui(x)
 	event_type := convert_event_type(e.typ)
 	key_code := convert_key_code(e.code)
+	modifier := convert_modifier(e.modifiers)
 	input := ctl.UserInput{
+		mod:  modifier
 		e:    event_type
 		code: key_code
 	}
 
 	ctl.event_loop(input, tui_app.core)
+}
+
+pub fn convert_modifier(e t.Modifiers) ctl.Modifier {
+	return match e {
+		.ctrl { .ctrl }
+		.shift { .shift }
+		.alt { .alt }
+		else { .none }
+	}
 }
 
 fn convert_event_type(e t.EventType) ctl.EventType {

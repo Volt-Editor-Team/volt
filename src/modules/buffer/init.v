@@ -6,6 +6,7 @@ import util { Mode }
 
 pub struct Buffer {
 pub mut:
+	label  string
 	name   string
 	path   string = 'Scratch'
 	mode   Mode
@@ -27,6 +28,7 @@ pub:
 pub fn Buffer.new(b Buffer) Buffer {
 	lines := read_file(b.path) or { b.lines }
 	mut buf := Buffer{
+		label:      if b.label.len == 0 { b.name } else { b.label }
 		name:       b.name
 		path:       b.path
 		lines:      lines

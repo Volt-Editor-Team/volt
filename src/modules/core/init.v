@@ -10,12 +10,16 @@ pub struct App {
 pub mut:
 	working_dir   string
 	buffers       []Buffer
+	swap_map      map[int]Buffer
 	active_buffer int
 	// prev_mode     Mode
 	cmd_buffer CommandBuffer
 	viewport   Viewport
 	theme      ColorScheme
 	stats      shared []string
+	// tracking for single buffer
+	has_directory_buffer bool
+	has_stats_opened     bool
 }
 
 pub fn App.new(file_path string, width int, height int) &App {

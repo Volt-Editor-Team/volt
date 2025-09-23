@@ -33,7 +33,7 @@ fn ui_loop(x voidptr) {
 		ctx.set_bg_color(theme.tab_bar_color)
 		ctx.draw_line(0, 1, width - 1, 1)
 		ctx.reset_colors()
-		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
+		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].label + ' '}
 		mut tab_pos := 1
 		for i, name in buffer_names {
 			if i == app.active_buffer {

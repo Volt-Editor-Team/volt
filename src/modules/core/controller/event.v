@@ -33,5 +33,15 @@ pub fn event_loop(input UserInput, x voidptr) {
 				}
 			}
 		}
+		.fuzzy {
+			match input.code {
+				.colon, .b, .n {
+					handle_normal_mode_event(x, input.e, input.code)
+				}
+				else {
+					handle_fuzzy_mode_event(x, input.mod, input.e, input.code)
+				}
+			}
+		}
 	}
 }

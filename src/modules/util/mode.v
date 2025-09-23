@@ -16,6 +16,7 @@ pub enum Mode {
 	normal
 	command
 	directory
+	fuzzy
 }
 
 pub fn mode_str(m Mode) string {
@@ -24,6 +25,7 @@ pub fn mode_str(m Mode) string {
 		.normal { 'NORMAL' }
 		.command { 'COMMAND' }
 		.directory { 'DIRECTORY' }
+		.fuzzy { 'FUZZY' }
 	}
 }
 
@@ -33,6 +35,7 @@ pub fn get_command_bg_color(m Mode) tui.Color {
 		.insert { colors.teal }
 		.command { colors.amber }
 		.directory { colors.neutral_grey }
+		.fuzzy { colors.neutral_grey }
 	}
 }
 

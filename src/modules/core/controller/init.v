@@ -6,6 +6,13 @@ pub fn get_app(x voidptr) &core.App {
 	return unsafe { &core.App(x) }
 }
 
+pub enum Modifier {
+	none
+	ctrl
+	shift
+	alt
+}
+
 pub enum EventType {
 	unknown
 	mouse_down
@@ -130,6 +137,7 @@ pub enum KeyCode {
 
 pub struct UserInput {
 pub:
+	mod  Modifier
 	e    EventType
 	code KeyCode
 }

@@ -38,31 +38,61 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 					}
 					'cd' {
 						buf.mode = buf.p_mode
-						app.add_directory_buffer()
 						app.cmd_buffer.command = ''
-						buf.update_visual_cursor(app.viewport.width)
+
+						if app.has_directory_buffer {
+							for i, buffer in app.buffers {
+								if buffer.p_mode == .directory {
+									app.active_buffer = i
+								}
+							}
+						} else {
+							app.add_directory_buffer()
+							buf.update_visual_cursor(app.viewport.width)
+							app.has_directory_buffer = true
+						}
 					}
 					'cb' {
-						app.close_buffer()
 						app.cmd_buffer.command = ''
-						buf.logical_cursor = buf.saved_cursor
-						buf.update_visual_cursor(app.viewport.width)
+						if buf.p_mode == .directory {
+							app.has_directory_buffer = false
+						}
+						if buf.name == 'DOCTOR' {
+							app.has_stats_opened = false
+						}
+						app.close_buffer()
 					}
 					'doctor' {
 						buf.mode = buf.p_mode
-						if app.stats.len == 0 {
-							go fn [mut buf] () {
-								temp := buf.path
-								buf.path = 'Error: Stats not available'
-								time.sleep(2 * time.second)
-								buf.path = temp
-							}()
-							return
-						}
-						app.add_stats_buffer()
 						app.cmd_buffer.command = ''
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
+						if app.has_stats_opened {
+							for i, buffer in app.buffers {
+								if buffer.name == 'DOCTOR' {
+									app.active_buffer = i
+								}
+							}
+						} else {
+							if app.stats.len == 0 {
+								go fn [mut buf] () {
+									temp := buf.path
+									buf.path = 'Error: Stats not available'
+									time.sleep(2 * time.second)
+									buf.path = temp
+								}()
+								return
+							}
+							app.add_stats_buffer()
+							app.has_stats_opened = true
+						}
+					}
+					'fuzzy' {
+						buf.mode = buf.p_mode
+						app.cmd_buffer.command = ''
+						buf.logical_cursor = buf.saved_cursor
+						buf.update_visual_cursor(app.viewport.width)
+						app.swap_to_temp_fuzzy_buffer()
 					}
 					else {}
 				}

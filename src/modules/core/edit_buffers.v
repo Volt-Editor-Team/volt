@@ -3,6 +3,7 @@ module core
 import buffer { Buffer }
 import util
 import fs { get_working_dir_paths }
+import os
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
 	app.buffers << Buffer.new(
@@ -48,4 +49,28 @@ pub fn (mut app App) close_buffer() {
 	if app.buffers.len == 0 {
 		app.add_new_buffer(mode: util.Mode.normal)
 	}
+}
+
+pub fn (mut app App) swap_to_temp_fuzzy_buffer() {
+	mut path := app.buffers[app.active_buffer].path
+	if !fs.is_dir(path) {
+		path = os.dir(path)
+	}
+	app.swap_map[app.active_buffer] = app.buffers[app.active_buffer]
+
+	mut cur_buf := &app.buffers[app.active_buffer]
+
+	// cur_buf.label = 'FUZZY'
+	cur_buf.name = ''
+	cur_buf.path = path
+	cur_buf.p_mode = util.Mode.fuzzy
+	cur_buf.mode = cur_buf.p_mode
+	cur_buf.lines = ['fuzzy']
+	cur_buf.logical_cursor.x = 0
+	cur_buf.logical_cursor.y = 0
+	cur_buf.visual_cursor.x = 0
+	cur_buf.visual_cursor.y = 0
+	cur_buf.saved_cursor = cur_buf.logical_cursor
+	cur_buf.row_offset = 0
+	cur_buf.update_all_line_cache()
 }
