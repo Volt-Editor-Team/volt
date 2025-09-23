@@ -56,11 +56,15 @@ pub fn (buf Buffer) logical_x(logical_y int, visual_x int) int {
 	visual_line := buf.visual_col[logical_y]
 	mut closest := 0
 
-	for i, col in visual_line {
-		if col > visual_x {
+	for i in 0 .. visual_line.len {
+		if visual_line[i] > visual_x {
 			break
 		}
 		closest = i
+	}
+
+	if closest == visual_line.len - 1 && visual_line[closest] < visual_x {
+		return closest + 1
 	}
 
 	return closest
