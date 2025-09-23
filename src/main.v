@@ -1,36 +1,27 @@
 module main
 
+// program state and rendering proceedure
 import core
 import ui.tui
+// necessary for parsing cli arguments
+import docs { create_cli }
 import os
-// import time
-
-fn run_doctor() chan []string {
-	ch := chan []string{cap: 1}
-
-	go fn (ch chan []string) {
-		v_doctor := os.execute('v doctor')
-		stats := v_doctor.output.split_into_lines()
-		ch <- stats
-	}(ch)
-
-	return ch
-}
+import cli as c
 
 fn main() {
-	width, height := tui.get_terminal_size()
-	// file_path := './testdata/simple.txt'
-	file_path := './src/modules/ui/tui/ui_loop.v'
-	mut core_app := core.App.new(file_path, width, height)
+	mut cli := create_cli()
 
-	// ! this runs 'v doctor' in the background !
-	// go fn [mut core_app] () {
-	// 	v_doctor := os.execute('v doctor')
-	// 	stats := v_doctor.output.split_into_lines()
-	// 	core_app.set_stats(stats)
-	// }()
+	cli.execute = fn (cmd c.Command) ! {
+		width, height := tui.get_terminal_size()
+		// file_path := './testdata/simple.txt'
+		file_path := './src/modules/ui/tui/ui_loop.v'
+		mut core_app := core.App.new(file_path, width, height)
+		mut tui_app := tui.TuiApp.new(core_app)
 
-	mut tui_app := tui.TuiApp.new(core_app)
+		tui_app.tui.run()!
+	}
 
-	tui_app.tui.run()!
+	cli.setup()
+	args := os.args.map(if it.starts_with('--') { it.replace_once('-', '') } else { it })
+	cli.parse(args)
 }

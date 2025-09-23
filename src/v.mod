@@ -1,6 +1,6 @@
 Module {
-	name: 'text_editor'
-	description: 'text editor project in vlang'
+	name: 'volt'
+	description: 'Volt text editor. Written entirely in Vlang'
 	version: '0.0.0'
 	license: 'MIT'
 	dependencies: []
