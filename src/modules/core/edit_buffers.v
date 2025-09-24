@@ -4,6 +4,7 @@ import buffer { Buffer }
 import util
 import fs { get_working_dir_paths }
 import os
+import time
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
 	app.buffers << Buffer.new(
@@ -51,26 +52,20 @@ pub fn (mut app App) close_buffer() {
 	}
 }
 
-pub fn (mut app App) swap_to_temp_fuzzy_buffer() {
-	mut path := app.buffers[app.active_buffer].path
+pub fn (mut app App) swap_to_temp_fuzzy_buffer(mut buf Buffer) {
+	mut path := buf.path
 	if !fs.is_dir(path) {
 		path = os.dir(path)
 	}
-	app.swap_map[app.active_buffer] = app.buffers[app.active_buffer]
 
-	mut cur_buf := &app.buffers[app.active_buffer]
+	go app.async_fill(mut buf)
+}
 
-	// cur_buf.label = 'FUZZY'
-	cur_buf.name = ''
-	cur_buf.path = path
-	cur_buf.p_mode = util.Mode.fuzzy
-	cur_buf.mode = cur_buf.p_mode
-	cur_buf.lines = ['fuzzy']
-	cur_buf.logical_cursor.x = 0
-	cur_buf.logical_cursor.y = 0
-	cur_buf.visual_cursor.x = 0
-	cur_buf.visual_cursor.y = 0
-	cur_buf.saved_cursor = cur_buf.logical_cursor
-	cur_buf.row_offset = 0
-	cur_buf.update_all_line_cache()
+pub fn (mut app App) async_fill(mut buf Buffer) {
+	for i in 0 .. 12 {
+		lock {
+			buf.temp_data << 'fuzzy ${i}'
+		}
+		time.sleep(50 * time.millisecond)
+	}
 }

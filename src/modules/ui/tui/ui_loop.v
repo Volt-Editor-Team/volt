@@ -49,132 +49,147 @@ fn ui_loop(x voidptr) {
 		}
 	}
 
-	// render loop
-	start_row := buf.row_offset // the line index of the buffer to start rendering at
-	end_row := math.min(buf.lines.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
-	mut buffer_gap := int(multiple_buffers)
-	mut wrap_offset := 0
-	mut wraps := 0
-	render_lines: for i, line in buf.lines[start_row..end_row] {
-		// i is the row index of the actual renders screen
-		// y_index is the position in the buffer
-		y_index := start_row + i
+	if buf.p_mode != .fuzzy {
+		// render loop
+		start_row := buf.row_offset // the line index of the buffer to start rendering at
+		end_row := math.min(buf.lines.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+		mut buffer_gap := int(multiple_buffers)
+		mut wrap_offset := 0
+		mut wraps := 0
+		render_lines: for i, line in buf.lines[start_row..end_row] {
+			// i is the row index of the actual renders screen
+			// y_index is the position in the buffer
+			y_index := start_row + i
 
-		// values necessary for rendering aligned line numbers
-		mut line_num_label := term.bold((y_index + 1).str() +
-			' '.repeat(buf.lines.len.str().len - (y_index + 1).str().len))
-		mut line_num_inactive_color := theme.inactive_line_number_color
-		mut line_num_active_color := theme.active_line_number_color
+			// values necessary for rendering aligned line numbers
+			mut line_num_label := term.bold((y_index + 1).str() +
+				' '.repeat(buf.lines.len.str().len - (y_index + 1).str().len))
+			mut line_num_inactive_color := theme.inactive_line_number_color
+			mut line_num_active_color := theme.active_line_number_color
 
-		// determine cursor colors
-		cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, theme)
+			// determine cursor colors
+			cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, theme)
 
-		// get line indices and characters
-		line_indices := buf.visual_col[y_index] // column index for line
-		runes := line.runes() // list of characters
+			// get line indices and characters
+			line_indices := buf.visual_col[y_index] // column index for line
 
-		mut text_color := colors.white
+			mut text_color := colors.white
 
-		if buf.p_mode == .directory {
-			if fs.is_dir(buf.path + line) {
-				line_num_label = ' '.repeat(buf.lines.len.str().len)
-				text_color = colors.royal_blue
-			} else {
-				file_ext := os.file_ext(line)
-				if file_ext in constants.ext_icons {
-					filetype := constants.ext_icons[file_ext]
-					line_num_inactive_color = colors.hex_to_tui_color(filetype.color) or {
-						colors.white
-					}
-					line_num_active_color = line_num_inactive_color
-					line_num_label = filetype.icon +
-						' '.repeat(buf.lines.len.str().len - filetype.icon.len)
-				} else {
+			if buf.p_mode == .directory {
+				if fs.is_dir(buf.path + line) {
 					line_num_label = ' '.repeat(buf.lines.len.str().len)
+					text_color = colors.royal_blue
+				} else {
+					file_ext := os.file_ext(line)
+					if file_ext in constants.ext_icons {
+						filetype := constants.ext_icons[file_ext]
+						line_num_inactive_color = colors.hex_to_tui_color(filetype.color) or {
+							colors.white
+						}
+						line_num_active_color = line_num_inactive_color
+						line_num_label = filetype.icon +
+							' '.repeat(buf.lines.len.str().len - filetype.icon.len)
+					} else {
+						line_num_label = ' '.repeat(buf.lines.len.str().len)
+					}
 				}
 			}
-		}
-		// highlight active line and render line numbers
-		// this is rendered first, simulating line highlight over active line
-		if y_index == buf.logical_cursor.y {
-			// calculate how many lines that this line requires
-			// (+ 1 since base is 0)
-			total_lines := if runes.len > 0 { (line_indices.last() / view.width) + 1 } else { 1 }
+			// highlight active line and render line numbers
+			// this is rendered first, simulating line highlight over active line
+			if y_index == buf.logical_cursor.y {
+				// calculate how many lines that this line requires
+				// (+ 1 since base is 0)
+				total_lines := if line.len > 0 {
+					(line_indices.last() / view.width) + 1
+				} else {
+					1
+				}
 
-			ctx.set_colors(theme.active_line_bg_color, line_num_active_color)
-			for wrap in 0 .. total_lines {
-				active_line_index := i + wrap + wrap_offset + buffer_gap + 1
-				if active_line_index > view.height {
-					ctx.reset_colors()
+				ctx.set_colors(theme.active_line_bg_color, line_num_active_color)
+				for wrap in 0 .. total_lines {
+					active_line_index := i + wrap + wrap_offset + buffer_gap + 1
+					if active_line_index > view.height {
+						ctx.reset_colors()
+						break render_lines
+					}
+					// not sure why +3 on end x
+					ctx.draw_line(0, active_line_index, width - 1, active_line_index)
+					ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
+				}
+				ctx.reset_colors()
+			} else {
+				if i + wrap_offset + 1 > view.height {
 					break render_lines
 				}
-				// not sure why +3 on end x
-				ctx.draw_line(0, active_line_index, width - 1, active_line_index)
+				// render just line number for inactive line
+				ctx.set_colors(theme.background_color, line_num_inactive_color)
 				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
-			}
-			ctx.reset_colors()
-		} else {
-			if i + wrap_offset + 1 > view.height {
-				break render_lines
-			}
-			// render just line number for inactive line
-			ctx.set_colors(theme.background_color, line_num_inactive_color)
-			ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
-			ctx.reset_colors()
-		}
-
-		mut char_width := 1
-		for x_index, ch in runes {
-			visual_x_index := line_indices[x_index]
-			wraps = visual_x_index / view.width
-			x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
-			y_pos := i + wraps + wrap_offset + buffer_gap
-
-			if y_pos > view.height - buffer_gap {
-				break render_lines
+				ctx.reset_colors()
 			}
 
-			mut printed := ch
-			if ch == `\t` {
-				printed = ` `
-				char_width = buf.tabsize
+			mut char_width := 1
+			for x_index, ch in line.runes_iterator() {
+				visual_x_index := line_indices[x_index]
+				wraps = visual_x_index / view.width
+				x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
+				y_pos := i + wraps + wrap_offset + buffer_gap
+
+				if y_pos > view.height - buffer_gap {
+					break render_lines
+				}
+
+				mut printed := ch
+				if ch == `\t` {
+					printed = ` `
+					char_width = buf.tabsize
+				}
+
+				if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
+					view.visual_wraps = wrap_offset
+					ctx.set_colors(cursor_bg_color, cursor_fg_color)
+					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+					ctx.reset_colors()
+				} else if y_index == buf.logical_cursor.y {
+					ctx.set_colors(theme.active_line_bg_color, text_color)
+					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+					ctx.reset_colors()
+				} else {
+					ctx.set_colors(theme.background_color, text_color)
+					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+					ctx.reset_colors()
+				}
+				char_width = 1
 			}
 
-			if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
+			// Special case: cursor at end of line
+			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
+				// find last column in this line (or 0 if empty)
+				last_x := if line.len > 0 {
+					buf.visual_col[y_index][line.len - 1] + 1
+				} else {
+					0
+				}
+				last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
+				cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
+				cursor_y := i + last_wraps + wrap_offset + buffer_gap
+				if cursor_y > view.height - buffer_gap {
+					break render_lines
+				}
+
 				view.visual_wraps = wrap_offset
 				ctx.set_colors(cursor_bg_color, cursor_fg_color)
-				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
-				ctx.reset_colors()
-			} else if y_index == buf.logical_cursor.y {
-				ctx.set_colors(theme.active_line_bg_color, text_color)
-				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
-				ctx.reset_colors()
-			} else {
-				ctx.set_colors(theme.background_color, text_color)
-				ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
+				ctx.draw_text(cursor_x + 1, cursor_y + 1, ' ') // or just draw a block cursor
 				ctx.reset_colors()
 			}
-			char_width = 1
-		}
 
-		// Special case: cursor at end of line
-		if buf.logical_cursor.y == y_index && buf.logical_cursor.x == runes.len {
-			// find last column in this line (or 0 if empty)
-			last_x := if runes.len > 0 { buf.visual_col[y_index][runes.len - 1] + 1 } else { 0 }
-			last_wraps := if runes.len > 0 { last_x / view.width } else { 0 }
-			cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
-			cursor_y := i + last_wraps + wrap_offset + buffer_gap
-			if cursor_y > view.height - buffer_gap {
-				break render_lines
+			wrap_offset += wraps
+		}
+	} else {
+		for i, line in buf.temp_data {
+			for j, ch in line.runes_iterator() {
+				ctx.draw_text(j + 1, i + 1, ch.str())
 			}
-
-			view.visual_wraps = wrap_offset
-			ctx.set_colors(cursor_bg_color, cursor_fg_color)
-			ctx.draw_text(cursor_x + 1, cursor_y + 1, ' ') // or just draw a block cursor
-			ctx.reset_colors()
 		}
-
-		wrap_offset += wraps
 	}
 
 	// debugging

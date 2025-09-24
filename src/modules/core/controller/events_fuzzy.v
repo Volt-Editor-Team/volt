@@ -12,18 +12,17 @@ pub fn handle_fuzzy_mode_event(x voidptr, mod Modifier, event EventType, key Key
 						.j, .down {}
 						.k, .up {}
 						.q {
-							saved_buf := app.swap_map[app.active_buffer]
-							// buf.label = saved_buf.label
-							buf.name = saved_buf.name
-							buf.path = saved_buf.path
-							buf.p_mode = saved_buf.p_mode
+							// restore settings
+							buf.p_mode = buf.temp_mode
 							buf.mode = buf.p_mode
-							buf.lines = saved_buf.lines
-							buf.logical_cursor = saved_buf.logical_cursor
-							buf.visual_cursor = saved_buf.visual_cursor
-							buf.saved_cursor = saved_buf.saved_cursor
-							buf.row_offset = saved_buf.row_offset
-							buf.update_all_line_cache()
+							buf.logical_cursor = buf.temp_cursor
+							buf.update_visual_cursor(app.viewport.width)
+							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+								app.viewport.margin)
+
+							// delete temp stuff
+							buf.temp_label = ''
+							buf.temp_data.clear()
 						}
 						else {}
 					}

@@ -16,7 +16,7 @@ pub mut:
 	cmd_buffer CommandBuffer
 	viewport   Viewport
 	theme      ColorScheme
-	stats      shared []string
+	stats      []string
 	// tracking for single buffer
 	has_directory_buffer bool
 	has_stats_opened     bool
@@ -74,13 +74,13 @@ pub fn App.new(file_path string, width int, height int) &App {
 }
 
 pub fn (mut app App) get_doctor_info() {
-	lock app.stats {
+	lock {
 		v_doctor := os.execute('v doctor')
 		stats := v_doctor.output.split_into_lines()
 		app.stats = stats
 	}
 }
 
-pub fn (mut app App) get_stats() shared []string {
+pub fn (mut app App) get_stats() []string {
 	return app.stats
 }

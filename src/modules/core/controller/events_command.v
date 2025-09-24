@@ -88,11 +88,21 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						}
 					}
 					'fuzzy' {
-						buf.mode = buf.p_mode
 						app.cmd_buffer.command = ''
-						buf.logical_cursor = buf.saved_cursor
+						buf.temp_label = ''
+						buf.temp_data = ['']
+						buf.temp_cursor = buf.logical_cursor
+						buf.temp_mode = buf.p_mode
+
+						buf.p_mode = .fuzzy
+						buf.mode = .fuzzy
+						buf.logical_cursor.x = 0
+						buf.logical_cursor.y = 0
+						buf.row_offset = 0
 						buf.update_visual_cursor(app.viewport.width)
-						app.swap_to_temp_fuzzy_buffer()
+
+						// buf.logical_cursor = buf.saved_cursor
+						app.swap_to_temp_fuzzy_buffer(mut buf)
 					}
 					else {}
 				}

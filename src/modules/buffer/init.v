@@ -18,6 +18,11 @@ pub mut:
 	visual_cursor  VisualCursor
 	saved_cursor   LogicalCursor
 	row_offset     int
+	// temp stuff
+	temp_label  string
+	temp_data   []string = ['']
+	temp_cursor LogicalCursor
+	temp_mode   Mode
 
 	// cache visual col indexes
 	visual_col [][]int
