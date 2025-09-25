@@ -86,3 +86,12 @@ pub fn is_dir(path string) bool {
 	}
 	return false
 }
+
+pub fn get_dir_or_parent_dir(base_path string) string {
+	mut path := base_path
+	if !is_dir(path) {
+		path = os.dir(path)
+	}
+
+	return path
+}

@@ -2,7 +2,7 @@ module buffer
 
 import cursor { LogicalCursor, VisualCursor }
 import fs { read_file }
-import util { Mode }
+import util { Mode, PersistantMode }
 
 pub struct Buffer {
 pub mut:
@@ -10,7 +10,7 @@ pub mut:
 	name   string
 	path   string = 'Scratch'
 	mode   Mode
-	p_mode Mode
+	p_mode PersistantMode
 
 	// lines contains all lines of the text buffer.
 	lines          []string = ['']
@@ -22,7 +22,8 @@ pub mut:
 	temp_label  string
 	temp_data   []string = ['']
 	temp_cursor LogicalCursor
-	temp_mode   Mode
+	temp_mode   PersistantMode
+	temp_path   string
 
 	// cache visual col indexes
 	visual_col [][]int
@@ -40,7 +41,7 @@ pub fn Buffer.new(b Buffer) Buffer {
 		tabsize:    b.tabsize
 		visual_col: [][]int{len: lines.len}
 		mode:       b.mode
-		p_mode:     b.mode
+		p_mode:     b.p_mode
 	}
 
 	buf.update_all_line_cache()

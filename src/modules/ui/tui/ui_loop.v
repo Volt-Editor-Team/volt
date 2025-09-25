@@ -18,8 +18,9 @@ fn ui_loop(x voidptr) {
 	mut app := controller.get_app(tui_app.core)
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	mut command_str := util.mode_str(buf.p_mode)
+	mut command_str := util.mode_str(buf.mode, buf.p_mode)
 	multiple_buffers := app.buffers.len > 1
+	buffer_gap := int(multiple_buffers)
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
 
@@ -53,7 +54,6 @@ fn ui_loop(x voidptr) {
 		// render loop
 		start_row := buf.row_offset // the line index of the buffer to start rendering at
 		end_row := math.min(buf.lines.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
-		mut buffer_gap := int(multiple_buffers)
 		mut wrap_offset := 0
 		mut wraps := 0
 		render_lines: for i, line in buf.lines[start_row..end_row] {
@@ -185,10 +185,38 @@ fn ui_loop(x voidptr) {
 			wrap_offset += wraps
 		}
 	} else {
-		for i, line in buf.temp_data {
-			for j, ch in line.runes_iterator() {
-				ctx.draw_text(j + 1, i + 1, ch.str())
+		start_row := buf.row_offset // the line index of the buffer to start rendering at
+		end_row := math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+		// draw for fuzzy
+		start := 1 + buffer_gap
+		input_string := '> ${buf.temp_label}'
+		ctx.set_bg_color(theme.background_color)
+		ctx.draw_text(1, start, input_string)
+		if buf.mode == .insert {
+			// the cursor is a lie but it looks good
+			ctx.set_bg_color(theme.insert_cursor_color)
+			ctx.draw_text(input_string.len + 1, start, ' ')
+			if buf.temp_data.len > 0 {
+				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.draw_line(0, 1 + start, width - 1, 1 + start)
+				ctx.draw_text(0, 1 + start, buf.temp_data[0])
 			}
+			ctx.set_bg_color(theme.background_color)
+		}
+		for i, line in buf.temp_data[start_row..end_row] {
+			if buf.mode == .normal && i == buf.logical_cursor.y {
+				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.draw_line(0, i + 1 + start, width - 1, i + 1 + start)
+			}
+			for j, ch in line.runes_iterator() {
+				if buf.mode == .insert && i == 0 {
+					ctx.set_bg_color(theme.active_line_bg_color)
+					ctx.draw_text(j + 1, i + 1 + start, ch.str())
+				} else {
+					ctx.draw_text(j + 1, i + 1 + start, ch.str())
+				}
+			}
+			ctx.set_bg_color(theme.background_color)
 		}
 	}
 
@@ -205,7 +233,7 @@ fn ui_loop(x voidptr) {
 
 	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' + (view.row_offset +
 	// 	view.height - view.margin).str())
-	// ctx.draw_text(width - 30, height - 2, 'lower limit: ' + (view.row_offset + view.margin).str())
+	// ctx.draw_text(width - 30, height - 2, '[' + buf.temp_label + ']')
 
 	mut command_bar_y_pos := height
 
@@ -215,7 +243,7 @@ fn ui_loop(x voidptr) {
 		ctx.set_bg_color(theme.command_bar_color)
 		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
 
-		ctx.set_bg_color(util.get_command_bg_color(buf.mode))
+		ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
 		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
 
@@ -258,7 +286,7 @@ fn ui_loop(x voidptr) {
 		ctx.set_bg_color(theme.command_bar_color)
 		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
 
-		ctx.set_bg_color(util.get_command_bg_color(buf.mode))
+		ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
 		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
 

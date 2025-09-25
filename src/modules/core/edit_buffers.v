@@ -3,8 +3,6 @@ module core
 import buffer { Buffer }
 import util
 import fs { get_working_dir_paths }
-import os
-import time
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
 	app.buffers << Buffer.new(
@@ -12,7 +10,8 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		path:    b.path
 		lines:   b.lines
 		tabsize: default_tabsize
-		mode:    b.mode
+		mode:    .normal
+		p_mode:  b.p_mode
 	)
 	app.change_active_buffer(app.buffers.len - 1)
 }
@@ -24,10 +23,10 @@ pub fn (mut app App) change_active_buffer(idx int) {
 pub fn (mut app App) add_directory_buffer() {
 	parent_dir, lines := get_working_dir_paths()
 	app.add_new_buffer(
-		name:  'DIRECTORY'
-		path:  parent_dir
-		lines: lines
-		mode:  util.Mode.directory
+		name:   'DIRECTORY'
+		path:   parent_dir
+		lines:  lines
+		p_mode: util.PersistantMode.directory
 	)
 }
 
@@ -37,7 +36,7 @@ pub fn (mut app App) add_stats_buffer() {
 		name:  'DOCTOR'
 		path:  'V DOCTOR OUTPUT'
 		lines: lines
-		mode:  util.Mode.normal
+		mode:  .normal
 	)
 }
 
@@ -52,20 +51,20 @@ pub fn (mut app App) close_buffer() {
 	}
 }
 
-pub fn (mut app App) swap_to_temp_fuzzy_buffer(mut buf Buffer) {
-	mut path := buf.path
-	if !fs.is_dir(path) {
-		path = os.dir(path)
-	}
+// pub fn (mut app App) swap_to_temp_fuzzy_buffer(mut buf Buffer) {
+// 	mut path := buf.path
+// 	if !fs.is_dir(path) {
+// 		path = os.dir(path)
+// 	}
 
-	go app.async_fill(mut buf)
-}
+// 	go app.async_fill(mut buf)
+// }
 
-pub fn (mut app App) async_fill(mut buf Buffer) {
-	for i in 0 .. 12 {
-		lock {
-			buf.temp_data << 'fuzzy ${i}'
-		}
-		time.sleep(50 * time.millisecond)
-	}
-}
+// pub fn (mut app App) async_fill(mut buf Buffer) {
+// 	for i in 0 .. 12 {
+// 		lock {
+// 			buf.temp_data << 'fuzzy ${i}'
+// 		}
+// 		time.sleep(50 * time.millisecond)
+// 	}
+// }

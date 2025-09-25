@@ -11,31 +11,51 @@ const secondary_class_modes = {
 	Mode.command: true
 }
 
-pub enum Mode {
-	insert
-	normal
-	command
+pub enum PersistantMode {
+	default
 	directory
 	fuzzy
 }
 
-pub fn mode_str(m Mode) string {
+pub enum Mode {
+	insert
+	normal
+	command
+}
+
+pub fn mode_str(m Mode, pm PersistantMode) string {
 	return match m {
-		.insert { 'INSERT' }
-		.normal { 'NORMAL' }
-		.command { 'COMMAND' }
-		.directory { 'DIRECTORY' }
-		.fuzzy { 'FUZZY' }
+		.insert {
+			'INSERT'
+		}
+		.normal {
+			match pm {
+				.directory { 'DIRECTORY' }
+				.fuzzy { 'FUZZY' }
+				else { 'NORMAL' }
+			}
+		}
+		.command {
+			'COMMAND'
+		}
 	}
 }
 
-pub fn get_command_bg_color(m Mode) tui.Color {
+pub fn get_command_bg_color(m Mode, pm PersistantMode) tui.Color {
 	return match m {
-		.normal { colors.neutral_grey }
-		.insert { colors.teal }
-		.command { colors.amber }
-		.directory { colors.neutral_grey }
-		.fuzzy { colors.neutral_grey }
+		.normal {
+			match pm {
+				.directory { colors.neutral_grey }
+				.fuzzy { colors.neutral_grey }
+				else { colors.neutral_grey }
+			}
+		}
+		.insert {
+			colors.teal
+		}
+		.command {
+			colors.amber
+		}
 	}
 }
 

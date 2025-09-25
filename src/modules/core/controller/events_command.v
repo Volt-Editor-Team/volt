@@ -2,16 +2,33 @@ module controller
 
 import time
 import fs { read_file, write_file }
+import util.fuzzy
+import os
 
-pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
+pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
 
 	if event == .key_down {
 		cmd_str := app.cmd_buffer.command
+		if buf.p_mode == .fuzzy && mod == .ctrl && key == .q {
+			app.stop_flag = true
+			// restore settings
+			buf.path = buf.temp_path
+			buf.p_mode = buf.temp_mode
+			buf.mode = .normal
+			buf.logical_cursor = buf.temp_cursor
+			buf.update_visual_cursor(app.viewport.width)
+			buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
+
+			// delete temp stuff
+			buf.temp_label = ''
+			buf.temp_data.clear()
+			app.stop_flag = false
+		}
 		match key {
 			.escape {
-				buf.mode = buf.p_mode
+				buf.mode = .normal
 				app.cmd_buffer.command = ''
 				buf.logical_cursor = buf.saved_cursor
 				buf.update_visual_cursor(app.viewport.width)
@@ -23,21 +40,26 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						exit(0)
 					}
 					'w', 'write' {
-						result, message := write_file(buf.path, buf.lines)
-						if result {
-							// do something
-							_ := message
-						} else {
-							buf.lines = read_file(buf.path) or { [''] }
-							// buf.update_all_line_cache()
+						match buf.p_mode {
+							.directory {}
+							else {
+								result, message := write_file(buf.path, buf.lines)
+								if result {
+									// do something
+									_ := message
+								} else {
+									buf.lines = read_file(buf.path) or { [''] }
+									// buf.update_all_line_cache()
+								}
+								app.cmd_buffer.command = ''
+								buf.mode = .normal
+								buf.logical_cursor = buf.saved_cursor
+								buf.update_visual_cursor(app.viewport.width)
+							}
 						}
-						app.cmd_buffer.command = ''
-						buf.mode = buf.p_mode
-						buf.logical_cursor = buf.saved_cursor
-						buf.update_visual_cursor(app.viewport.width)
 					}
 					'cd' {
-						buf.mode = buf.p_mode
+						buf.mode = .normal
 						app.cmd_buffer.command = ''
 
 						if app.has_directory_buffer {
@@ -63,7 +85,7 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 						app.close_buffer()
 					}
 					'doctor' {
-						buf.mode = buf.p_mode
+						buf.mode = .normal
 						app.cmd_buffer.command = ''
 						buf.logical_cursor = buf.saved_cursor
 						buf.update_visual_cursor(app.viewport.width)
@@ -89,20 +111,34 @@ pub fn handle_command_mode_event(x voidptr, event EventType, key KeyCode) {
 					}
 					'fuzzy' {
 						app.cmd_buffer.command = ''
-						buf.temp_label = ''
-						buf.temp_data = ['']
+						buf.temp_path = buf.path
 						buf.temp_cursor = buf.logical_cursor
 						buf.temp_mode = buf.p_mode
 
+						buf.path = os.getwd()
 						buf.p_mode = .fuzzy
-						buf.mode = .fuzzy
+						buf.mode = .insert
+
 						buf.logical_cursor.x = 0
 						buf.logical_cursor.y = 0
 						buf.row_offset = 0
 						buf.update_visual_cursor(app.viewport.width)
 
-						// buf.logical_cursor = buf.saved_cursor
-						app.swap_to_temp_fuzzy_buffer(mut buf)
+						app.stop_flag = true
+						app.stop_flag = false
+						go os.walk(buf.path, fn [mut buf] (file string) {
+							if buf.p_mode == .fuzzy {
+								if file.contains(os.path_separator + '.git' + os.path_separator) {
+									return
+								}
+								if os.is_file(file) {
+									lock {
+										buf.temp_data << file[buf.path.len + 1..]
+									}
+								}
+							}
+						})
+						fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut &app.stop_flag)
 					}
 					else {}
 				}
