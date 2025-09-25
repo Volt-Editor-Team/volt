@@ -160,7 +160,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.q {
-					app.stop_flag = true
 					// restore settings
 					buf.path = buf.temp_path
 					buf.p_mode = buf.temp_mode
@@ -173,7 +172,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					// delete temp stuff
 					buf.temp_label = ''
 					buf.temp_data.clear()
-					app.stop_flag = false
 				}
 				else {}
 			}

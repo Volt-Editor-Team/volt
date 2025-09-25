@@ -8,22 +8,25 @@ struct FuzzyResult {
 	highlights []f64 // for highlighting matched characters
 }
 
-pub fn fuzzyfind(query string, mut lines []string, mut stop_flag &bool) {
-	if *stop_flag {
+pub fn fuzzyfind(query string, mut lines []string, check_sf fn () bool) {
+	if check_sf() {
 		return
 	}
-
 	// Preallocate the result array
 	mut result := []FuzzyResult{len: lines.len}
 
 	// Fill the array
 	for i, entry in lines {
-		if *stop_flag {
+		if check_sf() {
 			return
 		}
 		result[i] = FuzzyResult{
 			text:  entry
-			score: strings.levenshtein_distance_percentage(query.to_lower(), entry.to_lower())
+			score: if lines.len > 2000 {
+				strings.jaro_winkler_similarity(query.to_lower(), entry.to_lower())
+			} else {
+				strings.levenshtein_distance_percentage(query.to_lower(), entry.to_lower())
+			}
 		}
 	}
 	// Sort after filling

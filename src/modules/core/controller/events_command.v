@@ -12,7 +12,6 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 	if event == .key_down {
 		cmd_str := app.cmd_buffer.command
 		if buf.p_mode == .fuzzy && mod == .ctrl && key == .q {
-			app.stop_flag = true
 			// restore settings
 			buf.path = buf.temp_path
 			buf.p_mode = buf.temp_mode
@@ -24,7 +23,6 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			// delete temp stuff
 			buf.temp_label = ''
 			buf.temp_data.clear()
-			app.stop_flag = false
 		}
 		match key {
 			.escape {
@@ -124,21 +122,53 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						buf.row_offset = 0
 						buf.update_visual_cursor(app.viewport.width)
 
-						app.stop_flag = true
-						app.stop_flag = false
-						go os.walk(buf.path, fn [mut buf] (file string) {
-							if buf.p_mode == .fuzzy {
-								if file.contains(os.path_separator + '.git' + os.path_separator) {
-									return
-								}
-								if os.is_file(file) {
-									lock {
-										buf.temp_data << file[buf.path.len + 1..]
+						// walk path
+						go fn [buf] () {
+							walk_path := fs.get_dir_or_parent_dir(buf.path)
+							os.walk(walk_path, fn [buf] (file string) {
+								if buf.p_mode == .fuzzy {
+									if file.contains(os.path_separator + '.git' + os.path_separator) {
+										return
+									}
+									if os.is_file(file) {
+										buf.file_ch <- file[buf.path.len + 1..]
 									}
 								}
+							})
+						}()
+
+						// worker thread
+						go fn [mut buf] () {
+							mut last_query := ''
+							for {
+								if buf.p_mode != .fuzzy {
+									time.sleep(100 * time.millisecond)
+									continue
+								}
+
+								// non-blocking channel receive with timeout
+								select {
+									file := <-buf.file_ch {
+										buf.temp_data << file
+									}
+									else {
+										// no file available, continue
+									}
+								}
+								if buf.temp_label != last_query {
+									lock buf.stop_flag {
+										buf.stop_flag.flag = true
+									}
+									lock buf.stop_flag {
+										buf.stop_flag.flag = false
+									}
+									last_query = buf.temp_label
+									fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data,
+										unsafe { buf.check_stop_flag })
+								}
+								// time.sleep(1 * time.millisecond)
 							}
-						})
-						fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut &app.stop_flag)
+						}()
 					}
 					else {}
 				}

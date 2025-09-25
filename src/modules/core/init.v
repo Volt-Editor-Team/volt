@@ -17,7 +17,6 @@ pub mut:
 	viewport   Viewport
 	theme      ColorScheme
 	stats      []string
-	stop_flag  bool
 	// tracking for single buffer
 	has_directory_buffer bool
 	has_stats_opened     bool

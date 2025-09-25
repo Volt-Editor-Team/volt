@@ -192,6 +192,8 @@ fn ui_loop(x voidptr) {
 		input_string := '> ${buf.temp_label}'
 		ctx.set_bg_color(theme.background_color)
 		ctx.draw_text(1, start, input_string)
+		file_count_text := '( walked: ${buf.temp_data.len} )'
+		ctx.draw_text(width - file_count_text.len - 2, start, file_count_text)
 		if buf.mode == .insert {
 			// the cursor is a lie but it looks good
 			ctx.set_bg_color(theme.insert_cursor_color)
@@ -233,7 +235,7 @@ fn ui_loop(x voidptr) {
 
 	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' + (view.row_offset +
 	// 	view.height - view.margin).str())
-	// ctx.draw_text(width - 30, height - 2, '[' + buf.temp_label + ']')
+	// ctx.draw_text(width - 30, height - 2, '[' + buf.temp_label.str() + ']')
 
 	mut command_bar_y_pos := height
 

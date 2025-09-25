@@ -1,7 +1,5 @@
 module controller
 
-import util.fuzzy
-
 pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
@@ -62,21 +60,13 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					else {
 						match key {
 							.backspace {
-								app.stop_flag = true
 								if buf.temp_label.len > 0 {
 									buf.temp_label = buf.temp_label[..buf.temp_label.len - 1]
-									app.stop_flag = false
-									fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut
-										&app.stop_flag)
 								}
 							}
 							else {
 								if is_printable_key(key) {
-									app.stop_flag = true
 									buf.temp_label += key.str()
-									app.stop_flag = false
-									fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut
-										&app.stop_flag)
 								}
 							}
 						}

@@ -3,6 +3,11 @@ module util
 import colors
 import term.ui as tui
 
+pub struct StopFlag {
+pub mut:
+	flag bool
+}
+
 pub enum BufferFlag {
 	directory
 }
