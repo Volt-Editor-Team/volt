@@ -20,7 +20,7 @@ pub mut:
 	row_offset     int
 	// temp stuff
 	temp_label  string
-	temp_data   []string = ['']
+	temp_data   []string = []
 	temp_cursor LogicalCursor
 	temp_mode   PersistantMode
 	temp_path   string

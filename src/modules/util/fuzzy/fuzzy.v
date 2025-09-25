@@ -23,10 +23,9 @@ pub fn fuzzyfind(query string, mut lines []string, mut stop_flag &bool) {
 		}
 		result[i] = FuzzyResult{
 			text:  entry
-			score: strings.jaro_winkler_similarity(query.to_lower(), entry.to_lower())
+			score: strings.levenshtein_distance_percentage(query.to_lower(), entry.to_lower())
 		}
 	}
-
 	// Sort after filling
 	// result = result.filter(it.score >= 0)
 	result.sort(a.score > b.score)
