@@ -2,8 +2,6 @@ module controller
 
 import time
 import fs { read_file, write_file }
-import util.fuzzy
-import os
 
 pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -109,66 +107,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					}
 					'fuzzy' {
 						app.cmd_buffer.command = ''
-						buf.temp_path = buf.path
-						buf.temp_cursor = buf.logical_cursor
-						buf.temp_mode = buf.p_mode
-
-						buf.path = os.getwd()
-						buf.p_mode = .fuzzy
-						buf.mode = .insert
-
-						buf.logical_cursor.x = 0
-						buf.logical_cursor.y = 0
-						buf.row_offset = 0
-						buf.update_visual_cursor(app.viewport.width)
-
-						// walk path
-						go fn [buf] () {
-							walk_path := fs.get_dir_or_parent_dir(buf.path)
-							os.walk(walk_path, fn [buf] (file string) {
-								if buf.p_mode == .fuzzy {
-									if file.contains(os.path_separator + '.git' + os.path_separator) {
-										return
-									}
-									if os.is_file(file) {
-										buf.file_ch <- file[buf.path.len + 1..]
-									}
-								}
-							})
-						}()
-
-						// worker thread
-						go fn [mut buf] () {
-							mut last_query := ''
-							for {
-								if buf.p_mode != .fuzzy {
-									time.sleep(100 * time.millisecond)
-									continue
-								}
-
-								// non-blocking channel receive with timeout
-								select {
-									file := <-buf.file_ch {
-										buf.temp_data << file
-									}
-									else {
-										// no file available, continue
-									}
-								}
-								if buf.temp_label != last_query {
-									lock buf.stop_flag {
-										buf.stop_flag.flag = true
-									}
-									lock buf.stop_flag {
-										buf.stop_flag.flag = false
-									}
-									last_query = buf.temp_label
-									fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data,
-										unsafe { buf.check_stop_flag })
-								}
-								// time.sleep(1 * time.millisecond)
-							}
-						}()
+						buf.open_fuzzy_find()
 					}
 					else {}
 				}

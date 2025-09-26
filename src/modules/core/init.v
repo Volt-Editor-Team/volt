@@ -1,7 +1,6 @@
 module core
 
 import buffer { Buffer, CommandBuffer }
-import util { Mode }
 import viewport { Viewport }
 import ui { ColorScheme }
 import os
@@ -22,7 +21,7 @@ pub mut:
 	has_stats_opened     bool
 }
 
-pub fn App.new(file_path string, width int, height int) &App {
+pub fn App.new(width int, height int) &App {
 	mut app := &App{}
 
 	app.working_dir = os.abs_path('.')
@@ -57,17 +56,11 @@ pub fn App.new(file_path string, width int, height int) &App {
 	}
 
 	mut buffers := []Buffer{}
-	buffers << Buffer.new(Buffer{
-		name:    os.file_name(file_path)
-		path:    file_path
-		tabsize: default_tabsize
-		mode:    Mode.normal
-	})
+	buffers << Buffer.new(Buffer{})
 	app.buffers = buffers
-
 	app.active_buffer = 0
 
-	// app.viewport.update_width()
+	app.viewport.update_width()
 
 	go app.get_doctor_info()
 	return app
