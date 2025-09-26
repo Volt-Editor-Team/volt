@@ -21,6 +21,7 @@ pub mut:
 	// temp stuff
 	temp_label  string
 	temp_data   []string = []
+	temp_int    int
 	temp_cursor LogicalCursor
 	temp_mode   PersistantMode
 	temp_path   string

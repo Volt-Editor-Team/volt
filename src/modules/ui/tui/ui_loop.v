@@ -192,7 +192,7 @@ fn ui_loop(x voidptr) {
 		input_string := '> ${buf.temp_label}'
 		ctx.set_bg_color(theme.background_color)
 		ctx.draw_text(1, start, input_string)
-		file_count_text := '( walked: ${buf.temp_data.len} )'
+		file_count_text := '( walked: ${buf.temp_data.len} / ${buf.temp_int} )'
 		ctx.draw_text(width - file_count_text.len - 2, start, file_count_text)
 		if buf.mode == .insert {
 			// the cursor is a lie but it looks good

@@ -161,6 +161,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.enter {
+					file := buf.temp_data[buf.logical_cursor.y]
+
 					buf.path = buf.temp_path
 					buf.p_mode = buf.temp_mode
 					buf.mode = .normal
@@ -169,7 +171,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						app.viewport.margin)
 
-					file := buf.temp_data[buf.logical_cursor.y]
+					// delete temp stuff
+					buf.temp_label = ''
+					buf.temp_data.clear()
+
 					app.add_new_buffer(
 						name:    os.file_name(file)
 						path:    file
@@ -177,9 +182,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						mode:    .normal
 						p_mode:  .default
 					)
-					// delete temp stuff
-					buf.temp_label = ''
-					buf.temp_data.clear()
 				}
 				else {}
 			}
@@ -199,6 +201,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// delete temp stuff
 							buf.temp_label = ''
 							buf.temp_data.clear()
+							buf.file_ch.close()
 						}
 						else {}
 					}

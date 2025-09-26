@@ -78,6 +78,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								// delete temp stuff
 								buf.temp_label = ''
 								buf.temp_data.clear()
+								buf.file_ch.close()
 							}
 							else {}
 						}
@@ -93,7 +94,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 
-								file := buf.temp_data[buf.logical_cursor.y]
+								file := buf.temp_data[0]
 								app.add_new_buffer(
 									name:    os.file_name(file)
 									path:    file

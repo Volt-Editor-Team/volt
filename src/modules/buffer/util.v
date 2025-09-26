@@ -129,16 +129,16 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 	// buf.update_visual_cursor(app.viewport.width)
 
 	// walk path
-	go fn [buf] () {
+	buf.file_ch = chan string{cap: 1000}
+	go fn [mut buf] () {
 		walk_path := fs.get_dir_or_parent_dir(buf.path)
-		os.walk(walk_path, fn [buf] (file string) {
+		os.walk(walk_path, fn [mut buf] (file string) {
 			if buf.p_mode == .fuzzy {
-				if file.contains(os.path_separator + '.git' + os.path_separator) {
-					return
-				}
-				if os.is_file(file) {
+				if os.is_file(file) && !fuzzy.is_ignored(file) {
 					buf.file_ch <- file[buf.path.len + 1..]
 				}
+			} else {
+				buf.file_ch.close()
 			}
 		})
 	}()
@@ -146,6 +146,7 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 	// worker thread
 	go fn [mut buf] () {
 		mut last_query := ''
+		mut master_list := []string{}
 		for {
 			if buf.p_mode != .fuzzy {
 				time.sleep(100 * time.millisecond)
@@ -153,23 +154,29 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 			}
 
 			// non-blocking channel receive with timeout
-			select {
-				file := <-buf.file_ch {
-					buf.temp_data << file
-				}
-				else {
-					// no file available, continue
+			for {
+				select {
+					file := <-buf.file_ch {
+						lock {
+							master_list << file
+							buf.temp_int = master_list.len
+						}
+					}
+					else {
+						// no file available, continue
+						break
+					}
 				}
 			}
-			if buf.temp_label != last_query {
+			if buf.temp_label != last_query || buf.temp_label.len == 0 {
+				last_query = buf.temp_label
 				lock buf.stop_flag {
 					buf.stop_flag.flag = true
 				}
 				lock buf.stop_flag {
 					buf.stop_flag.flag = false
 				}
-				last_query = buf.temp_label
-				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, unsafe { buf.check_stop_flag })
+				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut master_list, unsafe { buf.check_stop_flag })
 			}
 			// time.sleep(1 * time.millisecond)
 		}

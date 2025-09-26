@@ -1,6 +1,32 @@
 module fuzzy
 
 import strings
+import util
+import os
+
+// List of directory or file patterns to ignore
+const ignore_patterns = [
+	'.git', // git metadata
+	'node_modules', // node modules
+	'.DS_Store', // macOS metadata
+	'target', // typical Rust build dir
+	'.cache', // cache dirs
+	'.vscode', // editor config
+	'.idea', // JetBrains project files
+	'.tmp', // temp files
+]
+
+// Check if a file path matches any ignore pattern
+pub fn is_ignored(file string) bool {
+	for pattern in ignore_patterns {
+		// Match folder or file anywhere in path
+		if file.contains(os.path_separator + pattern + os.path_separator)
+			|| file.ends_with(os.path_separator + pattern) || file.ends_with(pattern) {
+			return true
+		}
+	}
+	return false
+}
 
 struct FuzzyResult {
 	text       string
@@ -8,30 +34,43 @@ struct FuzzyResult {
 	highlights []f64 // for highlighting matched characters
 }
 
-pub fn fuzzyfind(query string, mut lines []string, check_sf fn () bool) {
+fn compare_fuzzy_result(a FuzzyResult, b FuzzyResult) int {
+	if a.score < b.score {
+		return -1
+	} else if a.score > b.score {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+pub fn fuzzyfind(query string, mut lines []string, mut master_list []string, check_sf fn () bool) {
 	if check_sf() {
 		return
 	}
 	// Preallocate the result array
-	mut result := []FuzzyResult{len: lines.len}
+	mut result := []FuzzyResult{cap: master_list.len}
 
 	// Fill the array
-	for i, entry in lines {
+	for entry in master_list {
 		if check_sf() {
 			return
 		}
-		result[i] = FuzzyResult{
-			text:  entry
-			score: if lines.len > 2000 {
-				strings.jaro_winkler_similarity(query.to_lower(), entry.to_lower())
-			} else {
-				strings.levenshtein_distance_percentage(query.to_lower(), entry.to_lower())
+		q := query.to_lower()
+		e := entry.to_lower()
+		if util.is_subsequence(q, e) {
+			fzf_entry := FuzzyResult{
+				text:  entry
+				score: if master_list.len > 2000 {
+					strings.jaro_winkler_similarity(q, e)
+				} else {
+					strings.levenshtein_distance_percentage(q, e)
+				}
 			}
+			// Sort using binary search
+			util.binary_insert(mut result, fzf_entry, compare_fuzzy_result)
 		}
 	}
-	// Sort after filling
-	// result = result.filter(it.score >= 0)
-	result.sort(a.score > b.score)
 
 	// Fill lines safely inside the lock
 	lock {
