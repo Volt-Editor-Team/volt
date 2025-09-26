@@ -256,7 +256,14 @@ fn ui_loop(x voidptr) {
 		} else {
 			ctx.set_color(colors.white)
 		}
-		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, buf.path)
+
+		mut path_to_draw := buf.path
+		if path_to_draw.len > width - 30 {
+			buf_split := buf.path.split(os.path_separator)
+			path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
+				buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
+		}
+		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 		ctx.reset_color()
 		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
 			(buf.logical_cursor.y + 1).str())
@@ -299,7 +306,13 @@ fn ui_loop(x voidptr) {
 		} else {
 			ctx.set_color(colors.white)
 		}
-		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, buf.path)
+		mut path_to_draw := buf.path
+		if path_to_draw.len > width - 30 {
+			buf_split := buf.path.split(os.path_separator)
+			path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
+				buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
+		}
+		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 		ctx.reset_color()
 		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
 			(buf.logical_cursor.y + 1).str())

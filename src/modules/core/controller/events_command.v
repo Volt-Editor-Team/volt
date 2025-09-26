@@ -68,7 +68,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						} else {
 							app.add_directory_buffer()
-							buf.update_visual_cursor(app.viewport.width)
+							// buf.update_visual_cursor(app.viewport.width)
 							app.has_directory_buffer = true
 						}
 					}

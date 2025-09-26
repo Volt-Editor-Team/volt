@@ -5,7 +5,8 @@ import util
 import fs { get_working_dir_paths }
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
-	app.buffers << Buffer.new(
+	new_buf := Buffer.new(
+		label:   b.label
 		name:    b.name
 		path:    b.path
 		lines:   b.lines
@@ -13,7 +14,12 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		mode:    .normal
 		p_mode:  b.p_mode
 	)
-	app.change_active_buffer(app.buffers.len - 1)
+	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
+		app.buffers[0] = new_buf
+	} else {
+		app.buffers << new_buf
+		app.change_active_buffer(app.buffers.len - 1)
+	}
 }
 
 pub fn (mut app App) change_active_buffer(idx int) {
