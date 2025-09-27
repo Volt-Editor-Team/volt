@@ -5,6 +5,7 @@ import fs { read_file }
 import util { Mode, PersistantMode }
 
 pub struct Buffer {
+	TempData
 pub mut:
 	label  string         = 'Scratch'
 	name   string         = 'Scratch'
@@ -19,19 +20,23 @@ pub mut:
 	saved_cursor   LogicalCursor
 	row_offset     int
 	// temp stuff
+	file_ch   chan string
+	stop_flag shared util.StopFlag
+
+	// cache visual col indexes
+	visual_col [][]int
+pub:
+	tabsize int
+}
+
+pub struct TempData {
+pub mut:
 	temp_label  string
 	temp_data   []string = []
 	temp_int    int
 	temp_cursor LogicalCursor
 	temp_mode   PersistantMode
 	temp_path   string
-	file_ch     chan string
-	stop_flag   shared util.StopFlag
-
-	// cache visual col indexes
-	visual_col [][]int
-pub:
-	tabsize int
 }
 
 pub fn (mut buf Buffer) check_stop_flag() bool {
