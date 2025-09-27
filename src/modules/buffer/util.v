@@ -2,7 +2,6 @@ module buffer
 
 import math
 import os
-import time
 import util.fuzzy
 import fs
 
@@ -143,6 +142,7 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 				}
 			} else {
 				buf.file_ch.close()
+				return
 			}
 		})
 	}()
@@ -153,8 +153,7 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 		mut master_list := []string{}
 		for {
 			if buf.p_mode != .fuzzy {
-				time.sleep(100 * time.millisecond)
-				continue
+				return
 			}
 
 			// non-blocking channel receive with timeout
@@ -174,13 +173,7 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 			}
 			if buf.temp_label != last_query || buf.temp_label.len == 0 {
 				last_query = buf.temp_label
-				lock buf.stop_flag {
-					buf.stop_flag.flag = true
-				}
-				lock buf.stop_flag {
-					buf.stop_flag.flag = false
-				}
-				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut master_list, unsafe { buf.check_stop_flag })
+				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut master_list)
 			}
 			// time.sleep(1 * time.millisecond)
 		}

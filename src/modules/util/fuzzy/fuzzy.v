@@ -44,18 +44,12 @@ fn compare_fuzzy_result(a FuzzyResult, b FuzzyResult) int {
 	}
 }
 
-pub fn fuzzyfind(query string, mut lines []string, mut master_list []string, check_sf fn () bool) {
-	if check_sf() {
-		return
-	}
+pub fn fuzzyfind(query string, mut lines []string, mut master_list []string) {
 	// Preallocate the result array
 	mut result := []FuzzyResult{cap: master_list.len}
 
 	// Fill the array
 	for entry in master_list {
-		if check_sf() {
-			return
-		}
 		q := query.to_lower()
 		e := entry.to_lower()
 		if util.is_subsequence(q, e) {

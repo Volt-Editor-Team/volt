@@ -21,8 +21,7 @@ pub mut:
 	row_offset     int
 
 	// temp stuff
-	file_ch   chan string
-	stop_flag shared util.StopFlag
+	file_ch chan string
 
 	// cache visual col indexes
 	visual_col [][]int
@@ -38,12 +37,6 @@ pub mut:
 	temp_cursor LogicalCursor
 	temp_mode   PersistantMode
 	temp_path   string
-}
-
-pub fn (mut buf Buffer) check_stop_flag() bool {
-	rlock buf.stop_flag {
-		return buf.stop_flag.flag
-	}
 }
 
 pub fn Buffer.new(b Buffer) Buffer {
