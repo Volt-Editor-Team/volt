@@ -72,6 +72,7 @@ pub fn (mut app App) get_doctor_info() {
 		stats := v_doctor.output.split_into_lines()
 		app.stats = stats
 	}
+	return
 }
 
 pub fn (mut app App) get_stats() []string {
