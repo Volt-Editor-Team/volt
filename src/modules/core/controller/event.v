@@ -23,6 +23,9 @@ pub fn event_loop(input UserInput, x voidptr) {
 		.command {
 			handle_command_mode_event(x, input.mod, input.e, input.code)
 		}
+		.menu {
+			handle_menu_mode_event(x, input.mod, input.e, input.code)
+		}
 		// .directory {
 		// 	match input.code {
 		// 		.k, .up, .j, .down, .h, .left, .l, .right, .colon, .i {

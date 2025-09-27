@@ -115,6 +115,10 @@ pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) 
 }
 
 pub fn (mut buf Buffer) open_fuzzy_find() {
+	// if fuzzy is already running, return
+	if buf.p_mode == .fuzzy {
+		return
+	}
 	buf.temp_path = buf.path
 	buf.temp_cursor = buf.logical_cursor
 	buf.temp_mode = buf.p_mode

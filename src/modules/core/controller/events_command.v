@@ -105,7 +105,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							app.has_stats_opened = true
 						}
 					}
-					'fuzzy' {
+					'fzf' {
 						app.cmd_buffer.command = ''
 						buf.open_fuzzy_find()
 					}

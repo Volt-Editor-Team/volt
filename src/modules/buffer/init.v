@@ -19,6 +19,7 @@ pub mut:
 	visual_cursor  VisualCursor
 	saved_cursor   LogicalCursor
 	row_offset     int
+
 	// temp stuff
 	file_ch   chan string
 	stop_flag shared util.StopFlag

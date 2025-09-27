@@ -26,6 +26,7 @@ pub enum Mode {
 	insert
 	normal
 	command
+	menu
 }
 
 pub fn mode_str(m Mode, pm PersistantMode) string {
@@ -43,12 +44,19 @@ pub fn mode_str(m Mode, pm PersistantMode) string {
 		.command {
 			'COMMAND'
 		}
+		.menu {
+			match pm {
+				.directory { 'DIRECTORY' }
+				.fuzzy { 'FUZZY' }
+				else { 'MENU' }
+			}
+		}
 	}
 }
 
 pub fn get_command_bg_color(m Mode, pm PersistantMode) tui.Color {
 	return match m {
-		.normal {
+		.normal, .menu {
 			match pm {
 				.directory { colors.neutral_grey }
 				.fuzzy { colors.neutral_grey }

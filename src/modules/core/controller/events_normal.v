@@ -42,6 +42,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	if buf.p_mode == .default || buf.p_mode == .directory {
 		if event == .key_down {
 			match key {
+				.space {
+					buf.mode = .menu
+				}
 				.l, .right {
 					buf.logical_cursor.move_right_buffer(buf.lines)
 					buf.update_visual_cursor(app.viewport.width)
