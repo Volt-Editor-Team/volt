@@ -28,4 +28,4 @@ v run main.v
 
 ## Lightweight
 
-Compiles to just 529 KB, making it fast, efficient, and portable.
+Compiles to just 544 KB, making it fast, efficient, and portable.
