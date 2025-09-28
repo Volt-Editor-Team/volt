@@ -54,6 +54,11 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						}
 					}
+					'help' {
+						buf.mode = .normal
+						app.cmd_buffer.command = ''
+						app.add_help_buffer()
+					}
 					'cd' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''

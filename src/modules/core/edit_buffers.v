@@ -46,6 +46,16 @@ pub fn (mut app App) add_stats_buffer() {
 	)
 }
 
+pub fn (mut app App) add_help_buffer() {
+	help_path := $embed_file('./src/modules/docs/help.txt').to_string().split_into_lines()
+	app.add_new_buffer(
+		name:  'HELP'
+		path:  'HELP DOCUMENTATION'
+		lines: help_path
+		mode:  .normal
+	)
+}
+
 pub fn (mut app App) close_buffer() {
 	app.buffers.delete(app.active_buffer)
 
@@ -56,21 +66,3 @@ pub fn (mut app App) close_buffer() {
 		app.add_new_buffer(mode: util.Mode.normal)
 	}
 }
-
-// pub fn (mut app App) swap_to_temp_fuzzy_buffer(mut buf Buffer) {
-// 	mut path := buf.path
-// 	if !fs.is_dir(path) {
-// 		path = os.dir(path)
-// 	}
-
-// 	go app.async_fill(mut buf)
-// }
-
-// pub fn (mut app App) async_fill(mut buf Buffer) {
-// 	for i in 0 .. 12 {
-// 		lock {
-// 			buf.temp_data << 'fuzzy ${i}'
-// 		}
-// 		time.sleep(50 * time.millisecond)
-// 	}
-// }

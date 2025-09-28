@@ -1,0 +1,6 @@
+- [ ] Buffer flicker -- instead of redrawing entire screen, only redraw changes
+- [ ] directory buffer tree -- refactor directory buffer to enable tree view
+- [ ] syntax highlighting
+- [ ] keybindings
+- [ ] config file
+- [ ] documentation buffer

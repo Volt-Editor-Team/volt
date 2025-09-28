@@ -38,8 +38,12 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 					else {
 						if is_printable_key(key) {
+							mut ch := u8(key).ascii_str()
+							if mod == .shift {
+								ch = ch.to_upper()
+							}
 							buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y,
-								u8(key).ascii_str())
+								ch)
 
 							buf.logical_cursor.move_right_buffer(buf.lines)
 							buf.update_visual_cursor(app.viewport.width)

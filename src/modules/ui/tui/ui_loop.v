@@ -265,8 +265,8 @@ fn ui_loop(x voidptr) {
 		}
 		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 		ctx.reset_color()
-		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
-			(buf.logical_cursor.y + 1).str())
+		pos_string := (buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+		ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
 		ctx.reset_bg_color()
 
@@ -314,8 +314,8 @@ fn ui_loop(x voidptr) {
 		}
 		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 		ctx.reset_color()
-		ctx.draw_text(width - 5, command_bar_y_pos, (buf.logical_cursor.x + 1).str() + ':' +
-			(buf.logical_cursor.y + 1).str())
+		pos_string := (buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+		ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
 		ctx.reset_bg_color()
 	}
