@@ -90,25 +90,27 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					else {
 						match key {
 							.enter {
-								buf.path = buf.temp_path
-								buf.p_mode = buf.temp_mode
-								buf.mode = .normal
-								buf.logical_cursor = buf.temp_cursor
-								buf.update_visual_cursor(app.viewport.width)
-								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-									app.viewport.margin)
+								if buf.temp_data.len > 0 {
+									buf.path = buf.temp_path
+									buf.p_mode = buf.temp_mode
+									buf.mode = .normal
+									buf.logical_cursor = buf.temp_cursor
+									buf.update_visual_cursor(app.viewport.width)
+									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+										app.viewport.margin)
 
-								file := buf.temp_data[0]
-								app.add_new_buffer(
-									name:    os.file_name(file)
-									path:    file
-									tabsize: buf.tabsize
-									mode:    .normal
-									p_mode:  .default
-								)
-								// delete temp stuff
-								buf.temp_label = ''
-								buf.temp_data.clear()
+									file := buf.temp_data[0]
+									app.add_new_buffer(
+										name:    os.file_name(file)
+										path:    file
+										tabsize: buf.tabsize
+										mode:    .normal
+										p_mode:  .default
+									)
+									// delete temp stuff
+									buf.temp_label = ''
+									buf.temp_data.clear()
+								}
 							}
 							.backspace {
 								if buf.temp_label.len > 0 {

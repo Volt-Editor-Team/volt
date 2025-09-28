@@ -174,27 +174,29 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.enter {
-					file := buf.temp_data[buf.logical_cursor.y]
+					if buf.temp_data.len > 0 {
+						file := buf.temp_data[buf.logical_cursor.y]
 
-					buf.path = buf.temp_path
-					buf.p_mode = buf.temp_mode
-					buf.mode = .normal
-					buf.logical_cursor = buf.temp_cursor
-					buf.update_visual_cursor(app.viewport.width)
-					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-						app.viewport.margin)
+						buf.path = buf.temp_path
+						buf.p_mode = buf.temp_mode
+						buf.mode = .normal
+						buf.logical_cursor = buf.temp_cursor
+						buf.update_visual_cursor(app.viewport.width)
+						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							app.viewport.margin)
 
-					// delete temp stuff
-					buf.temp_label = ''
-					buf.temp_data.clear()
+						// delete temp stuff
+						buf.temp_label = ''
+						buf.temp_data.clear()
 
-					app.add_new_buffer(
-						name:    os.file_name(file)
-						path:    file
-						tabsize: buf.tabsize
-						mode:    .normal
-						p_mode:  .default
-					)
+						app.add_new_buffer(
+							name:    os.file_name(file)
+							path:    file
+							tabsize: buf.tabsize
+							mode:    .normal
+							p_mode:  .default
+						)
+					}
 				}
 				else {}
 			}
