@@ -229,12 +229,16 @@ fn ui_loop(x voidptr) {
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 			}
 			for j, ch in line.runes_iterator() {
+				if buf.temp_label.contains(ch.str()) {
+					ctx.set_color(colors.lavender_violet)
+				}
 				if buf.mode == .insert && i == 0 {
 					ctx.set_bg_color(theme.active_line_bg_color)
 					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				} else {
 					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				}
+				ctx.reset_color()
 			}
 			ctx.set_bg_color(theme.background_color)
 		}

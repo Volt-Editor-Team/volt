@@ -148,3 +148,9 @@ pub const vscode_classic = Color{
 	g: 30
 	b: 30
 }
+
+pub const lavender_violet = Color{
+	r: 187
+	g: 154
+	b: 247
+}
