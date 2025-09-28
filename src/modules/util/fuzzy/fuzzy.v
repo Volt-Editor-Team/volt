@@ -14,6 +14,11 @@ const ignore_patterns = [
 	'.vscode', // editor config
 	'.idea', // JetBrains project files
 	'.tmp', // temp files
+	'site-packages',
+	'Thumbs.db',
+	'__pycache__',
+	'.next',
+	'.nuxt',
 ]
 
 // Check if a file path matches any ignore pattern

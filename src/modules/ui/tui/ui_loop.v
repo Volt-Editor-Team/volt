@@ -189,6 +189,7 @@ fn ui_loop(x voidptr) {
 		end_row := math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 		// draw for fuzzy
 		start := 1 + buffer_gap
+		start_x := buf.temp_data.len.str().len + 1
 		input_string := '> ${buf.temp_label}'
 		ctx.set_bg_color(theme.background_color)
 		ctx.draw_text(1, start, input_string)
@@ -201,21 +202,38 @@ fn ui_loop(x voidptr) {
 			if buf.temp_data.len > 0 {
 				ctx.set_bg_color(theme.active_line_bg_color)
 				ctx.draw_line(0, 1 + start, width - 1, 1 + start)
-				ctx.draw_text(0, 1 + start, buf.temp_data[0])
+				ctx.draw_text(start_x + 1, 1 + start, buf.temp_data[0])
 			}
 			ctx.set_bg_color(theme.background_color)
 		}
 		for i, line in buf.temp_data[start_row..end_row] {
+			mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
+			file_ext := os.file_ext(line)
 			if buf.mode == .normal && i == buf.logical_cursor.y {
 				ctx.set_bg_color(theme.active_line_bg_color)
 				ctx.draw_line(0, i + 1 + start, width - 1, i + 1 + start)
 			}
+			if file_ext in constants.ext_icons {
+				filetype := constants.ext_icons[file_ext]
+				fg_color := colors.hex_to_tui_color(filetype.color) or { colors.white }
+				line_num_label = filetype.icon +
+					' '.repeat(buf.lines.len.str().len - filetype.icon.len)
+				if buf.mode == .insert && i == 0 {
+					ctx.set_bg_color(theme.active_line_bg_color)
+				}
+				ctx.set_color(fg_color)
+				ctx.draw_text(1, i + 1 + start, line_num_label)
+				ctx.reset_color()
+			} else {
+				line_num_label = ' '.repeat(buf.lines.len.str().len)
+				ctx.draw_text(1, i + 1 + start, line_num_label)
+			}
 			for j, ch in line.runes_iterator() {
 				if buf.mode == .insert && i == 0 {
 					ctx.set_bg_color(theme.active_line_bg_color)
-					ctx.draw_text(j + 1, i + 1 + start, ch.str())
+					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				} else {
-					ctx.draw_text(j + 1, i + 1 + start, ch.str())
+					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				}
 			}
 			ctx.set_bg_color(theme.background_color)
