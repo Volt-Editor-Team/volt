@@ -1,3 +1,4 @@
+- [ ] switch to gap buffer -- a data structure much better for real-time editing of text. _this required significant refactoring across codebase_
 - [ ] Buffer flicker -- instead of redrawing entire screen, only redraw changes
 - [ ] directory buffer tree -- refactor directory buffer to enable tree view
 - [ ] syntax highlighting
