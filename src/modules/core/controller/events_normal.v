@@ -119,6 +119,16 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	match buf.p_mode {
 		.directory {
 			match key {
+				.g {
+					path := buf.lines[buf.logical_cursor.y]
+					app.add_new_buffer(
+						name:    os.file_name(path)
+						path:    buf.path + path
+						tabsize: buf.tabsize
+						mode:    .normal
+						p_mode:  .default
+					)
+				}
 				.tab {
 					path := buf.lines[buf.logical_cursor.y]
 

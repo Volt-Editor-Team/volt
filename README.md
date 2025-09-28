@@ -1,5 +1,7 @@
 # Volt
 
+> **Experimental**: This text editor is in early development, and features may change frequently. It serves primarily as a learning experiment and a sandbox for testing ideas in VLang. While all pushed commits are intended to be complete and runnable, use at your own risk. :)
+
 Volt is a buffer-centric TUI written in VLang. It is currently developing as a playground project, aiming to incorporate features from the greats — Neovim, Helix, and Emacs — into a standalone binary smaller than all of them!
 
 The philosophy of Volt is simple: treat everything as a buffer to provide a predictable, consistent, and natural editor experience.
