@@ -9,7 +9,7 @@ The philosophy of Volt is simple: treat everything as a buffer to provide a pred
 ## Build Instructions
 
 ```
-git clone https://github.com/yourusername/volt.git
+https://github.com/Volt-Editor-Team/volt.git
 cd volt
 v run main.v
 ```
@@ -28,4 +28,4 @@ v run main.v
 
 ## Lightweight
 
-Compiles to just 529 KB, making it fast, efficient, and portable.
+Compiles to just 544 KB, making it fast, efficient, and portable.
