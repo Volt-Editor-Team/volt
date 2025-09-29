@@ -93,14 +93,7 @@ pub fn (buf Buffer) visual_y(logical_y int, visual_x int, width int) int {
 	return real_y
 }
 
-pub fn (mut buf Buffer) update_offset(width int, height int, margin int) bool {
-	mut visual_wraps := 0
-	mut cur_index := buf.logical_cursor.y - 1
-	for cur_index + visual_wraps > buf.logical_cursor.y - height - margin && cur_index >= 0 {
-		visual_wraps += buf.lines[cur_index].len / width
-		cur_index--
-	}
-
+pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) bool {
 	// Compute the cursor's relative position inside the viewport
 	rel_pos := buf.logical_cursor.y - buf.row_offset + visual_wraps
 

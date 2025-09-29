@@ -76,7 +76,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.mode = .normal
 								buf.logical_cursor = buf.temp_cursor
 								buf.update_visual_cursor(app.viewport.width)
-								buf.update_offset(app.viewport.width, app.viewport.height,
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 
 								// delete temp stuff
@@ -96,7 +96,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.mode = .normal
 									buf.logical_cursor = buf.temp_cursor
 									buf.update_visual_cursor(app.viewport.width)
-									buf.update_offset(app.viewport.width, app.viewport.height,
+									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 										app.viewport.margin)
 
 									file := buf.temp_data[0]
