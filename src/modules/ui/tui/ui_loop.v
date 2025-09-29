@@ -255,9 +255,9 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, 'y_pos: ' +
 	// 	buf.visual_y(buf.visual_cursor.y, buf.visual_cursor.x, app.viewport.width).str())
 
-	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' + (view.row_offset +
-	// 	view.height - view.margin).str())
-	// ctx.draw_text(width - 30, height - 2, '[' + buf.temp_label.str() + ']')
+	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' +
+	// 	(buf.logical_cursor.y - (app.viewport.height - app.viewport.margin)).str())
+	// ctx.draw_text(width - 30, height - 2, '[' + app.viewport.visual_wraps.str() + ']')
 
 	mut command_bar_y_pos := height
 

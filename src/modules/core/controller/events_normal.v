@@ -9,6 +9,12 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	// global normal mode
 	if event == .key_down {
 		match key {
+			.space {
+				buf.mode = .menu
+			}
+			.g {
+				buf.mode = .goto
+			}
 			.i {
 				buf.mode = .insert
 			}
@@ -42,9 +48,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	if buf.p_mode == .default || buf.p_mode == .directory {
 		if event == .key_down {
 			match key {
-				.space {
-					buf.mode = .menu
-				}
 				.l, .right {
 					buf.logical_cursor.move_right_buffer(buf.lines)
 					buf.update_visual_cursor(app.viewport.width)
@@ -78,8 +81,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					buf.update_visual_cursor(app.viewport.width)
 
 					// update viewport offset
-					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-						app.viewport.margin)
+					buf.update_offset(app.viewport.width, app.viewport.height, app.viewport.margin)
 				}
 				.k, .up {
 					cur_wrap := buf.visual_cursor.x / app.viewport.width
@@ -109,8 +111,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 					buf.update_visual_cursor(app.viewport.width)
 					// update offset
-					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-						app.viewport.margin)
+					buf.update_offset(app.viewport.width, app.viewport.height, app.viewport.margin)
 				}
 				else {}
 			}
@@ -182,8 +183,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.mode = .normal
 						buf.logical_cursor = buf.temp_cursor
 						buf.update_visual_cursor(app.viewport.width)
-						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							app.viewport.margin)
+						buf.update_offset(app.viewport.width, app.viewport.height, app.viewport.margin)
 
 						// delete temp stuff
 						buf.temp_label = ''
@@ -210,7 +210,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.mode = .normal
 							buf.logical_cursor = buf.temp_cursor
 							buf.update_visual_cursor(app.viewport.width)
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							buf.update_offset(app.viewport.width, app.viewport.height,
 								app.viewport.margin)
 
 							// delete temp stuff

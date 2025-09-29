@@ -19,6 +19,7 @@ const ignore_patterns = [
 	'__pycache__',
 	'.next',
 	'.nuxt',
+	'.exe',
 ]
 
 // Check if a file path matches any ignore pattern

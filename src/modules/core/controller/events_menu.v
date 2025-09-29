@@ -17,6 +17,8 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				}
 			}
 		}
-		else {}
+		else {
+			buf.mode = .normal
+		}
 	}
 }
