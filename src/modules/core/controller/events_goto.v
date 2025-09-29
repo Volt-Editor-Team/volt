@@ -1,7 +1,5 @@
 module controller
 
-import math
-
 pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
