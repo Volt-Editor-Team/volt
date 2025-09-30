@@ -26,6 +26,20 @@ pub fn GapBuffer.new(g GapBuffer) GapBuffer {
 	}
 }
 
+pub fn (g GapBuffer) to_string() string {
+	// Only take the parts before and after the gap
+	before := g.data[..g.gap.start]
+	after := g.data[g.gap.end..]
+	return before.string() + after.string()
+}
+
+pub fn (g GapBuffer) debug_string() string {
+	before := g.data[..g.gap.start].string()
+	gap_size := g.gap.end - g.gap.start
+	after := g.data[g.gap.end..].string()
+	return before + '[gap:' + (g.data.cap - (before.len + after.len)).str() + ']' + after
+}
+
 // gap memcpy
 pub fn (mut g GapBuffer) shift_gap_to(curs int) {
 	gap_len := g.gap.end - g.gap.start
@@ -56,10 +70,10 @@ pub fn (mut g GapBuffer) shift_gap_to(curs int) {
 pub fn check_gap_size(mut g GapBuffer, n_required int) {
 	gap_len := g.gap.end - g.gap.start
 	if gap_len < n_required {
-		mut new_data := []rune{len: g.data.len + n_required, cap: 2 * math.max(g.data.len,
+		g.shift_gap_to(g.data.len - gap_len)
+		mut new_data := []rune{len: g.data.len + n_required - gap_len, cap: 2 * math.max(g.data.len,
 			n_required)}
 		arrays.copy(mut new_data, g.data)
-		// gap.end = gap.start + ((2 *math.max(g.data.len, n_required)) - g.data.len)
 		g.data = new_data
 		g.gap.end = g.data.len
 	}
