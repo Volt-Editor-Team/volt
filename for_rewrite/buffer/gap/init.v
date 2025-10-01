@@ -67,3 +67,7 @@ pub fn (g GapBuffer) to_string() string {
 	after := g.data[g.gap.end..]
 	return before.string() + after.string()
 }
+
+pub fn (g GapBuffer) len() int {
+	return g.to_string().len
+}
