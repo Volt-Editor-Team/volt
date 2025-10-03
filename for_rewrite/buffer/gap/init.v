@@ -6,7 +6,7 @@ import buffer
 // --- initialization ---
 pub struct GapBuffer {
 pub mut:
-	data []rune
+	data []u8
 mut:
 	gap Gap
 }
@@ -19,7 +19,7 @@ mut:
 
 pub fn GapBuffer.new(g GapBuffer) GapBuffer {
 	return GapBuffer{
-		data: []rune{len: g.data.len, cap: g.data.len * 2, init: g.data[index]}
+		data: []u8{len: g.data.len, cap: g.data.len * 2, init: g.data[index]}
 		gap:  Gap{
 			start: g.data.len
 			end:   g.data.len * 2
@@ -65,7 +65,7 @@ pub fn (g GapBuffer) to_string() string {
 	// Only take the parts before and after the gap
 	before := g.data[..g.gap.start]
 	after := g.data[g.gap.end..]
-	return before.string() + after.string()
+	return before.bytestr() + after.bytestr()
 }
 
 pub fn (g GapBuffer) len() int {
