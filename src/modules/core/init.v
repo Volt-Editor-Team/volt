@@ -1,6 +1,7 @@
 module core
 
-import buffer { Buffer, CommandBuffer }
+import buffer { CommandBuffer }
+import buffer.list { ListBuffer }
 import viewport { Viewport }
 import ui { ColorScheme }
 import os
@@ -8,8 +9,8 @@ import os
 pub struct App {
 pub mut:
 	working_dir   string
-	buffers       []Buffer
-	swap_map      map[int]Buffer
+	buffers       []ListBuffer
+	swap_map      map[int]ListBuffer
 	active_buffer int
 	// prev_mode     Mode
 	cmd_buffer CommandBuffer
@@ -55,14 +56,14 @@ pub fn App.new(width int, height int) &App {
 		margin:               margin
 	}
 
-	mut buffers := []Buffer{}
-	buffers << Buffer.new(Buffer{})
+	mut buffers := []ListBuffer{}
+	buffers << ListBuffer.new(ListBuffer{})
 	app.buffers = buffers
 	app.active_buffer = 0
 
 	app.viewport.update_width()
 
-	go app.get_doctor_info()
+	// go app.get_doctor_info()
 	return app
 }
 

@@ -1,13 +1,15 @@
-module buffer
+module list
 
-pub fn (mut buf Buffer) insert_char(x_pos int, y_pos int, ch string) {
+import buffer { DeleteResult }
+
+pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch string) {
 	mut line := buf.lines[y_pos]
 	new_line := line[..x_pos] + ch + line[x_pos..]
 	buf.lines[y_pos] = new_line
 	buf.update_line_cache(y_pos)
 }
 
-pub fn (mut buf Buffer) insert_newline(x_pos int, y_pos int) {
+pub fn (mut buf ListBuffer) insert_newline(x_pos int, y_pos int) {
 	cur_line := buf.lines[y_pos]
 	left := cur_line[..x_pos]
 	right := cur_line[x_pos..]
@@ -19,7 +21,7 @@ pub fn (mut buf Buffer) insert_newline(x_pos int, y_pos int) {
 	buf.update_line_cache(y_pos + 1)
 }
 
-pub fn (mut buf Buffer) remove_char(x_pos int, y_pos int) DeleteResult {
+pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 	cur_line := buf.lines[y_pos]
 	left := cur_line[..x_pos]
 	right := cur_line[x_pos..]
@@ -48,7 +50,7 @@ pub fn (mut buf Buffer) remove_char(x_pos int, y_pos int) DeleteResult {
 	return result
 }
 
-pub fn (mut buf Buffer) remove_line(y_pos int) {
+pub fn (mut buf ListBuffer) remove_line(y_pos int) {
 	buf.lines.delete(y_pos)
 	buf.visual_col.delete(y_pos)
 }

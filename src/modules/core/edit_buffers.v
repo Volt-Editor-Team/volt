@@ -1,11 +1,11 @@
 module core
 
-import buffer { Buffer }
+import buffer.list { ListBuffer }
 import util
 import fs { get_working_dir_paths }
 
-pub fn (mut app App) add_new_buffer(b Buffer) {
-	new_buf := Buffer.new(
+pub fn (mut app App) add_new_buffer(b ListBuffer) {
+	new_buf := ListBuffer.new(
 		label:   b.label
 		name:    b.name
 		path:    b.path

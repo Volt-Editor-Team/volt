@@ -1,17 +1,17 @@
-module buffer
+module list
 
 import math
 import os
 import util.fuzzy
 import fs
 
-pub fn (mut buf Buffer) update_all_line_cache() {
+pub fn (mut buf ListBuffer) update_all_line_cache() {
 	for i in 0 .. buf.lines.len {
 		buf.update_line_cache(i)
 	}
 }
 
-pub fn (mut buf Buffer) update_line_cache(line_index int) {
+pub fn (mut buf ListBuffer) update_line_cache(line_index int) {
 	line := buf.lines[line_index]
 	mut visual := []int{len: line.len}
 	mut col := 0
@@ -27,7 +27,7 @@ pub fn (mut buf Buffer) update_line_cache(line_index int) {
 	buf.visual_col[line_index] = visual
 }
 
-pub fn (buf Buffer) get_visual_coords(logical_x int, logical_y int, width int) (int, int) {
+pub fn (buf ListBuffer) get_visual_coords(logical_x int, logical_y int, width int) (int, int) {
 	// wraps := logical_x / width
 	// x := (logical_x + width) % width
 	// y := logical_y + wraps
@@ -46,12 +46,12 @@ pub fn (buf Buffer) get_visual_coords(logical_x int, logical_y int, width int) (
 	return visual_line[logical_x], logical_y
 }
 
-pub fn (mut buf Buffer) update_visual_cursor(width int) {
+pub fn (mut buf ListBuffer) update_visual_cursor(width int) {
 	buf.visual_cursor.x, buf.visual_cursor.y = buf.get_visual_coords(buf.logical_cursor.x,
 		buf.logical_cursor.y, width)
 }
 
-pub fn (buf Buffer) logical_x(logical_y int, visual_x int) int {
+pub fn (buf ListBuffer) logical_x(logical_y int, visual_x int) int {
 	if logical_y < 0 || logical_y >= buf.visual_col.len {
 		return 0
 	}
@@ -73,7 +73,7 @@ pub fn (buf Buffer) logical_x(logical_y int, visual_x int) int {
 	return closest
 }
 
-pub fn (buf Buffer) visual_y(logical_y int, visual_x int, width int) int {
+pub fn (buf ListBuffer) visual_y(logical_y int, visual_x int, width int) int {
 	mut real_y := 0
 
 	// sum the number of rows all previous lines take
@@ -93,7 +93,7 @@ pub fn (buf Buffer) visual_y(logical_y int, visual_x int, width int) int {
 	return real_y
 }
 
-pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) bool {
+pub fn (mut buf ListBuffer) update_offset(visual_wraps int, height int, margin int) bool {
 	// Compute the cursor's relative position inside the viewport
 	rel_pos := buf.logical_cursor.y - buf.row_offset + visual_wraps
 
@@ -113,7 +113,7 @@ pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) 
 	return false
 }
 
-pub fn (mut buf Buffer) open_fuzzy_find() {
+pub fn (mut buf ListBuffer) open_fuzzy_find() {
 	// if fuzzy is already running, return
 	if buf.p_mode == .fuzzy {
 		return
