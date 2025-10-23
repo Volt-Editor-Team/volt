@@ -56,3 +56,9 @@ pub fn ListBuffer.new(b ListBuffer) ListBuffer {
 
 	return buf
 }
+
+struct DeleteResult {
+pub mut:
+	joined_line bool
+	new_x       int
+}
