@@ -62,3 +62,15 @@ pub mut:
 	joined_line bool
 	new_x       int
 }
+
+// --- buffer interface ---
+// - [ ] insert(cursor int, s InsertValue)
+// - [ ] delete(cursor int, n int)
+// - [ ] to_string() string
+// - [ ] len() int
+// - [ ] line_count() int
+// - [ ] line_at(i int)
+// - [ ] char_at(i int) rune
+// - [ ] slice(start int, end int) string
+// - [ ] index_to_line_col(i int) (int, int)
+// - [ ] line_col_to_index(line int, col int) int
