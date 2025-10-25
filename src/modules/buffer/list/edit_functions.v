@@ -4,7 +4,7 @@ pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch string) {
 	mut line := buf.lines[y_pos]
 	new_line := line[..x_pos] + ch + line[x_pos..]
 	buf.lines[y_pos] = new_line
-	buf.update_line_cache(y_pos)
+	// buf.update_line_cache(y_pos)
 }
 
 pub fn (mut buf ListBuffer) insert_newline(x_pos int, y_pos int) {
@@ -14,9 +14,9 @@ pub fn (mut buf ListBuffer) insert_newline(x_pos int, y_pos int) {
 
 	buf.lines[y_pos] = left
 	buf.lines.insert(y_pos + 1, right)
-	buf.visual_col.insert(y_pos + 1, []int{})
-	buf.update_line_cache(y_pos)
-	buf.update_line_cache(y_pos + 1)
+	// buf.visual_col.insert(y_pos + 1, []int{})
+	// buf.update_line_cache(y_pos)
+	// buf.update_line_cache(y_pos + 1)
 }
 
 pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
@@ -32,7 +32,7 @@ pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 	if x_pos > 0 {
 		// normal delete
 		buf.lines[y_pos] = left#[..-1] + right
-		buf.update_line_cache(y_pos)
+		// 	buf.update_line_cache(y_pos)
 		result.new_x = x_pos - 1
 	} else if x_pos == 0 && y_pos > 0 {
 		// remove line
@@ -40,7 +40,7 @@ pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 		prev_line_index := y_pos - 1
 		new_x := buf.lines[prev_line_index].len
 		buf.lines[y_pos - 1] += right
-		buf.update_line_cache(y_pos - 1)
+		// 	buf.update_line_cache(y_pos - 1)
 
 		result.joined_line = true
 		result.new_x = new_x
@@ -50,5 +50,5 @@ pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 
 pub fn (mut buf ListBuffer) remove_line(y_pos int) {
 	buf.lines.delete(y_pos)
-	buf.visual_col.delete(y_pos)
+	// buf.visual_col.delete(y_pos)
 }

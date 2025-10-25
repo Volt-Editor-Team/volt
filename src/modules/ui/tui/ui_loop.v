@@ -71,7 +71,7 @@ fn ui_loop(x voidptr) {
 			cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, theme)
 
 			// get line indices and characters
-			line_indices := buf.visual_col[y_index] // column index for line
+			// line_indices := buf.visual_col[y_index] // column index for line
 
 			mut text_color := colors.white
 
@@ -100,7 +100,7 @@ fn ui_loop(x voidptr) {
 				// calculate how many lines that this line requires
 				// (+ 1 since base is 0)
 				total_lines := if line.len > 0 {
-					(line_indices.last() / view.width) + 1
+					(util.char_count_expanded_tabs(line, buf.tabsize) / view.width) + 1
 				} else {
 					1
 				}
@@ -128,20 +128,25 @@ fn ui_loop(x voidptr) {
 			}
 
 			mut char_width := 1
+			mut visual_cache := map[int]int{}
+			mut col := 0
 			for x_index, ch in line.runes_iterator() {
-				visual_x_index := line_indices[x_index]
+				visual_cache[x_index] = col
+				mut printed := ch
+				if ch == `\t` {
+					printed = ` `
+					char_width = buf.tabsize
+					col += buf.tabsize - (col % buf.tabsize)
+				} else {
+					col++
+				}
+				visual_x_index := visual_cache[x_index]
 				wraps = visual_x_index / view.width
 				x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
 				y_pos := i + wraps + wrap_offset + buffer_gap
 
 				if y_pos > view.height - buffer_gap {
 					break render_lines
-				}
-
-				mut printed := ch
-				if ch == `\t` {
-					printed = ` `
-					char_width = buf.tabsize
 				}
 
 				if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
@@ -165,7 +170,7 @@ fn ui_loop(x voidptr) {
 			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
 				// find last column in this line (or 0 if empty)
 				last_x := if line.len > 0 {
-					buf.visual_col[y_index][line.len - 1] + 1
+					visual_cache[line.len - 1] + 1
 				} else {
 					0
 				}
@@ -257,7 +262,7 @@ fn ui_loop(x voidptr) {
 
 	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' +
 	// 	(buf.logical_cursor.y - (app.viewport.height - app.viewport.margin)).str())
-	// ctx.draw_text(width - 30, height - 2, '[' + app.viewport.visual_wraps.str() + ']')
+	// ctx.draw_text(width - 30, height - 2, buf.logical_cursor.desired_col.str())
 
 	mut command_bar_y_pos := height
 

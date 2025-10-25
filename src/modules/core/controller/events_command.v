@@ -15,7 +15,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			buf.p_mode = buf.temp_mode
 			buf.mode = .normal
 			buf.logical_cursor = buf.temp_cursor
-			buf.update_visual_cursor(app.viewport.width)
+			// buf.update_visual_cursor(app.viewport.width)
 			buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 			// delete temp stuff
 			buf.temp_label = ''
@@ -26,7 +26,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				buf.mode = .normal
 				app.cmd_buffer.command = ''
 				buf.logical_cursor = buf.saved_cursor
-				buf.update_visual_cursor(app.viewport.width)
+				// 	buf.update_visual_cursor(app.viewport.width)
 			}
 			.enter {
 				match cmd_str {
@@ -49,7 +49,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 								app.cmd_buffer.command = ''
 								buf.mode = .normal
 								buf.logical_cursor = buf.saved_cursor
-								buf.update_visual_cursor(app.viewport.width)
+								// 					buf.update_visual_cursor(app.viewport.width)
 							}
 						}
 					}
@@ -70,7 +70,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						} else {
 							app.add_directory_buffer()
-							// buf.update_visual_cursor(app.viewport.width)
+							// 				// buf.update_visual_cursor(app.viewport.width)
 							app.has_directory_buffer = true
 						}
 					}
@@ -88,7 +88,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
 						buf.logical_cursor = buf.saved_cursor
-						buf.update_visual_cursor(app.viewport.width)
+						// 			buf.update_visual_cursor(app.viewport.width)
 						if app.has_stats_opened {
 							for i, buffer in app.buffers {
 								if buffer.name == 'DOCTOR' {

@@ -8,7 +8,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 			.g {
 				buf.logical_cursor.y = 0
 				buf.logical_cursor.x = 0
-				buf.update_visual_cursor(app.viewport.width)
+				// buf.update_visual_cursor(app.viewport.width)
 				buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 				buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 				buf.mode = .normal
@@ -16,7 +16,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 			.e {
 				buf.logical_cursor.y = buf.lines.len - 1
 				buf.logical_cursor.x = buf.lines[buf.logical_cursor.y].len
-				buf.update_visual_cursor(app.viewport.width)
+				// buf.update_visual_cursor(app.viewport.width)
 				buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 				mut visual_wraps := 0
 				mut cur_index := buf.logical_cursor.y - 1

@@ -24,7 +24,7 @@ pub mut:
 	file_ch chan string
 
 	// cache visual col indexes
-	visual_col [][]int
+	// visual_col [][]int
 pub:
 	tabsize int
 }
@@ -47,12 +47,12 @@ pub fn ListBuffer.new(b ListBuffer) ListBuffer {
 		path:       b.path
 		lines:      lines
 		tabsize:    b.tabsize
-		visual_col: [][]int{len: lines.len}
+		// visual_col: [][]int{len: lines.len}
 		mode:       b.mode
 		p_mode:     b.p_mode
 	}
 
-	buf.update_all_line_cache()
+	// buf.update_all_line_cache()
 
 	return buf
 }

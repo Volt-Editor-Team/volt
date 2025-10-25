@@ -22,12 +22,27 @@ pub fn (mut log_curs LogicalCursor) move_left_buffer(lines []string) {
 	}
 }
 
-pub fn (mut log_curs LogicalCursor) move_down_buffer(lines []string, logical_x_fn fn (line_index int, visual_x int) int) {
+pub fn (mut log_curs LogicalCursor) move_down_buffer(lines []string, tabsize int) {
 	// cursor is not on the last line
 	// move curse down and calculate x
 	if log_curs.y < lines.len - 1 {
 		log_curs.y += 1
-		log_curs.x = logical_x_fn(log_curs.y, log_curs.desired_col)
+		// log_curs.x = logical_x_fn(log_curs.y, log_curs.desired_col)
+		line := lines[log_curs.y].runes()
+		mut column := 0
+		mut closest := 0
+		for i, ch in line {
+			if column >= log_curs.desired_col {
+				break
+			}
+			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
+			closest = i
+		}
+		log_curs.x = if closest == line.len - 1 && closest < log_curs.desired_col {
+			closest + 1
+		} else {
+			closest
+		}
 	} else {
 		// cursor is on the last line
 		// move cursor the end
@@ -35,21 +50,35 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(lines []string, logical_x_f
 	}
 }
 
-pub fn (mut log_curs LogicalCursor) move_up_buffer(logical_x_fn fn (line_index int, visual_x int) int) {
+pub fn (mut log_curs LogicalCursor) move_up_buffer(lines []string, tabsize int) {
 	if log_curs.y > 0 {
 		log_curs.y -= 1
-		log_curs.x = logical_x_fn(log_curs.y, log_curs.desired_col)
+		line := lines[log_curs.y].runes()
+		mut column := 0
+		mut closest := 0
+		for i, ch in line {
+			if column >= log_curs.desired_col {
+				break
+			}
+			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
+			closest = i
+		}
+		log_curs.x = if closest == line.len - 1 && closest < log_curs.desired_col {
+			closest + 1
+		} else {
+			closest
+		}
 	} else if log_curs.y == 0 {
 		log_curs.x = 0
 	}
 }
 
-pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(lines []string, logical_x_fn fn (line_index int, visual_x int) int) {
-	log_curs.move_down_buffer(lines, logical_x_fn)
+pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(lines []string, tabsize int) {
+	log_curs.move_down_buffer(lines, tabsize)
 	log_curs.x = 0
 }
 
-pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(lines []string, logical_x_fn fn (line_index int, visual_x int) int) {
-	log_curs.move_up_buffer(logical_x_fn)
+pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(lines []string, tabsize int) {
+	log_curs.move_up_buffer(lines, tabsize)
 	log_curs.x = lines[log_curs.y].len
 }
