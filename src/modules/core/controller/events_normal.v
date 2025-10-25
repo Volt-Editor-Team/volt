@@ -50,14 +50,21 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		if event == .key_down {
 			match key {
 				.l, .right {
+					prev_y := buf.logical_cursor.y
 					buf.logical_cursor.move_right_buffer(buf.lines)
 					// buf.update_visual_cursor(app.viewport.width)
 					cur_line := buf.lines[buf.logical_cursor.y]
 					visual_index := util.char_count_expanded_tabs(cur_line#[..
 						buf.logical_cursor.x + 1], buf.tabsize)
+
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
+					if buf.logical_cursor.y != prev_y {
+						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							app.viewport.margin)
+					}
 				}
 				.h, .left {
+					prev_y := buf.logical_cursor.y
 					buf.logical_cursor.move_left_buffer(buf.lines)
 					// buf.update_visual_cursor(app.viewport.width)
 					// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
@@ -65,6 +72,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					visual_index := util.char_count_expanded_tabs(cur_line#[..
 						buf.logical_cursor.x + 1], buf.tabsize)
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
+					if buf.logical_cursor.y != prev_y {
+						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							app.viewport.margin)
+					}
 				}
 				.j, .down {
 					line := buf.lines[buf.logical_cursor.y]
