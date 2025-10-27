@@ -1,6 +1,7 @@
 module rope
 
-import buffer { InsertValue, RopeData }
+import buffer { RopeData }
+import buffer.common { InsertValue }
 
 // --- initialization ---
 pub struct RopeBuffer {

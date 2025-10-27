@@ -24,12 +24,12 @@ fn ui_loop(x voidptr) {
 	// mut text_color := colors.white
 	width, height := term.get_terminal_size()
 
-	// draw background
+	// --- draw background ---
 	ctx.set_bg_color(theme.background_color)
 	ctx.draw_rect(1, 1, width, height)
 	ctx.reset_bg_color()
 
-	// render tabs for multiple buffers
+	// --- draw tabs for multiple buffers ---
 	if multiple_buffers {
 		ctx.set_bg_color(theme.tab_bar_color)
 		ctx.draw_line(0, 1, width - 1, 1)
@@ -50,20 +50,29 @@ fn ui_loop(x voidptr) {
 		}
 	}
 
+	start_row := buf.row_offset
+	mut end_row := start_row
+	if buf.p_mode != .fuzzy {
+		end_row = math.min(buf.line_count(), buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+	} else {
+		end_row = math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+	}
+
+	// --- render text ---
 	if buf.p_mode != .fuzzy {
 		// render loop
-		start_row := buf.row_offset // the line index of the buffer to start rendering at
-		end_row := math.min(buf.lines.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 		mut wrap_offset := 0
 		mut wraps := 0
-		render_lines: for i, line in buf.lines[start_row..end_row] {
+		// render_lines: for i, line in buf.lines[start_row..end_row] {
+		render_lines: for i in 0 .. end_row - start_row {
 			// i is the row index of the actual renders screen
 			// y_index is the position in the buffer
 			y_index := start_row + i
+			line := buf.line_at(y_index)
 
 			// values necessary for rendering aligned line numbers
 			mut line_num_label := term.bold((y_index + 1).str() +
-				' '.repeat(buf.lines.len.str().len - (y_index + 1).str().len))
+				' '.repeat(buf.line_count().str().len - (y_index + 1).str().len))
 			mut line_num_inactive_color := theme.inactive_line_number_color
 			mut line_num_active_color := theme.active_line_number_color
 
@@ -77,7 +86,7 @@ fn ui_loop(x voidptr) {
 
 			if buf.p_mode == .directory {
 				if fs.is_dir(buf.path + line) {
-					line_num_label = ' '.repeat(buf.lines.len.str().len)
+					line_num_label = ' '.repeat(buf.line_count().str().len)
 					text_color = colors.royal_blue
 				} else {
 					file_ext := os.file_ext(line)
@@ -88,9 +97,9 @@ fn ui_loop(x voidptr) {
 						}
 						line_num_active_color = line_num_inactive_color
 						line_num_label = filetype.icon +
-							' '.repeat(buf.lines.len.str().len - filetype.icon.len)
+							' '.repeat(buf.line_count().str().len - filetype.icon.len)
 					} else {
-						line_num_label = ' '.repeat(buf.lines.len.str().len)
+						line_num_label = ' '.repeat(buf.line_count().str().len)
 					}
 				}
 			}
@@ -167,14 +176,14 @@ fn ui_loop(x voidptr) {
 			}
 
 			// Special case: cursor at end of line
-			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
+			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.runes().len {
 				// find last column in this line (or 0 if empty)
-				last_x := if line.len > 0 {
-					visual_cache[line.len - 1] + 1
+				last_x := if line.runes().len > 0 {
+					visual_cache[line.runes().len - 1] + 1
 				} else {
 					0
 				}
-				last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
+				last_wraps := if line.runes().len > 0 { last_x / view.width } else { 0 }
 				cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
 				cursor_y := i + last_wraps + wrap_offset + buffer_gap
 				if cursor_y > view.height - buffer_gap {
@@ -190,8 +199,6 @@ fn ui_loop(x voidptr) {
 			wrap_offset += wraps
 		}
 	} else {
-		start_row := buf.row_offset // the line index of the buffer to start rendering at
-		end_row := math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 		// draw for fuzzy
 		start := 1 + buffer_gap
 		start_x := buf.temp_data.len.str().len + 1

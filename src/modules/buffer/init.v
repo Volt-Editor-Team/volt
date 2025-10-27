@@ -22,12 +22,15 @@ pub mut:
 	path   string         = 'Scratch'
 	mode   Mode           = .normal
 	p_mode PersistantMode = .default
-	// core used for internal functionality
+	// core internal structures
 	type         BufferType
 	buffer       BufferInterface
 	cursor       CursorInterface
 	saved_cursor CursorInterface
 	file_ch      chan string
+	// other important attributes
+	tabsize    int
+	row_offset int
 }
 
 pub struct TempData {

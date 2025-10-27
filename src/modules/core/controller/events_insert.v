@@ -2,6 +2,7 @@ module controller
 
 import os
 import util
+import buffer.list { ListCursor }
 
 pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -119,6 +120,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										tabsize: buf.tabsize
 										mode:    .normal
 										p_mode:  .default
+										cursor:  ListCursor{} // will probably be removed once functioning correctly
 									)
 									// delete temp stuff
 									buf.temp_label = ''

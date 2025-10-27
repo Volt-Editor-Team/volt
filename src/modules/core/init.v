@@ -1,7 +1,7 @@
 module core
 
 import buffer { CommandBuffer }
-import buffer.list { ListBuffer }
+import buffer.list { ListBuffer, ListCursor }
 import viewport { Viewport }
 import ui { ColorScheme }
 import os
@@ -57,7 +57,9 @@ pub fn App.new(width int, height int) &App {
 	}
 
 	mut buffers := []ListBuffer{}
-	buffers << ListBuffer.new(ListBuffer{})
+	buffers << ListBuffer.new(ListBuffer{
+		cursor: ListCursor{} // will probably be removed once functioning correctly
+	})
 	app.buffers = buffers
 	app.active_buffer = 0
 

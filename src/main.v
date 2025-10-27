@@ -7,6 +7,7 @@ import ui.tui
 import docs { create_cli }
 import os
 import cli as c
+import buffer.list { ListCursor }
 
 fn main() {
 	mut cli := create_cli()
@@ -30,6 +31,7 @@ fn main() {
 							core_app.add_new_buffer(
 								mode:   .normal
 								p_mode: .default
+								cursor: ListCursor{} // will probably be removed once functioning correctly
 							)
 							core_app.buffers[core_app.active_buffer].open_fuzzy_find()
 						}
@@ -42,6 +44,7 @@ fn main() {
 						path:   arg
 						mode:   .normal
 						p_mode: .default
+						cursor: ListCursor{} // will probably be removed once functioning correctly
 					)
 					if open_fuzzy {
 						core_app.buffers[core_app.active_buffer].open_fuzzy_find()

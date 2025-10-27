@@ -3,6 +3,7 @@ module controller
 import fs
 import os
 import util
+import buffer.list { ListCursor }
 
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -56,8 +57,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					cur_line := buf.lines[buf.logical_cursor.y]
 					visual_index := util.char_count_expanded_tabs(cur_line#[..
 						buf.logical_cursor.x + 1], buf.tabsize)
-
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
+
 					if buf.logical_cursor.y != prev_y {
 						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 							app.viewport.margin)
@@ -90,7 +91,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					cur_wrap := buf.logical_cursor.x / app.viewport.width
 
 					if cur_wrap < total_wraps {
-						buf.visual_cursor.x += app.viewport.width
+						// buf.visual_cursor.x += app.viewport.width
 
 						buf.logical_cursor.x = util.char_count_expanded_tabs(line[..
 							buf.logical_cursor.x + app.viewport.width], buf.tabsize)
@@ -107,7 +108,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						app.viewport.margin)
 				}
 				.k, .up {
-					cur_wrap := buf.visual_cursor.x / app.viewport.width
+					cur_wrap := util.char_count_expanded_tabs(buf.lines[buf.logical_cursor.y][..buf.logical_cursor.x],
+						buf.tabsize) / app.viewport.width
 					if cur_wrap == 0 {
 						if buf.logical_cursor.y - 1 > 0 {
 							line := buf.lines[buf.logical_cursor.y - 1]
@@ -157,6 +159,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						tabsize: buf.tabsize
 						mode:    .normal
 						p_mode:  .default
+						cursor:  ListCursor{} // will probably be removed once functioning correctly
 					)
 				}
 				.tab {
@@ -225,6 +228,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							tabsize: buf.tabsize
 							mode:    .normal
 							p_mode:  .default
+							cursor:  ListCursor{} // will probably be removed once functioning correctly
 						)
 					}
 				}
