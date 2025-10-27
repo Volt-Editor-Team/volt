@@ -9,7 +9,7 @@ pub interface BufferInterface {
 	// --- core navigation ---
 	len() int
 	line_count() int
-	line_at(i int) []rune
+	line_at(i int) string
 
 	// --- random access ---
 	char_at(i int) rune

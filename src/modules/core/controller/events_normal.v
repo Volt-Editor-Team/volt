@@ -3,7 +3,6 @@ module controller
 import fs
 import os
 import util
-import buffer.list { ListCursor }
 
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -52,9 +51,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			match key {
 				.l, .right {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_right_buffer(buf.lines)
+					buf.logical_cursor.move_right_buffer(buf)
 					// buf.update_visual_cursor(app.viewport.width)
-					cur_line := buf.lines[buf.logical_cursor.y]
+					cur_line := buf.line_at(buf.logical_cursor.y)
 					visual_index := util.char_count_expanded_tabs(cur_line#[..
 						buf.logical_cursor.x + 1], buf.tabsize)
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -66,7 +65,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.h, .left {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_left_buffer(buf.lines)
+					buf.logical_cursor.move_left_buffer(buf)
 					// buf.update_visual_cursor(app.viewport.width)
 					// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					cur_line := buf.lines[buf.logical_cursor.y]
@@ -97,7 +96,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.logical_cursor.x + app.viewport.width], buf.tabsize)
 						// buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
 					} else {
-						buf.logical_cursor.move_down_buffer(buf.lines, buf.tabsize)
+						buf.logical_cursor.move_down_buffer(buf, buf.tabsize)
 					}
 
 					// update visual cursor to match logical cursor
@@ -126,10 +125,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.logical_cursor.x = util.char_count_expanded_tabs(line[..total_wraps * app.viewport.width],
 									buf.tabsize)
 							} else {
-								buf.logical_cursor.move_up_buffer(buf.lines, buf.tabsize)
+								buf.logical_cursor.move_up_buffer(buf, buf.tabsize)
 							}
 						} else {
-							buf.logical_cursor.move_up_buffer(buf.lines, buf.tabsize)
+							buf.logical_cursor.move_up_buffer(buf, buf.tabsize)
 						}
 					} else {
 						// buf.visual_cursor.x -= app.viewport.width
@@ -159,7 +158,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						tabsize: buf.tabsize
 						mode:    .normal
 						p_mode:  .default
-						cursor:  ListCursor{} // will probably be removed once functioning correctly
 					)
 				}
 				.tab {
@@ -228,7 +226,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							tabsize: buf.tabsize
 							mode:    .normal
 							p_mode:  .default
-							cursor:  ListCursor{} // will probably be removed once functioning correctly
 						)
 					}
 				}

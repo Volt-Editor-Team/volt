@@ -1,6 +1,6 @@
 module core
 
-import buffer.list { ListBuffer, ListCursor }
+import buffer.list { ListBuffer }
 import util
 import fs { get_working_dir_paths }
 
@@ -13,7 +13,6 @@ pub fn (mut app App) add_new_buffer(b ListBuffer) {
 		tabsize: default_tabsize
 		mode:    .normal
 		p_mode:  b.p_mode
-		cursor:  b.cursor // will probably be removed once functioning correctly
 	)
 	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
 		app.buffers[0] = new_buf
@@ -34,29 +33,26 @@ pub fn (mut app App) add_directory_buffer() {
 		path:   parent_dir
 		lines:  lines
 		p_mode: util.PersistantMode.directory
-		cursor: ListCursor{} // will probably be removed once functioning correctly
 	)
 }
 
 pub fn (mut app App) add_stats_buffer() {
 	lines := app.get_stats()
 	app.add_new_buffer(
-		name:   'DOCTOR'
-		path:   'V DOCTOR OUTPUT'
-		lines:  lines
-		mode:   .normal
-		cursor: ListCursor{} // will probably be removed once functioning correctly
+		name:  'DOCTOR'
+		path:  'V DOCTOR OUTPUT'
+		lines: lines
+		mode:  .normal
 	)
 }
 
 pub fn (mut app App) add_help_buffer() {
 	help_path := $embed_file('./src/modules/docs/help.txt').to_string().split_into_lines()
 	app.add_new_buffer(
-		name:   'HELP'
-		path:   'HELP DOCUMENTATION'
-		lines:  help_path
-		mode:   .normal
-		cursor: ListCursor{} // will probably be removed once functioning correctly
+		name:  'HELP'
+		path:  'HELP DOCUMENTATION'
+		lines: help_path
+		mode:  .normal
 	)
 }
 
@@ -68,8 +64,7 @@ pub fn (mut app App) close_buffer() {
 	}
 	if app.buffers.len == 0 {
 		app.add_new_buffer(
-			mode:   util.Mode.normal
-			cursor: ListCursor{} // will probably be removed once functioning correctly
+			mode: util.Mode.normal
 		)
 	}
 }

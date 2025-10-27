@@ -75,7 +75,7 @@ pub fn line_count() int {
 	return 0
 }
 
-pub fn line_at(i int) {
+pub fn line_at(i int) string {
 }
 
 pub fn char_at(i int) rune {

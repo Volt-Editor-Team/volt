@@ -2,7 +2,6 @@ module controller
 
 import os
 import util
-import buffer.list { ListCursor }
 
 pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -25,23 +24,23 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					.backspace {
 						delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if delete_result.joined_line {
-							buf.logical_cursor.move_up_buffer(buf.lines, buf.tabsize)
+							buf.logical_cursor.move_up_buffer(buf, buf.tabsize)
 						}
 						buf.logical_cursor.move_to_x(delete_result.new_x)
 						// buf.update_visual_cursor(app.viewport.width)
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
-						cur_line := buf.lines[buf.logical_cursor.y]
+						cur_line := buf.line_at(buf.logical_cursor.y)
 						visual_index := util.char_count_expanded_tabs(cur_line#[..
 							buf.logical_cursor.x + 1], buf.tabsize)
 						buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
 					}
 					.enter {
 						buf.insert_newline(buf.logical_cursor.x, buf.logical_cursor.y)
-						buf.logical_cursor.move_to_start_next_line_buffer(buf.lines, buf.tabsize)
+						buf.logical_cursor.move_to_start_next_line_buffer(buf, buf.tabsize)
 						// buf.update_visual_cursor(app.viewport.width)
 
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
-						cur_line := buf.lines[buf.logical_cursor.y]
+						cur_line := buf.line_at(buf.logical_cursor.y)
 						visual_index := util.char_count_expanded_tabs(cur_line#[..
 							buf.logical_cursor.x + 1], buf.tabsize)
 						buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -55,7 +54,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y,
 								ch)
 
-							buf.logical_cursor.move_right_buffer(buf.lines)
+							buf.logical_cursor.move_right_buffer(buf)
 							// 	buf.update_visual_cursor(app.viewport.width)
 							// buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 							// 	app.viewport.width)
@@ -120,7 +119,6 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										tabsize: buf.tabsize
 										mode:    .normal
 										p_mode:  .default
-										cursor:  ListCursor{} // will probably be removed once functioning correctly
 									)
 									// delete temp stuff
 									buf.temp_label = ''

@@ -23,7 +23,7 @@ pub mut:
 	mode   Mode           = .normal
 	p_mode PersistantMode = .default
 	// core internal structures
-	type         BufferType
+	type         BufferType = .rope
 	buffer       BufferInterface
 	cursor       CursorInterface
 	saved_cursor CursorInterface
@@ -46,4 +46,7 @@ pub mut:
 pub struct CommandBuffer {
 pub mut:
 	command string
+}
+
+pub fn Buffer.new(buf Buffer) {
 }
