@@ -1,6 +1,6 @@
 module cursor
 
-import buffer { BufferInterface }
+import buffer.common { BufferInterface }
 
 pub fn (mut log_curs LogicalCursor) move_right_buffer(buf BufferInterface) {
 	line_len := buf.line_at(log_curs.y).runes().len

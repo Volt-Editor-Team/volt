@@ -1,6 +1,4 @@
-module buffer
-
-import buffer.common { InsertValue }
+module common
 
 // interface required for all buffer implementations
 pub interface BufferInterface {
@@ -21,7 +19,8 @@ pub interface BufferInterface {
 mut:
 	// --- edit functions ---
 	insert(cursor int, s InsertValue) !
-	delete(cursor int, n int) !
+	delete(cursor int, n int) !DeleteResult
+	replace_with_temp(lines []string)
 }
 
 // interface required for cursor implementations

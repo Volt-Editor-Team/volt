@@ -1,5 +1,7 @@
 module list
 
+import buffer.common { DeleteResult }
+
 pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch string) {
 	mut line := buf.lines[y_pos]
 	new_line := line[..x_pos] + ch + line[x_pos..]

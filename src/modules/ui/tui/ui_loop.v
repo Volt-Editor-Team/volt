@@ -53,7 +53,7 @@ fn ui_loop(x voidptr) {
 	start_row := buf.row_offset
 	mut end_row := start_row
 	if buf.p_mode != .fuzzy {
-		end_row = math.min(buf.line_count(), buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+		end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 	} else {
 		end_row = math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
 	}
@@ -68,11 +68,11 @@ fn ui_loop(x voidptr) {
 			// i is the row index of the actual renders screen
 			// y_index is the position in the buffer
 			y_index := start_row + i
-			line := buf.line_at(y_index)
+			line := buf.buffer.line_at(y_index)
 
 			// values necessary for rendering aligned line numbers
 			mut line_num_label := term.bold((y_index + 1).str() +
-				' '.repeat(buf.line_count().str().len - (y_index + 1).str().len))
+				' '.repeat(buf.buffer.line_count().str().len - (y_index + 1).str().len))
 			mut line_num_inactive_color := theme.inactive_line_number_color
 			mut line_num_active_color := theme.active_line_number_color
 
@@ -86,7 +86,7 @@ fn ui_loop(x voidptr) {
 
 			if buf.p_mode == .directory {
 				if fs.is_dir(buf.path + line) {
-					line_num_label = ' '.repeat(buf.line_count().str().len)
+					line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
 					text_color = colors.royal_blue
 				} else {
 					file_ext := os.file_ext(line)
@@ -97,9 +97,9 @@ fn ui_loop(x voidptr) {
 						}
 						line_num_active_color = line_num_inactive_color
 						line_num_label = filetype.icon +
-							' '.repeat(buf.line_count().str().len - filetype.icon.len)
+							' '.repeat(buf.buffer.line_count().str().len - filetype.icon.len)
 					} else {
-						line_num_label = ' '.repeat(buf.line_count().str().len)
+						line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
 					}
 				}
 			}
@@ -229,7 +229,7 @@ fn ui_loop(x voidptr) {
 				filetype := constants.ext_icons[file_ext]
 				fg_color := colors.hex_to_tui_color(filetype.color) or { colors.white }
 				line_num_label = filetype.icon +
-					' '.repeat(buf.lines.len.str().len - filetype.icon.len)
+					' '.repeat(buf.buffer.line_count().str().len - filetype.icon.len)
 				if buf.mode == .insert && i == 0 {
 					ctx.set_bg_color(theme.active_line_bg_color)
 				}
@@ -237,7 +237,7 @@ fn ui_loop(x voidptr) {
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 				ctx.reset_color()
 			} else {
-				line_num_label = ' '.repeat(buf.lines.len.str().len)
+				line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 			}
 			for j, ch in line.runes_iterator() {

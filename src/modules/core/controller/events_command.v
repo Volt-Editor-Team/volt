@@ -1,7 +1,7 @@
 module controller
 
 import time
-import fs { read_file, write_file }
+// import fs
 
 pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -38,18 +38,19 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						match buf.p_mode {
 							.directory {}
 							else {
-								result, message := write_file(buf.path, buf.lines)
-								if result {
-									// do something
-									_ := message
-								} else {
-									buf.lines = read_file(buf.path) or { [''] }
-									// buf.update_all_line_cache()
-								}
-								app.cmd_buffer.command = ''
-								buf.mode = .normal
-								buf.logical_cursor = buf.saved_cursor
-								// 					buf.update_visual_cursor(app.viewport.width)
+								// ! more interface implementation first !
+								// result, message := write_file(buf.path, buf.lines)
+								// if result {
+								// 	// do something
+								// 	_ := message
+								// } else {
+								// 	buf.lines = read_file(buf.path) or { [''] }
+								// 	// buf.update_all_line_cache()
+								// }
+								// app.cmd_buffer.command = ''
+								// buf.mode = .normal
+								// buf.logical_cursor = buf.saved_cursor
+								// // 					buf.update_visual_cursor(app.viewport.width)
 							}
 						}
 					}

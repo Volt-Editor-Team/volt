@@ -1,56 +1,53 @@
 module list
 
-import cursor { LogicalCursor, VisualCursor }
+// import cursor { LogicalCursor, VisualCursor }
 import fs { read_file }
-import util { Mode, PersistantMode }
-import buffer.common { InsertValue }
+// import util
+import buffer.common { DeleteResult, InsertValue }
 
 pub struct ListBuffer {
-	TempData
+	// TempData
 pub mut:
-	label  string         = 'Scratch'
-	name   string         = 'Scratch'
-	path   string         = 'Scratch'
-	mode   Mode           = .normal
-	p_mode PersistantMode = .default
-
+	// label  string         = 'Scratch'
+	// name   string         = 'Scratch'
+	// path   string         = 'Scratch'
+	// mode   Mode           = .normal
+	// p_mode PersistantMode = .default
 	// lines contains all lines of the text buffer.
-	lines          []string = ['']
-	logical_cursor LogicalCursor
-	// visual_cursor  VisualCursor
-	saved_cursor   LogicalCursor
-	row_offset     int
-
+	lines []string = ['']
+	// logical_cursor LogicalCursor
+	// // visual_cursor  VisualCursor
+	// saved_cursor   LogicalCursor
+	// row_offset     int
 	// temp stuff
-	file_ch chan string
-
+	// file_ch chan string
 	// cache visual col indexes
 	// visual_col [][]int
-pub:
-	tabsize int
+	// pub:
+	// 	tabsize int
 }
 
-pub struct TempData {
-pub mut:
-	temp_label  string
-	temp_data   []string = []
-	temp_int    int
-	temp_cursor LogicalCursor
-	temp_mode   PersistantMode
-	temp_path   string
-}
+// pub struct TempData {
+// pub mut:
+// 	temp_label  string
+// 	temp_data   []string = []
+// 	temp_int    int
+// 	temp_cursor LogicalCursor
+// 	temp_mode   PersistantMode
+// 	temp_path   string
+// }
 
-pub fn ListBuffer.new(b ListBuffer) ListBuffer {
-	lines := read_file(b.path) or { b.lines }
+pub fn ListBuffer.from_path(path string) ListBuffer {
+	lines := read_file(path) or { [''] }
 	mut buf := ListBuffer{
-		label:      if b.label == 'Scratch' { b.name } else { b.label }
-		name:       b.name
-		path:       b.path
-		lines:      lines
-		tabsize:    b.tabsize
+		// label:      if b.label == 'Scratch' { b.name } else { b.label }
+		// name:       b.name
+		// path:       b.path
+		lines: lines
+		// tabsize:    b.tabsize
 		// visual_col: [][]int{len: lines.len}
-		mode:       b.mode
-		p_mode:     b.p_mode
+		// mode:       b.mode
+		// p_mode:     b.p_mode
 	}
 
 	// buf.update_all_line_cache()
@@ -58,10 +55,21 @@ pub fn ListBuffer.new(b ListBuffer) ListBuffer {
 	return buf
 }
 
-struct DeleteResult {
-pub mut:
-	joined_line bool
-	new_x       int
+pub fn ListBuffer.prefilled(lines []string) ListBuffer {
+	mut buf := ListBuffer{
+		// label:      if b.label == 'Scratch' { b.name } else { b.label }
+		// name:       b.name
+		// path:       b.path
+		lines: lines
+		// tabsize:    b.tabsize
+		// visual_col: [][]int{len: lines.len}
+		// mode:       b.mode
+		// p_mode:     b.p_mode
+	}
+
+	// buf.update_all_line_cache()
+
+	return buf
 }
 
 // --- buffer interface ---
@@ -76,8 +84,7 @@ pub mut:
 // - [ ] index_to_line_col(i int) (int, int)
 // - [ ] line_col_to_index(line int, col int) int
 
-
-pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) !{
+pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 	// return error('')
 	x, y := buf.char_index_to_xy(curs)
 	match s {
@@ -95,7 +102,7 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) !{
 			return
 		}
 		string {
-			buf.insert_char(x,y, s)
+			buf.insert_char(x, y, s)
 		}
 	}
 	// ch := s as rune
@@ -106,12 +113,15 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) !{
 	// }
 }
 
-pub fn (mut buf ListBuffer) delete(curs int, n int) !{
-
+pub fn (mut buf ListBuffer) delete(curs int, n int) !DeleteResult {
+	x, y := buf.char_index_to_xy(curs)
+	return buf.remove_char(x, y)
 }
+
 pub fn (buf ListBuffer) to_string() string {
 	return buf.lines.join('\n')
 }
+
 pub fn (buf ListBuffer) len() int {
 	mut res := 0
 	for line in buf.lines {
@@ -119,25 +129,31 @@ pub fn (buf ListBuffer) len() int {
 	}
 	return res
 }
+
 pub fn (buf ListBuffer) line_count() int {
 	return buf.lines.len
-
 }
+
 pub fn (buf ListBuffer) line_at(i int) string {
 	return buf.lines[i]
 }
+
 pub fn (buf ListBuffer) char_at(i int) rune {
 	return rune(` `)
 }
+
 pub fn (buf ListBuffer) slice(start int, end int) string {
 	return ''
 }
+
 pub fn (buf ListBuffer) index_to_line_col(i int) (int, int) {
-	return 1,1
+	return 1, 1
 }
+
 pub fn (buf ListBuffer) line_col_to_index(line int, col int) int {
 	return 0
 }
 
-
-
+pub fn (mut buf ListBuffer) replace_with_temp(lines []string) {
+	buf.lines = lines
+}
