@@ -78,6 +78,32 @@ pub mut:
 
 
 pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) !{
+	// return error('')
+	x, y := buf.char_index_to_xy(curs)
+	match s {
+		rune {
+			if s == `\n` {
+				buf.insert_newline(x, y)
+			} else {
+				buf.insert_char(x, y, s.str())
+			}
+		}
+		u8 {
+			return
+		}
+		[]rune {
+			return
+		}
+		string {
+			buf.insert_char(x,y, s)
+		}
+	}
+	// ch := s as rune
+	// if ch == `\n` {
+	// 	buf.insert_newline(x,y)
+	// } else {
+	// 	buf.insert_char(x, y, ch.str())
+	// }
 }
 
 pub fn (mut buf ListBuffer) delete(curs int, n int) !{

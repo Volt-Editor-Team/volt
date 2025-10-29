@@ -93,6 +93,20 @@ import fs
 // 	return real_y
 // }
 
+pub fn (buf ListBuffer) char_index_to_xy(i int) (int, int) {
+	mut y := 0
+	mut x := i
+	for line in buf.lines {
+		length := line.runes().len + 1 // +1 for newline
+		if x < length {
+			return x, y
+		}
+		x -= length
+		y++
+	}
+	return x, y
+}
+
 pub fn (mut buf ListBuffer) update_offset(visual_wraps int, height int, margin int) bool {
 	// Compute the cursor's relative position inside the viewport
 	rel_pos := buf.logical_cursor.y - buf.row_offset + visual_wraps

@@ -35,7 +35,15 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
 					}
 					.enter {
-						buf.insert_newline(buf.logical_cursor.x, buf.logical_cursor.y)
+						// --- map cursor to character index
+						mut offset := 0
+						for i in 0 .. buf.logical_cursor.y {
+							offset += buf.line_at(i).len + 1 // +1 for newline
+						}
+						index := offset + buf.logical_cursor.x
+						// ---
+						buf.insert(index, `\n`) or { return }
+						// buf.insert_newline(buf.logical_cursor.x, buf.logical_cursor.y)
 						buf.logical_cursor.move_to_start_next_line_buffer(buf, buf.tabsize)
 						// buf.update_visual_cursor(app.viewport.width)
 
@@ -51,14 +59,23 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							if mod == .shift {
 								ch = ch.to_upper()
 							}
-							buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y,
-								ch)
+							// --- map cursor to character index
+							mut offset := 0
+							for i in 0 .. buf.logical_cursor.y {
+								offset += buf.line_at(i).len + 1 // +1 for newline
+							}
+							index := offset + buf.logical_cursor.x
+							// ---
+
+							buf.insert(index, ch) or { return }
+							// buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y,
+							// 	ch)
 
 							buf.logical_cursor.move_right_buffer(buf)
 							// 	buf.update_visual_cursor(app.viewport.width)
 							// buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 							// 	app.viewport.width)
-							cur_line := buf.lines[buf.logical_cursor.y]
+							cur_line := buf.line_at(buf.logical_cursor.y)
 							visual_index := util.char_count_expanded_tabs(cur_line#[..
 								buf.logical_cursor.x + 1], buf.tabsize)
 							buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)

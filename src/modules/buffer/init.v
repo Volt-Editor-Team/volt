@@ -3,6 +3,7 @@ module buffer
 // import cursor
 // import fs
 import util { Mode, PersistantMode }
+// import buffer.list { ListBuffer }
 
 pub enum BufferType {
 	gap
@@ -23,7 +24,7 @@ pub mut:
 	mode   Mode           = .normal
 	p_mode PersistantMode = .default
 	// core internal structures
-	type         BufferType = .rope
+	type         BufferType = .list
 	buffer       BufferInterface
 	cursor       CursorInterface
 	saved_cursor CursorInterface
@@ -49,4 +50,12 @@ pub mut:
 }
 
 pub fn Buffer.new(buf Buffer) {
+	// match buf.type {
+	// 	list {
+	// 		return Buffer(ListBuffer.new(buf))
+	// 	}
+	// 	else {
+	// 		return Buffer(ListBuffer.new(buf))
+	// 	}
+	// }
 }

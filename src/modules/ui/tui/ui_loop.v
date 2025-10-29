@@ -264,12 +264,11 @@ fn ui_loop(x voidptr) {
 	// mut wrap_points := view.build_wrap_points(line)
 	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
 	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
-	// ctx.draw_text(width - 30, height - 4, 'y_pos: ' +
-	// 	buf.visual_y(buf.visual_cursor.y, buf.visual_cursor.x, app.viewport.width).str())
 
-	// ctx.draw_text(width - 30, height - 3, 'upper limit: ' +
-	// 	(buf.logical_cursor.y - (app.viewport.height - app.viewport.margin)).str())
-	// ctx.draw_text(width - 30, height - 2, buf.logical_cursor.desired_col.str())
+	// ctx.draw_text(width - 30, height - 4, buf.char_index.str())
+	// ctx.draw_text(width - 30, height - 3, '(' + buf.logical_cursor.x.str() + ', ' +
+	// 	buf.logical_cursor.y.str() + ')')
+	// ctx.draw_text(width - 30, height - 2, buf.char_index_to_xy(buf.char_index).str())
 
 	mut command_bar_y_pos := height
 
