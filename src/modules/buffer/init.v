@@ -25,7 +25,6 @@ pub mut:
 	path   string         = 'Scratch'
 	mode   Mode           = .normal
 	p_mode PersistantMode = .default
-	lines  []string
 	// core internal structures
 	type   BufferType      = .list
 	buffer BufferInterface = ListBuffer.from_path('')
@@ -53,42 +52,59 @@ pub mut:
 	command string
 }
 
-pub fn Buffer.new(buf Buffer) Buffer {
+pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
 	match buf.type {
 		.list {
-			new_buffer := if buf.lines.len > 0 {
-				ListBuffer.prefilled(buf.lines)
-			} else {
-				ListBuffer.from_path(buf.path)
-			}
+			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
 				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
 				name:    buf.name
 				path:    buf.path
-				lines:   buf.lines
 				tabsize: buf.tabsize
 				buffer:  new_buffer
-				// visual_col: [][]int{len: lines.len}
-				mode:   buf.mode
-				p_mode: buf.p_mode
+				mode:    buf.mode
+				p_mode:  buf.p_mode
 			}
 		}
 		else {
-			new_buffer := if buf.lines.len > 0 {
-				ListBuffer.prefilled(buf.lines)
-			} else {
-				ListBuffer.from_path(buf.path)
-			}
+			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
 				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
 				name:    buf.name
 				path:    buf.path
-				lines:   buf.lines
 				tabsize: buf.tabsize
 				buffer:  new_buffer
-				// visual_col: [][]int{len: lines.len}
-				mode:   buf.mode
-				p_mode: buf.p_mode
+				mode:    buf.mode
+				p_mode:  buf.p_mode
+			}
+		}
+	}
+}
+
+pub fn Buffer.from_path(buf Buffer) Buffer {
+	match buf.type {
+		.list {
+			new_buffer := ListBuffer.from_path(buf.path)
+			return Buffer{
+				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:    buf.name
+				path:    buf.path
+				tabsize: buf.tabsize
+				buffer:  new_buffer
+				mode:    buf.mode
+				p_mode:  buf.p_mode
+			}
+		}
+		else {
+			new_buffer := ListBuffer.from_path(buf.path)
+			return Buffer{
+				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:    buf.name
+				path:    buf.path
+				tabsize: buf.tabsize
+				buffer:  new_buffer
+				mode:    buf.mode
+				p_mode:  buf.p_mode
 			}
 		}
 	}

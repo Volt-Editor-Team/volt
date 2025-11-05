@@ -30,10 +30,12 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			}
 			.enter {
 				match cmd_str {
+					// quit
 					'q', 'quit' {
 						app.cmd_buffer.command = ''
 						exit(0)
 					}
+					// write/save file
 					'w', 'write' {
 						match buf.p_mode {
 							.directory {}
@@ -54,11 +56,13 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						}
 					}
+					// help
 					'help' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
 						app.add_help_buffer()
 					}
+					// change directory
 					'cd' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
@@ -75,6 +79,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							app.has_directory_buffer = true
 						}
 					}
+					// close buffer
 					'cb' {
 						app.cmd_buffer.command = ''
 						if buf.p_mode == .directory {
@@ -85,6 +90,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						}
 						app.close_buffer()
 					}
+					// open doctor
 					'doctor' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
@@ -110,6 +116,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							app.has_stats_opened = true
 						}
 					}
+					// fuzzy finder
 					'fzf' {
 						app.cmd_buffer.command = ''
 						buf.open_fuzzy_find()
@@ -117,6 +124,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					else {}
 				}
 			}
+			// delete character
 			.backspace {
 				// // command string start at x = 2
 				// command_str_index := buf.logical_cursor.x - 2
@@ -125,6 +133,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					app.cmd_buffer.remove_char(app.cmd_buffer.command.len - 1)
 				}
 			}
+			// add character
 			else {
 				ch := u8(key).ascii_str()
 				app.cmd_buffer.command += ch

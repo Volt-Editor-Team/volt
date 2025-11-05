@@ -57,7 +57,7 @@ pub fn App.new(width int, height int) &App {
 	}
 
 	mut buffers := []Buffer{}
-	buffers << Buffer.new(Buffer{})
+	buffers << Buffer.from_path(Buffer{})
 	app.buffers = buffers
 	app.active_buffer = 0
 
