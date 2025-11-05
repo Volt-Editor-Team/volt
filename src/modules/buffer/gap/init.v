@@ -1,7 +1,7 @@
 module gap
 
 import math
-import buffer { InsertValue, RopeData }
+import buffer.common { InsertValue, RopeData }
 
 // --- initialization ---
 struct GapBuffer {
@@ -41,6 +41,8 @@ pub fn GapBuffer.from(data []rune) GapBuffer {
 // - [ ] slice(start int, end int) string
 // - [ ] index_to_line_col(i int) (int, int)
 // - [ ] line_col_to_index(line int, col int) int
+// - [ ] split() (RopeData, RopeData)
+// - [ ] replace_with_temp(lines []string)
 
 pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 	match val {
@@ -58,11 +60,6 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 		}
 	}
 }
-
-// pub fn (mut g GapBuffer) delete(cursor int, count int) {
-// 	g.shift_gap_to(cursor)
-// 	g.gap.end = math.min(g.gap.end + count, g.data.len)
-// }
 
 pub fn (mut g GapBuffer) delete(cursor int, count int) ! {
 	g.shift_gap_to(cursor)
@@ -90,8 +87,8 @@ pub fn (g GapBuffer) line_count() int {
 	return lines
 }
 
-pub fn (g GapBuffer) line_at(i int) []rune {
-	return []
+pub fn (g GapBuffer) line_at(i int) string {
+	return ''
 }
 
 pub fn (g GapBuffer) char_at(index int) rune {
@@ -110,9 +107,11 @@ pub fn (g GapBuffer) line_col_to_index(line int, col int) int {
 	return 0
 }
 
+pub fn (g GapBuffer) replace_with_temp(lines []string) {}
+
 // splits gapbuffer into 2 ideally subsets,
 // creating two separate gap buffers.
-fn (g GapBuffer) split() (RopeData, RopeData) {
+pub fn (g GapBuffer) split() (RopeData, RopeData) {
 	text := g.get_runes()
 	split := text.len / 2
 	left := GapBuffer.from(text[..split])

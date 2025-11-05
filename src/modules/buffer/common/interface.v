@@ -19,7 +19,7 @@ pub interface BufferInterface {
 mut:
 	// --- edit functions ---
 	insert(cursor int, s InsertValue) !
-	delete(cursor int, n int) !DeleteResult
+	delete(cursor int, n int) !
 	replace_with_temp(lines []string)
 }
 

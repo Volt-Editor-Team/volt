@@ -24,8 +24,8 @@ fn test_insert_causes_split() {
 
 fn test_insert_from_file() {
 	mut buf := RopeBuffer.new(gap.GapBuffer.new())
-	str := os.read_file(os.real_path(os.join_path('.', 'src', 'modules', 'buffer', 'gap',
-		'insert_test.v'))) or { '' }
+	path := os.join_path(@VMODROOT, 'modules', 'buffer', 'gap', 'insert_test.v')
+	str := os.read_file(path) or { '' }
 	buf.insert(0, str)!
 	assert buf.len() == str.runes().len
 	assert buf.to_string() == str
@@ -40,8 +40,8 @@ fn test_insert_from_file_with_smaller_cap() {
 		}
 		node_cap: 1000
 	}
-	str := os.read_file(os.real_path(os.join_path('.', 'src', 'modules', 'buffer', 'gap',
-		'insert_test.v'))) or { '' }
+	path := os.join_path(@VMODROOT, 'modules', 'buffer', 'gap', 'insert_test.v')
+	str := os.read_file(path) or { '' }
 	buf.insert(0, str)!
 	assert buf.len() == str.runes().len
 	assert buf.to_string() == str

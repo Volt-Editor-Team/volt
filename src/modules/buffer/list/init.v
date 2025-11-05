@@ -1,81 +1,32 @@
 module list
 
-// import cursor { LogicalCursor, VisualCursor }
 import fs { read_file }
-// import util
-import buffer.common { DeleteResult, InsertValue }
+import buffer.common { InsertValue }
 
 pub struct ListBuffer {
-	// TempData
 pub mut:
-	// label  string         = 'Scratch'
-	// name   string         = 'Scratch'
-	// path   string         = 'Scratch'
-	// mode   Mode           = .normal
-	// p_mode PersistantMode = .default
-	// lines contains all lines of the text buffer.
 	lines []string = ['']
-	// logical_cursor LogicalCursor
-	// // visual_cursor  VisualCursor
-	// saved_cursor   LogicalCursor
-	// row_offset     int
-	// temp stuff
-	// file_ch chan string
-	// cache visual col indexes
-	// visual_col [][]int
-	// pub:
-	// 	tabsize int
 }
-
-// pub struct TempData {
-// pub mut:
-// 	temp_label  string
-// 	temp_data   []string = []
-// 	temp_int    int
-// 	temp_cursor LogicalCursor
-// 	temp_mode   PersistantMode
-// 	temp_path   string
-// }
 
 pub fn ListBuffer.from_path(path string) ListBuffer {
 	lines := read_file(path) or { [''] }
 	mut buf := ListBuffer{
-		// label:      if b.label == 'Scratch' { b.name } else { b.label }
-		// name:       b.name
-		// path:       b.path
 		lines: lines
-		// tabsize:    b.tabsize
-		// visual_col: [][]int{len: lines.len}
-		// mode:       b.mode
-		// p_mode:     b.p_mode
 	}
-
-	// buf.update_all_line_cache()
-
 	return buf
 }
 
 pub fn ListBuffer.prefilled(lines []string) ListBuffer {
 	mut buf := ListBuffer{
-		// label:      if b.label == 'Scratch' { b.name } else { b.label }
-		// name:       b.name
-		// path:       b.path
 		lines: lines
-		// tabsize:    b.tabsize
-		// visual_col: [][]int{len: lines.len}
-		// mode:       b.mode
-		// p_mode:     b.p_mode
 	}
-
-	// buf.update_all_line_cache()
-
 	return buf
 }
 
 // --- buffer interface ---
-// - [ ] insert(cursor int, s InsertValue)
-// - [ ] delete(cursor int, n int)
-// - [ ] to_string() string
+// - [?] insert(cursor int, s InsertValue)
+// - [x] delete(cursor int, n int)
+// - [x] to_string() string
 // - [x] len() int
 // - [x] line_count() int
 // - [x] line_at(i int)
@@ -83,6 +34,8 @@ pub fn ListBuffer.prefilled(lines []string) ListBuffer {
 // - [ ] slice(start int, end int) string
 // - [ ] index_to_line_col(i int) (int, int)
 // - [ ] line_col_to_index(line int, col int) int
+// - [ ] split() (RopeData, RopeData)
+// - [x] replace_with_temp(lines []string)
 
 pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 	// return error('')
@@ -113,9 +66,9 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 	// }
 }
 
-pub fn (mut buf ListBuffer) delete(curs int, n int) !DeleteResult {
+pub fn (mut buf ListBuffer) delete(curs int, n int) ! {
 	x, y := buf.char_index_to_xy(curs)
-	return buf.remove_char(x, y)
+	buf.remove_char(x, y)
 }
 
 pub fn (buf ListBuffer) to_string() string {

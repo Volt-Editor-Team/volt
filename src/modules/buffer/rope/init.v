@@ -1,7 +1,6 @@
 module rope
 
-import buffer { RopeData }
-import buffer.common { InsertValue }
+import buffer.common { InsertValue, RopeData }
 
 // --- initialization ---
 pub struct RopeBuffer {
@@ -76,6 +75,7 @@ pub fn line_count() int {
 }
 
 pub fn line_at(i int) string {
+	return ''
 }
 
 pub fn char_at(i int) rune {

@@ -1,6 +1,6 @@
 module rope
 
-import buffer { InsertValue, get_insert_value_size }
+import buffer.common { InsertValue, get_insert_value_size }
 
 pub fn (r RopeBuffer) left() !&RopeNode {
 	if r.root == unsafe { nil } {

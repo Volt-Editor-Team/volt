@@ -29,12 +29,15 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						}
 						index := offset + buf.logical_cursor.x
 						// ---
-						delete_result := buf.buffer.delete(index, 1) or { return }
+						total_lines := buf.buffer.line_count()
+						buf.buffer.delete(index, 1) or { return }
 						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
-						if delete_result.joined_line {
+						if buf.buffer.line_count() != total_lines {
 							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
+							buf.logical_cursor.move_to_x(buf.buffer.line_at(buf.logical_cursor.y).runes().len)
+						} else {
+							buf.logical_cursor.move_to_x(buf.logical_cursor.x - 1)
 						}
-						buf.logical_cursor.move_to_x(delete_result.new_x)
 						// buf.update_visual_cursor(app.viewport.width)
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 						cur_line := buf.buffer.line_at(buf.logical_cursor.y)
