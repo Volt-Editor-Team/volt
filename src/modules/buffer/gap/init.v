@@ -58,6 +58,7 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 		string {
 			g.insert_string(index, val)!
 		}
+		[]string {}
 	}
 }
 

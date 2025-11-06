@@ -3,7 +3,7 @@ module common
 pub type StartValue = string | []string | []rune
 
 // types accepted for storing in buffer
-pub type InsertValue = rune | u8 | []rune | string
+pub type InsertValue = rune | u8 | []rune | string | []string
 
 pub fn get_insert_value_size(val InsertValue) int {
 	match val {
@@ -15,6 +15,13 @@ pub fn get_insert_value_size(val InsertValue) int {
 		}
 		string {
 			return val.runes().len
+		}
+		[]string {
+			mut total := 0
+			for line in val {
+				total += line.runes().len
+			}
+			return total
 		}
 	}
 }

@@ -268,7 +268,13 @@ fn ui_loop(x voidptr) {
 	// ctx.draw_text(width - 30, height - 4, buf.char_index.str())
 	// ctx.draw_text(width - 30, height - 3, '(' + buf.logical_cursor.x.str() + ', ' +
 	// 	buf.logical_cursor.y.str() + ')')
-	// ctx.draw_text(width - 30, height - 2, buf.char_index_to_xy(buf.char_index).str())
+	ctx.draw_text(width - 30, height - 3, buf.logical_cursor.flat_index.str())
+	mut offset := 0
+	for i in 0 .. buf.logical_cursor.y {
+		offset += buf.buffer.line_at(i).len + 1 // +1 for newline
+	}
+	index := offset + buf.logical_cursor.x
+	ctx.draw_text(width - 30, height - 2, index.str())
 
 	mut command_bar_y_pos := height
 

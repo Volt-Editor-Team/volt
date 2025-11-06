@@ -22,6 +22,11 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			if event == .key_down {
 				match key {
 					.backspace {
+						prev_line_len := if buf.logical_cursor.y > 0 {
+							buf.buffer.line_at(buf.logical_cursor.y - 1).runes().len
+						} else {
+							0
+						}
 						// --- map cursor to character index
 						mut offset := 0
 						for i in 0 .. buf.logical_cursor.y {
@@ -33,10 +38,13 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.buffer.delete(index, 1) or { return }
 						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if buf.buffer.line_count() != total_lines {
+							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).runes().len - prev_line_len
 							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
-							buf.logical_cursor.move_to_x(buf.buffer.line_at(buf.logical_cursor.y).runes().len)
+							buf.logical_cursor.move_to_x(prev_line_len)
 						} else {
-							buf.logical_cursor.move_to_x(buf.logical_cursor.x - 1)
+							if buf.logical_cursor.x > 0 {
+								buf.logical_cursor.move_to_x(buf.logical_cursor.x - 1)
+							}
 						}
 						// buf.update_visual_cursor(app.viewport.width)
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)

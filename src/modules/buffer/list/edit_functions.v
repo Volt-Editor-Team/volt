@@ -9,6 +9,10 @@ pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch string) {
 	// buf.update_line_cache(y_pos)
 }
 
+pub fn (mut buf ListBuffer) insert_lines(y_pos int, lines []string) {
+	buf.lines.insert(y_pos, lines)
+}
+
 pub fn (mut buf ListBuffer) insert_newline(x_pos int, y_pos int) {
 	cur_line := buf.lines[y_pos]
 	left := cur_line[..x_pos]

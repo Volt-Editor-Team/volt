@@ -57,6 +57,9 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 		string {
 			buf.insert_char(x, y, s)
 		}
+		[]string {
+			buf.insert_lines(y + 1, s)
+		}
 	}
 	// ch := s as rune
 	// if ch == `\n` {

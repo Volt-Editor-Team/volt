@@ -11,6 +11,7 @@ pub fn (mut log_curs LogicalCursor) move_right_buffer(buf BufferInterface) {
 		log_curs.x = 0
 		log_curs.y++
 	}
+	log_curs.flat_index++
 }
 
 pub fn (mut log_curs LogicalCursor) move_left_buffer(buf BufferInterface) {
@@ -22,12 +23,14 @@ pub fn (mut log_curs LogicalCursor) move_left_buffer(buf BufferInterface) {
 	} else {
 		log_curs.x -= 1
 	}
+	log_curs.flat_index--
 }
 
 pub fn (mut log_curs LogicalCursor) move_down_buffer(buf BufferInterface, tabsize int) {
 	// cursor is not on the last line
 	// move curse down and calculate x
 	if log_curs.y < buf.line_count() - 1 {
+		log_curs.flat_index += buf.line_at(log_curs.y).runes().len + 1 - log_curs.x
 		log_curs.y += 1
 		// log_curs.x = logical_x_fn(log_curs.y, log_curs.desired_col)
 		line := buf.line_at(log_curs.y).runes()
@@ -45,14 +48,17 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(buf BufferInterface, tabsiz
 		} else {
 			closest
 		}
+		log_curs.flat_index += log_curs.x
 	} else {
 		// cursor is on the last line
 		// move cursor the end
+		log_curs.flat_index += buf.line_at(log_curs.y).runes().len - log_curs.x
 		log_curs.x = buf.line_at(log_curs.y).runes().len
 	}
 }
 
 pub fn (mut log_curs LogicalCursor) move_up_buffer(buf BufferInterface, tabsize int) {
+	log_curs.flat_index -= log_curs.x
 	if log_curs.y > 0 {
 		log_curs.y -= 1
 		line := buf.line_at(log_curs.y).runes()
@@ -70,6 +76,7 @@ pub fn (mut log_curs LogicalCursor) move_up_buffer(buf BufferInterface, tabsize 
 		} else {
 			closest
 		}
+		log_curs.flat_index -= line.len + 1 - log_curs.x
 	} else if log_curs.y == 0 {
 		log_curs.x = 0
 	}
@@ -77,10 +84,14 @@ pub fn (mut log_curs LogicalCursor) move_up_buffer(buf BufferInterface, tabsize 
 
 pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(buf BufferInterface, tabsize int) {
 	log_curs.move_down_buffer(buf, tabsize)
+	prev_x := log_curs.x
 	log_curs.x = 0
+	log_curs.flat_index -= prev_x
 }
 
 pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(buf BufferInterface, tabsize int) {
 	log_curs.move_up_buffer(buf, tabsize)
+	prev_x := log_curs.x
 	log_curs.x = buf.line_at(log_curs.y).runes().len
+	log_curs.flat_index += log_curs.x - prev_x
 }
