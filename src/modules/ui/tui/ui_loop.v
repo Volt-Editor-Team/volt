@@ -265,9 +265,8 @@ fn ui_loop(x voidptr) {
 	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
 	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
 
-	// ctx.draw_text(width - 30, height - 4, buf.char_index.str())
-	// ctx.draw_text(width - 30, height - 3, '(' + buf.logical_cursor.x.str() + ', ' +
-	// 	buf.logical_cursor.y.str() + ')')
+	ctx.draw_text(width - 30, height - 5, view.width.str())
+	ctx.draw_text(width - 30, height - 4, buf.logical_cursor.desired_col.str())
 	ctx.draw_text(width - 30, height - 3, buf.logical_cursor.flat_index.str())
 	mut offset := 0
 	for i in 0 .. buf.logical_cursor.y {
