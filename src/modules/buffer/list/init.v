@@ -5,18 +5,18 @@ import buffer.common { InsertValue }
 
 pub struct ListBuffer {
 pub mut:
-	lines []string = ['']
+	lines [][]rune
 }
 
 pub fn ListBuffer.from_path(path string) ListBuffer {
-	lines := read_file(path) or { [''] }
+	lines := read_file(path) or { [][]rune{} }
 	mut buf := ListBuffer{
 		lines: lines
 	}
 	return buf
 }
 
-pub fn ListBuffer.prefilled(lines []string) ListBuffer {
+pub fn ListBuffer.prefilled(lines [][]rune) ListBuffer {
 	mut buf := ListBuffer{
 		lines: lines
 	}
@@ -45,19 +45,21 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 			if s == `\n` {
 				buf.insert_newline(x, y)
 			} else {
-				buf.insert_char(x, y, s.str())
+				buf.insert_char(x, y, s)
 			}
 		}
 		u8 {
 			return
 		}
-		[]rune {
-			return
-		}
 		string {
-			buf.insert_char(x, y, s)
+			for r in s.runes_iterator() {
+				buf.insert_char(x, y, r)
+			}
 		}
 		[]string {
+			return
+		}
+		[]rune {
 			buf.insert_lines(y + 1, s)
 		}
 	}
@@ -75,13 +77,13 @@ pub fn (mut buf ListBuffer) delete(curs int, n int) ! {
 }
 
 pub fn (buf ListBuffer) to_string() string {
-	return buf.lines.join('\n')
+	return buf.lines.map(it.string()).join('\n')
 }
 
 pub fn (buf ListBuffer) len() int {
 	mut res := 0
 	for line in buf.lines {
-		res += line.runes().len
+		res += line.len
 	}
 	return res
 }
@@ -90,7 +92,7 @@ pub fn (buf ListBuffer) line_count() int {
 	return buf.lines.len
 }
 
-pub fn (buf ListBuffer) line_at(i int) string {
+pub fn (buf ListBuffer) line_at(i int) []rune {
 	return buf.lines[i]
 }
 
@@ -110,6 +112,6 @@ pub fn (buf ListBuffer) line_col_to_index(line int, col int) int {
 	return 0
 }
 
-pub fn (mut buf ListBuffer) replace_with_temp(lines []string) {
+pub fn (mut buf ListBuffer) replace_with_temp(lines [][]rune) {
 	buf.lines = lines
 }

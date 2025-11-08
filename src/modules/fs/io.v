@@ -2,12 +2,14 @@ module fs
 
 import os
 
-pub fn read_file(path string) ![]string {
+pub fn read_file(path string) ![][]rune {
 	abs_path := os.real_path(path)
 
 	if os.exists(abs_path) {
 		if os.is_file(abs_path) && os.is_readable(abs_path) {
-			return os.read_lines(abs_path) or { [''] }
+			lines := os.read_lines(abs_path) or { [''] }
+			runes := [][]rune{len: lines.len, init: lines[index].runes()}
+			return runes
 		} else {
 			return error('Unable to read file')
 		}

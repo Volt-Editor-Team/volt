@@ -7,7 +7,7 @@ pub interface BufferInterface {
 	// --- core navigation ---
 	len() int
 	line_count() int
-	line_at(i int) string
+	line_at(i int) []rune
 
 	// --- random access ---
 	char_at(i int) rune
@@ -20,7 +20,7 @@ mut:
 	// --- edit functions ---
 	insert(cursor int, s InsertValue) !
 	delete(cursor int, n int) !
-	replace_with_temp(lines []string)
+	replace_with_temp(lines [][]rune)
 }
 
 // interface required for cursor implementations

@@ -50,7 +50,7 @@ fn compare_fuzzy_result(a FuzzyResult, b FuzzyResult) int {
 	}
 }
 
-pub fn fuzzyfind(query string, mut lines []string, mut master_list []string) {
+pub fn fuzzyfind(query string, mut lines [][]rune, mut master_list []string) {
 	// Preallocate the result array
 	mut result := []FuzzyResult{cap: master_list.len}
 
@@ -74,6 +74,6 @@ pub fn fuzzyfind(query string, mut lines []string, mut master_list []string) {
 
 	// Fill lines safely inside the lock
 	lock {
-		lines = []string{len: result.len, init: result[index].text}
+		lines = [][]rune{len: result.len, init: result[index].text.runes()}
 	}
 }

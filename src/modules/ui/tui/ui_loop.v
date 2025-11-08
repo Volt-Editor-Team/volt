@@ -68,7 +68,7 @@ fn ui_loop(x voidptr) {
 			// i is the row index of the actual renders screen
 			// y_index is the position in the buffer
 			y_index := start_row + i
-			line := buf.buffer.line_at(y_index)
+			line := buf.buffer.line_at(y_index).string()
 
 			// values necessary for rendering aligned line numbers
 			mut line_num_label := term.bold((y_index + 1).str() +
@@ -214,11 +214,12 @@ fn ui_loop(x voidptr) {
 			if buf.temp_data.len > 0 {
 				ctx.set_bg_color(theme.active_line_bg_color)
 				ctx.draw_line(0, 1 + start, width - 1, 1 + start)
-				ctx.draw_text(start_x + 1, 1 + start, buf.temp_data[0])
+				ctx.draw_text(start_x + 1, 1 + start, buf.temp_data[0].string())
 			}
 			ctx.set_bg_color(theme.background_color)
 		}
-		for i, line in buf.temp_data[start_row..end_row] {
+		for i, line_runes in buf.temp_data[start_row..end_row] {
+			line := line_runes.string()
 			mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
 			file_ext := os.file_ext(line)
 			if buf.mode == .normal && i == buf.logical_cursor.y {

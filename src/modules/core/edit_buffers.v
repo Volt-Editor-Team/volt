@@ -23,6 +23,7 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 }
 
 pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
+	runes_list := [][]rune{len: lines.len, init: lines[index].runes()}
 	new_buf := Buffer.prefilled(Buffer{
 		label:   b.label
 		name:    b.name
@@ -30,7 +31,7 @@ pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
 		tabsize: default_tabsize
 		mode:    .normal
 		p_mode:  b.p_mode
-	}, lines)
+	}, runes_list)
 
 	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
 		app.buffers[0] = new_buf

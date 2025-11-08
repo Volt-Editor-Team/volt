@@ -23,7 +23,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				match key {
 					.backspace {
 						prev_line_len := if buf.logical_cursor.y > 0 {
-							buf.buffer.line_at(buf.logical_cursor.y - 1).runes().len
+							buf.buffer.line_at(buf.logical_cursor.y - 1).len
 						} else {
 							0
 						}
@@ -38,7 +38,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.buffer.delete(index, 1) or { return }
 						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if buf.buffer.line_count() != total_lines {
-							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).runes().len - prev_line_len
+							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
 							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
 							buf.logical_cursor.move_to_x(prev_line_len)
 						} else {
@@ -48,7 +48,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						}
 						// buf.update_visual_cursor(app.viewport.width)
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
-						cur_line := buf.buffer.line_at(buf.logical_cursor.y)
+						cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 						visual_index := util.char_count_expanded_tabs(cur_line#[..
 							buf.logical_cursor.x + 1], buf.tabsize)
 						buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -68,7 +68,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						// buf.update_visual_cursor(app.viewport.width)
 
 						// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
-						cur_line := buf.buffer.line_at(buf.logical_cursor.y)
+						cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 						visual_index := util.char_count_expanded_tabs(cur_line#[..
 							buf.logical_cursor.x + 1], buf.tabsize)
 						buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -95,7 +95,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// 	buf.update_visual_cursor(app.viewport.width)
 							// buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 							// 	app.viewport.width)
-							cur_line := buf.buffer.line_at(buf.logical_cursor.y)
+							cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 							visual_index := util.char_count_expanded_tabs(cur_line#[..
 								buf.logical_cursor.x + 1], buf.tabsize)
 							buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -149,7 +149,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 										app.viewport.margin)
 
-									file := buf.temp_data[0]
+									file := buf.temp_data[0].string()
 									app.add_new_buffer(
 										name:    os.file_name(file)
 										path:    file

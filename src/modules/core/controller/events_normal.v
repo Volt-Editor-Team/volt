@@ -54,7 +54,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					prev_y := buf.logical_cursor.y
 					buf.logical_cursor.move_right_buffer(buf.buffer)
 					// buf.update_visual_cursor(app.viewport.width)
-					cur_line := buf.buffer.line_at(buf.logical_cursor.y)
+					cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 					mut visual_index := util.char_count_expanded_tabs(cur_line#[..buf.logical_cursor.x],
 						buf.tabsize)
 
@@ -76,7 +76,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					buf.logical_cursor.move_left_buffer(buf.buffer)
 					// buf.update_visual_cursor(app.viewport.width)
 					// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
-					cur_line := buf.buffer.line_at(buf.logical_cursor.y)
+					cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 					mut visual_index := util.char_count_expanded_tabs(cur_line#[..buf.logical_cursor.x],
 						buf.tabsize)
 
@@ -93,7 +93,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.j, .down {
-					line := buf.buffer.line_at(buf.logical_cursor.y)
+					line := buf.buffer.line_at(buf.logical_cursor.y).string()
 
 					// total wraps in the current line
 					mut total_wraps := 0
@@ -116,7 +116,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						if buf.logical_cursor.x + app.viewport.width - 1 <= line.runes().len {
 							perfect_index++
 						}
-						buf.logical_cursor.x = perfect_index
+						buf.logical_cursor.move_to_x(perfect_index)
 						// perfect_index := line#[..buf.logical_cursor.x + app.viewport.width].runes().len
 						// buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
 					} else {
@@ -131,24 +131,24 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						app.viewport.margin)
 				}
 				.k, .up {
-					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
+					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y).string()#[..buf.logical_cursor.x],
 						buf.tabsize) / app.viewport.width
 					// cur_wrap := buf.logical_cursor.x / app.viewport.width
 					if cur_wrap == 0 {
 						// line above is NOT the first line
 						if buf.logical_cursor.y - 1 > 0 {
-							line := buf.buffer.line_at(buf.logical_cursor.y - 1)
+							line := buf.buffer.line_at(buf.logical_cursor.y - 1).string()
 
 							mut total_wraps := 0
 							if line.runes().len != 0 {
 								total_wraps = util.char_count_expanded_tabs(line, buf.tabsize) / app.viewport.width
 							}
 							if total_wraps > 0 {
-								buf.logical_cursor.y--
+								buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
 								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index], index - 1,
 									buf.tabsize)
-								buf.logical_cursor.x = perfect_index
+								buf.logical_cursor.move_to_x(perfect_index)
 							} else {
 								buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
 							}
@@ -158,7 +158,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					} else {
 						// buf.visual_cursor.x -= app.viewport.width
 						// buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
-						line := buf.buffer.line_at(buf.logical_cursor.y)
+						line := buf.buffer.line_at(buf.logical_cursor.y).string()
 						// buf.logical_cursor.x = util.char_count_expanded_tabs(line[..buf.logical_cursor.x - app.viewport.width],
 						// 	buf.tabsize)
 						index := math.max(cur_wrap * app.viewport.width +
@@ -167,7 +167,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							index - app.viewport.width, buf.tabsize)
 						// next_index := util.char_count_expanded_tabs(line[..buf.logical_cursor.x],
 						// 	buf.tabsize) - app.viewport.width
-						buf.logical_cursor.x = math.min(next_index, buf.logical_cursor.desired_col)
+						buf.logical_cursor.move_to_x(math.min(next_index, buf.logical_cursor.desired_col))
 					}
 
 					// buf.update_visual_cursor(app.viewport.width)
@@ -183,7 +183,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		.directory {
 			match key {
 				.enter {
-					path := buf.buffer.line_at(buf.logical_cursor.y)
+					path := buf.buffer.line_at(buf.logical_cursor.y).string()
 					app.add_new_buffer(
 						name:    os.file_name(path)
 						path:    buf.path + path
@@ -193,12 +193,13 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					)
 				}
 				.tab {
-					path := buf.buffer.line_at(buf.logical_cursor.y)
+					path := buf.buffer.line_at(buf.logical_cursor.y).string()
 
 					if fs.is_dir(buf.path + path) {
 						parent_dir, paths := fs.get_paths_from_dir(buf.path, path)
 						buf.path = parent_dir
-						buf.buffer.replace_with_temp(paths)
+						replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
+						buf.buffer.replace_with_temp(replacement_runes)
 
 						buf.logical_cursor.x = 0
 						buf.logical_cursor.y = 0
@@ -212,7 +213,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.backspace {
 					parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
 					buf.path = parent_dir
-					buf.buffer.replace_with_temp(paths)
+					replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
+					buf.buffer.replace_with_temp(replacement_runes)
 					// buf.visual_col = [][]int{len: buf.lines.len}
 					// buf.update_all_line_cache()
 
@@ -238,7 +240,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.enter {
 					if buf.temp_data.len > 0 {
-						file := buf.temp_data[buf.logical_cursor.y]
+						file := buf.temp_data[buf.logical_cursor.y].string()
 
 						buf.path = buf.temp_path
 						buf.p_mode = buf.temp_mode

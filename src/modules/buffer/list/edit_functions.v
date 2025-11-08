@@ -2,14 +2,15 @@ module list
 
 import buffer.common { DeleteResult }
 
-pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch string) {
-	mut line := buf.lines[y_pos]
-	new_line := line[..x_pos] + ch + line[x_pos..]
-	buf.lines[y_pos] = new_line
+pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch rune) {
+	// mut line := buf.lines[y_pos]
+	// new_line := line[..x_pos] + ch + line[x_pos..]
+	// buf.lines[y_pos] = new_line
+	buf.lines[y_pos].insert(x_pos, ch)
 	// buf.update_line_cache(y_pos)
 }
 
-pub fn (mut buf ListBuffer) insert_lines(y_pos int, lines []string) {
+pub fn (mut buf ListBuffer) insert_lines(y_pos int, lines []rune) {
 	buf.lines.insert(y_pos, lines)
 }
 
@@ -37,7 +38,7 @@ pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 
 	if x_pos > 0 {
 		// normal delete
-		buf.lines[y_pos] = left#[..-1] + right
+		buf.lines[y_pos].delete(x_pos)
 		// 	buf.update_line_cache(y_pos)
 		result.new_x = x_pos - 1
 	} else if x_pos == 0 && y_pos > 0 {
@@ -45,7 +46,8 @@ pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) DeleteResult {
 		buf.remove_line(y_pos)
 		prev_line_index := y_pos - 1
 		new_x := buf.lines[prev_line_index].len
-		buf.lines[y_pos - 1] += right
+		// buf.lines[y_pos - 1] += right
+		buf.lines[y_pos - 1].insert(buf.lines[y_pos - 1].len, right)
 		// 	buf.update_line_cache(y_pos - 1)
 
 		result.joined_line = true

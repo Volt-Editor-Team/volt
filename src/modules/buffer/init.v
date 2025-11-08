@@ -42,7 +42,7 @@ pub mut:
 pub struct TempData {
 pub mut:
 	temp_label  string
-	temp_data   []string = []
+	temp_data   [][]rune
 	temp_int    int
 	temp_cursor LogicalCursor
 	temp_mode   PersistantMode
@@ -54,7 +54,7 @@ pub mut:
 	command string
 }
 
-pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
+pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 	match buf.type {
 		.list {
 			new_buffer := ListBuffer.prefilled(lines)
