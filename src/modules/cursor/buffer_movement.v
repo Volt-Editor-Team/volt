@@ -38,12 +38,13 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(buf BufferInterface, tabsiz
 		mut closest := 0
 		for i, ch in line {
 			if column >= log_curs.desired_col {
+				column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 				break
 			}
 			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 			closest = i
 		}
-		log_curs.x = if closest == line.len - 1 && closest < log_curs.desired_col {
+		log_curs.x = if closest == line.len - 1 && closest + column < log_curs.desired_col {
 			closest + 1
 		} else {
 			closest

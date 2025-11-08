@@ -6,7 +6,7 @@ pub mut:
 	x           int
 	y           int
 	flat_index  int
-	desired_col int
+	desired_col int = 1
 }
 
 // pub struct VisualCursor {

@@ -22,16 +22,14 @@ pub fn char_count_expanded_tabs(line string, tabsize int) int {
 pub fn expand_tabs_to(line string, limit int, tabsize int) int {
 	mut res := 0
 	mut fin := 0
-	mut total := 0
 	for i, ch in line {
 		if res > limit {
 			break
 		}
 		res += char_expansion_counts(ch, tabsize)
 		fin = i
-		total++
 	}
-	if limit > total {
+	if limit > line.runes().len {
 		return fin + 1
 	}
 	return fin

@@ -77,8 +77,15 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					// buf.update_visual_cursor(app.viewport.width)
 					// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					cur_line := buf.buffer.line_at(buf.logical_cursor.y)
-					visual_index := util.char_count_expanded_tabs(cur_line#[..
-						buf.logical_cursor.x + 1], buf.tabsize)
+					mut visual_index := util.char_count_expanded_tabs(cur_line#[..buf.logical_cursor.x],
+						buf.tabsize)
+
+					if buf.logical_cursor.x + 1 >= cur_line.runes().len {
+						visual_index++
+					} else {
+						visual_index += util.char_expansion_counts(cur_line[buf.logical_cursor.x + 1],
+							buf.tabsize)
+					}
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
 					if buf.logical_cursor.y != prev_y {
 						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
@@ -138,18 +145,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							if total_wraps > 0 {
 								buf.logical_cursor.y--
-								// buf.visual_cursor.x += total_wraps * app.viewport.width
-								// buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y,
-								// buf.visual_cursor.x)
-								// buf.logical_cursor.x = util.char_count_expanded_tabs(line#[..total_wraps * app.viewport.width],
-								// 	buf.tabsize)
-								// quick add for if x is past the line len
-								// should probably be handled with desired col
 								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index], index - 1,
 									buf.tabsize)
-								// quick add for if x is past the line len
-								// should probably be handled with desired col
 								buf.logical_cursor.x = perfect_index
 							} else {
 								buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
@@ -163,8 +161,13 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						line := buf.buffer.line_at(buf.logical_cursor.y)
 						// buf.logical_cursor.x = util.char_count_expanded_tabs(line[..buf.logical_cursor.x - app.viewport.width],
 						// 	buf.tabsize)
-						buf.logical_cursor.x = math.min(util.char_count_expanded_tabs(line[..buf.logical_cursor.x],
-							buf.tabsize) - app.viewport.width, buf.logical_cursor.desired_col)
+						index := math.max(cur_wrap * app.viewport.width +
+							buf.logical_cursor.desired_col, buf.logical_cursor.x)
+						next_index := util.expand_tabs_to(line#[..index - app.viewport.width],
+							index - app.viewport.width, buf.tabsize)
+						// next_index := util.char_count_expanded_tabs(line[..buf.logical_cursor.x],
+						// 	buf.tabsize) - app.viewport.width
+						buf.logical_cursor.x = math.min(next_index, buf.logical_cursor.desired_col)
 					}
 
 					// buf.update_visual_cursor(app.viewport.width)
