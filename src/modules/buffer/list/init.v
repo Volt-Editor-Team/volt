@@ -5,11 +5,11 @@ import buffer.common { InsertValue }
 
 pub struct ListBuffer {
 pub mut:
-	lines [][]rune
+	lines [][]rune = [][]rune{len: 1}
 }
 
 pub fn ListBuffer.from_path(path string) ListBuffer {
-	lines := read_file(path) or { [][]rune{} }
+	lines := read_file(path) or { [][]rune{len: 1} }
 	mut buf := ListBuffer{
 		lines: lines
 	}

@@ -7,11 +7,12 @@ pub fn (mut log_curs LogicalCursor) move_right_buffer(buf BufferInterface) {
 
 	if log_curs.x < line_len {
 		log_curs.x++
+		log_curs.flat_index++
 	} else if log_curs.y < buf.line_count() - 1 {
 		log_curs.x = 0
 		log_curs.y++
+		log_curs.flat_index++
 	}
-	log_curs.flat_index++
 }
 
 pub fn (mut log_curs LogicalCursor) move_left_buffer(buf BufferInterface) {
@@ -19,11 +20,12 @@ pub fn (mut log_curs LogicalCursor) move_left_buffer(buf BufferInterface) {
 		if log_curs.y > 0 {
 			log_curs.y -= 1
 			log_curs.x = buf.line_at(log_curs.y).len
+			log_curs.flat_index--
 		}
 	} else {
 		log_curs.x -= 1
+		log_curs.flat_index--
 	}
-	log_curs.flat_index--
 }
 
 pub fn (mut log_curs LogicalCursor) move_down_buffer(buf BufferInterface, tabsize int) {
