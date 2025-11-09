@@ -5,7 +5,7 @@ pub mut:
 	// cursor coordinates
 	x           int
 	y           int
-	visual_x    int
+	visual_x    int = 1
 	flat_index  int
 	desired_col int = 1
 }

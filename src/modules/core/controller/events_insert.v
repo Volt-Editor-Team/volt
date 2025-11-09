@@ -40,10 +40,11 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						if buf.buffer.line_count() != total_lines {
 							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
 							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
-							buf.logical_cursor.move_to_x(prev_line_len)
+							buf.logical_cursor.move_to_x(buf.buffer, prev_line_len, buf.tabsize)
 						} else {
 							if buf.logical_cursor.x > 0 {
-								buf.logical_cursor.move_to_x(buf.logical_cursor.x - 1)
+								buf.logical_cursor.move_to_x(buf.buffer, buf.logical_cursor.x - 1,
+									buf.tabsize)
 							}
 						}
 						// buf.update_visual_cursor(app.viewport.width)
@@ -91,7 +92,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// buf.insert_char(buf.logical_cursor.x, buf.logical_cursor.y,
 							// 	ch)
 
-							buf.logical_cursor.move_right_buffer(buf.buffer)
+							buf.logical_cursor.move_right_buffer(buf.buffer, buf.tabsize)
 							// 	buf.update_visual_cursor(app.viewport.width)
 							// buf.logical_cursor.update_desired_col(buf.visual_cursor.x,
 							// 	app.viewport.width)

@@ -52,7 +52,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			match key {
 				.l, .right {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_right_buffer(buf.buffer)
+					buf.logical_cursor.move_right_buffer(buf.buffer, buf.tabsize)
 					// buf.update_visual_cursor(app.viewport.width)
 					cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
 					mut visual_index := util.char_count_expanded_tabs(cur_line#[..buf.logical_cursor.x],
@@ -61,7 +61,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					if buf.logical_cursor.x + 1 >= cur_line.runes().len {
 						visual_index++
 					} else {
-						visual_index += util.char_expansion_counts(cur_line[buf.logical_cursor.x + 1],
+						visual_index += util.get_char_width(cur_line[buf.logical_cursor.x + 1],
 							buf.tabsize)
 					}
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -73,7 +73,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.h, .left {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_left_buffer(buf.buffer)
+					buf.logical_cursor.move_left_buffer(buf.buffer, buf.tabsize)
 					// buf.update_visual_cursor(app.viewport.width)
 					// buf.logical_cursor.update_desired_col(buf.visual_cursor.x, app.viewport.width)
 					cur_line := buf.buffer.line_at(buf.logical_cursor.y).string()
@@ -83,7 +83,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					if buf.logical_cursor.x + 1 >= cur_line.runes().len {
 						visual_index++
 					} else {
-						visual_index += util.char_expansion_counts(cur_line[buf.logical_cursor.x + 1],
+						visual_index += util.get_char_width(cur_line[buf.logical_cursor.x + 1],
 							buf.tabsize)
 					}
 					buf.logical_cursor.update_desired_col(visual_index, app.viewport.width)
@@ -116,7 +116,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						if buf.logical_cursor.x + app.viewport.width - 1 <= line.runes().len {
 							perfect_index++
 						}
-						buf.logical_cursor.move_to_x(perfect_index)
+						buf.logical_cursor.move_to_x(buf.buffer, perfect_index, buf.tabsize)
 						// perfect_index := line#[..buf.logical_cursor.x + app.viewport.width].runes().len
 						// buf.logical_cursor.x = buf.logical_x(buf.logical_cursor.y, buf.visual_cursor.x)
 					} else {
@@ -148,7 +148,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index], index - 1,
 									buf.tabsize)
-								buf.logical_cursor.move_to_x(perfect_index)
+								buf.logical_cursor.move_to_x(buf.buffer, perfect_index,
+									buf.tabsize)
 							} else {
 								buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
 							}
@@ -167,7 +168,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							index - app.viewport.width, buf.tabsize)
 						// next_index := util.char_count_expanded_tabs(line[..buf.logical_cursor.x],
 						// 	buf.tabsize) - app.viewport.width
-						buf.logical_cursor.move_to_x(math.min(next_index, buf.logical_cursor.desired_col))
+						buf.logical_cursor.move_to_x(buf.buffer, math.min(next_index,
+							buf.logical_cursor.desired_col), buf.tabsize)
 					}
 
 					// buf.update_visual_cursor(app.viewport.width)

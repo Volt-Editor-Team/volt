@@ -1,12 +1,12 @@
 module util
 
-pub fn get_char_and_width(ch rune, index int, tabsize int) (rune, int) {
-	if ch == `\t` {
-		return ` `, tabsize - (index % tabsize)
-	}
+// pub fn get_char_and_width(ch rune, index int, tabsize int) (rune, int) {
+// 	if ch == `\t` {
+// 		return ` `, tabsize - (index % tabsize)
+// 	}
 
-	return ch, 1
-}
+// 	return ch, 1
+// }
 
 pub fn binary_insert[T](mut arr []T, item T, compare fn (T, T) int) {
 	mut low := 0
