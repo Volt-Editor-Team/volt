@@ -79,11 +79,12 @@ pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
 	app := ctl.get_app(core)
 	tui_app.theme = TuiTheme.new(app.theme)
 	tui_app.tui = t.init(
-		user_data:   tui_app
-		event_fn:    event_wrapper
-		frame_fn:    ui_loop
-		hide_cursor: true
-		frame_rate:  30
+		user_data:      tui_app
+		event_fn:       event_wrapper
+		frame_fn:       ui_loop
+		capture_events: true
+		hide_cursor:    true
+		frame_rate:     30
 	)
 }
 

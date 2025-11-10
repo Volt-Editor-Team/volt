@@ -6,48 +6,31 @@ import util.colors
 import util.constants
 import term
 import math
-import fs
 import os
 
 fn ui_loop(x voidptr) {
-	mut tui_app := get_tui(x)
-	mut ctx := tui_app.tui
-	theme := tui_app.theme
+	width, height := term.get_terminal_size()
 
 	// get app pointer, terminal size, and clear to prep for updates
+	mut tui_app := get_tui(x)
+	mut ctx := tui_app.tui
 	mut app := controller.get_app(tui_app.core)
+
+	// relavent info for rendering
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	mut command_str := util.mode_str(buf.mode, buf.p_mode)
-	multiple_buffers := app.buffers.len > 1
-	buffer_gap := int(multiple_buffers)
-	// mut text_color := colors.white
-	width, height := term.get_terminal_size()
+	theme := tui_app.theme
 
 	// --- draw background ---
-	ctx.set_bg_color(theme.background_color)
-	ctx.draw_rect(1, 1, width, height)
-	ctx.reset_bg_color()
+	ctx.draw_background(1, 1, width, height, tui_app.theme)
 
 	// --- draw tabs for multiple buffers ---
+	multiple_buffers := app.buffers.len > 1
+	buffer_gap := int(multiple_buffers)
 	if multiple_buffers {
-		ctx.set_bg_color(theme.tab_bar_color)
-		ctx.draw_line(0, 1, width - 1, 1)
-		ctx.reset_colors()
 		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].label + ' '}
-		mut tab_pos := 1
-		for i, name in buffer_names {
-			if i == app.active_buffer {
-				ctx.set_colors(theme.active_tab_color, theme.cursor_text_color)
-				ctx.draw_text(tab_pos + 1, 1, term.bold(name))
-				ctx.reset_colors()
-			} else {
-				ctx.set_bg_color(theme.tab_bar_color)
-				ctx.draw_text(tab_pos + 1, 1, name)
-				ctx.reset_colors()
-			}
-			tab_pos += name.len
-		}
+		ctx.draw_tabs(buffer_names, app.active_buffer, width, tui_app.theme)
 	}
 
 	start_row := buf.row_offset
@@ -68,41 +51,17 @@ fn ui_loop(x voidptr) {
 			// i is the row index of the actual renders screen
 			// y_index is the position in the buffer
 			y_index := start_row + i
-			line := buf.buffer.line_at(y_index).string()
+			line := buf.buffer.line_at(y_index)
 
 			// values necessary for rendering aligned line numbers
-			mut line_num_label := term.bold((y_index + 1).str() +
-				' '.repeat(buf.buffer.line_count().str().len - (y_index + 1).str().len))
-			mut line_num_inactive_color := theme.inactive_line_number_color
-			mut line_num_active_color := theme.active_line_number_color
 
 			// determine cursor colors
-			cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, theme)
+			cursor_bg_color, cursor_fg_color := ctx.get_cursor_colors(buf.mode, tui_app.theme)
 
 			// get line indices and characters
-			// line_indices := buf.visual_col[y_index] // column index for line
+			line_num_label, text_color, line_num_active_color, line_num_inactive_color := ctx.get_gutter_label_and_colors(buf.path,
+				line, y_index, buf.buffer.line_count(), buf.p_mode, tui_app.theme)
 
-			mut text_color := colors.white
-
-			if buf.p_mode == .directory {
-				if fs.is_dir(buf.path + line) {
-					line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
-					text_color = colors.royal_blue
-				} else {
-					file_ext := os.file_ext(line)
-					if file_ext in constants.ext_icons {
-						filetype := constants.ext_icons[file_ext]
-						line_num_inactive_color = colors.hex_to_tui_color(filetype.color) or {
-							colors.white
-						}
-						line_num_active_color = line_num_inactive_color
-						line_num_label = filetype.icon +
-							' '.repeat(buf.buffer.line_count().str().len - filetype.icon.len)
-					} else {
-						line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
-					}
-				}
-			}
 			// highlight active line and render line numbers
 			// this is rendered first, simulating line highlight over active line
 			if y_index == buf.logical_cursor.y {
@@ -139,7 +98,7 @@ fn ui_loop(x voidptr) {
 			mut char_width := 1
 			mut visual_cache := map[int]int{}
 			mut col := 0
-			for x_index, ch in line.runes_iterator() {
+			for x_index, ch in line {
 				visual_cache[x_index] = col
 				mut printed := ch
 				if ch == `\t` {
@@ -176,14 +135,14 @@ fn ui_loop(x voidptr) {
 			}
 
 			// Special case: cursor at end of line
-			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.runes().len {
+			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
 				// find last column in this line (or 0 if empty)
-				last_x := if line.runes().len > 0 {
-					visual_cache[line.runes().len - 1] + 1
+				last_x := if line.len > 0 {
+					visual_cache[line.len - 1] + 1
 				} else {
 					0
 				}
-				last_wraps := if line.runes().len > 0 { last_x / view.width } else { 0 }
+				last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
 				cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
 				cursor_y := i + last_wraps + wrap_offset + buffer_gap
 				if cursor_y > view.height - buffer_gap {
@@ -361,5 +320,4 @@ fn ui_loop(x voidptr) {
 
 	// update_cursor(buf.logical_cursor.x, buf.logical_cursor.y, mut ctx)
 	ctx.flush()
-	// ctx.paused = true
 }

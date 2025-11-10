@@ -70,7 +70,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.j, .down {
-					line := buf.buffer.line_at(buf.logical_cursor.y).string()
+					line := buf.buffer.line_at(buf.logical_cursor.y)
 
 					// total wraps in the current line
 					mut total_wraps := 0
@@ -85,7 +85,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						mut perfect_index := util.expand_tabs_to(line#[..buf.logical_cursor.x +
 							app.viewport.width - 1], buf.logical_cursor.x + app.viewport.width - 1,
 							buf.tabsize)
-						if buf.logical_cursor.x + app.viewport.width - 1 <= line.runes().len {
+						if buf.logical_cursor.x + app.viewport.width - 1 <= line.len {
 							perfect_index++
 						}
 						buf.logical_cursor.move_to_x(buf.buffer, perfect_index, buf.tabsize)
@@ -98,15 +98,15 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						app.viewport.margin)
 				}
 				.k, .up {
-					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y).string()#[..buf.logical_cursor.x],
+					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
 						buf.tabsize) / app.viewport.width
 					if cur_wrap == 0 {
 						// line above is NOT the first line
 						if buf.logical_cursor.y - 1 > 0 {
-							line := buf.buffer.line_at(buf.logical_cursor.y - 1).string()
+							line := buf.buffer.line_at(buf.logical_cursor.y - 1)
 
 							mut total_wraps := 0
-							if line.runes().len != 0 {
+							if line.len != 0 {
 								total_wraps = util.char_count_expanded_tabs(line, buf.tabsize) / app.viewport.width
 							}
 							if total_wraps > 0 {
@@ -123,7 +123,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
 						}
 					} else {
-						line := buf.buffer.line_at(buf.logical_cursor.y).string()
+						line := buf.buffer.line_at(buf.logical_cursor.y)
 						index := math.max(cur_wrap * app.viewport.width +
 							buf.logical_cursor.desired_col, buf.logical_cursor.x)
 						next_index := util.expand_tabs_to(line#[..index - app.viewport.width - 1],
@@ -142,81 +142,88 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	}
 	match buf.p_mode {
 		.directory {
-			match key {
-				.enter {
-					path := buf.buffer.line_at(buf.logical_cursor.y).string()
-					app.add_new_buffer(
-						name:    os.file_name(path)
-						path:    buf.path + path
-						tabsize: buf.tabsize
-						mode:    .normal
-						p_mode:  .default
-					)
-				}
-				.tab {
-					path := buf.buffer.line_at(buf.logical_cursor.y).string()
+			match mod {
+				.none {
+					match key {
+						.enter {
+							path := buf.buffer.line_at(buf.logical_cursor.y).string()
+							app.add_new_buffer(
+								name:    os.file_name(path)
+								path:    buf.path + path
+								tabsize: buf.tabsize
+								mode:    .normal
+								p_mode:  .default
+							)
+						}
+						.tab {
+							path := buf.buffer.line_at(buf.logical_cursor.y).string()
 
-					if fs.is_dir(buf.path + path) {
-						parent_dir, paths := fs.get_paths_from_dir(buf.path, path)
-						buf.path = parent_dir
-						replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
-						buf.buffer.replace_with_temp(replacement_runes)
+							if fs.is_dir(buf.path + path) {
+								parent_dir, paths := fs.get_paths_from_dir(buf.path, path)
+								buf.path = parent_dir
+								replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
+								buf.buffer.replace_with_temp(replacement_runes)
 
-						buf.logical_cursor.x = 0
-						buf.logical_cursor.y = 0
+								buf.logical_cursor.x = 0
+								buf.logical_cursor.y = 0
+							}
+						}
+						.backspace {
+							parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
+							buf.path = parent_dir
+							replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
+							buf.buffer.replace_with_temp(replacement_runes)
+
+							buf.logical_cursor.x = 0
+							buf.logical_cursor.y = 0
+						}
+						else {}
 					}
-				}
-				.backspace {
-					parent_dir, paths := fs.get_paths_from_parent_dir(buf.path)
-					buf.path = parent_dir
-					replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
-					buf.buffer.replace_with_temp(replacement_runes)
-
-					buf.logical_cursor.x = 0
-					buf.logical_cursor.y = 0
 				}
 				else {}
 			}
 		}
 		.fuzzy {
-			match key {
-				.j, .down {
-					if buf.logical_cursor.y < buf.temp_data.len - 1 {
-						buf.logical_cursor.y++
-					}
-				}
-				.k, .up {
-					if buf.logical_cursor.y > 0 {
-						buf.logical_cursor.y--
-					}
-				}
-				.enter {
-					if buf.temp_data.len > 0 {
-						file := buf.temp_data[buf.logical_cursor.y].string()
-
-						buf.path = buf.temp_path
-						buf.p_mode = buf.temp_mode
-						buf.mode = .normal
-						buf.logical_cursor = buf.temp_cursor
-						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							app.viewport.margin)
-
-						// delete temp stuff
-						buf.temp_label = ''
-						buf.temp_data.clear()
-
-						app.add_new_buffer(
-							name:    os.file_name(file)
-							path:    file
-							tabsize: buf.tabsize
-							mode:    .normal
-							p_mode:  .default
-						)
-					}
-				}
-				else {}
-			}
 			match mod {
+				.none {
+					match key {
+						.j, .down {
+							if buf.logical_cursor.y < buf.temp_data.len - 1 {
+								buf.logical_cursor.y++
+							}
+						}
+						.k, .up {
+							if buf.logical_cursor.y > 0 {
+								buf.logical_cursor.y--
+							}
+						}
+						.enter {
+							if buf.temp_data.len > 0 {
+								file := buf.temp_data[buf.logical_cursor.y].string()
+
+								buf.path = buf.temp_path
+								buf.p_mode = buf.temp_mode
+								buf.mode = .normal
+								buf.logical_cursor = buf.temp_cursor
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
+
+								// delete temp stuff
+								buf.temp_label = ''
+								buf.temp_data.clear()
+
+								app.add_new_buffer(
+									name:    os.file_name(file)
+									path:    file
+									tabsize: buf.tabsize
+									mode:    .normal
+									p_mode:  .default
+								)
+							}
+						}
+						else {}
+					}
+				}
 				.ctrl {
 					match key {
 						.q {

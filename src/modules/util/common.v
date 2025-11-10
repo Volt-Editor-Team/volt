@@ -23,7 +23,7 @@ pub fn expand_line_to(line []rune, x int, tabsize int) int {
 	return res
 }
 
-pub fn char_count_expanded_tabs(line string, tabsize int) int {
+pub fn char_count_expanded_tabs(line []rune, tabsize int) int {
 	mut res := 0
 	for ch in line {
 		res += get_char_width(ch, tabsize)
@@ -31,7 +31,7 @@ pub fn char_count_expanded_tabs(line string, tabsize int) int {
 	return res
 }
 
-pub fn expand_tabs_to(line string, limit int, tabsize int) int {
+pub fn expand_tabs_to(line []rune, limit int, tabsize int) int {
 	mut res := 0
 	mut fin := 0
 	for i, ch in line {
@@ -41,7 +41,7 @@ pub fn expand_tabs_to(line string, limit int, tabsize int) int {
 		res += get_char_width(ch, tabsize)
 		fin = i
 	}
-	if limit > line.runes().len {
+	if limit > line.len {
 		return fin + 1
 	}
 	return fin
