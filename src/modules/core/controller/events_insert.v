@@ -69,10 +69,6 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					.shift {
 						match key {
 							.enter {}
-							.colon {
-								buf.saved_cursor = buf.logical_cursor
-								buf.mode = .command
-							}
 							else {}
 						}
 					}
@@ -123,6 +119,10 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								if buf.temp_label.len > 0 {
 									buf.temp_label = buf.temp_label[..buf.temp_label.len - 1]
 								}
+							}
+							.colon {
+								buf.saved_cursor = buf.logical_cursor
+								buf.mode = .command
 							}
 							else {
 								if is_printable_key(key) {

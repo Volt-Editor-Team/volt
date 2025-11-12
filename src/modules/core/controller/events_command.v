@@ -117,6 +117,17 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						app.cmd_buffer.command = ''
 						buf.open_fuzzy_find()
 					}
+					'btype' {
+						go fn [mut buf] () {
+							temp := buf.path
+							buf.path = 'Buffer type: ${buf.type}'
+							time.sleep(2 * time.second)
+							buf.path = temp
+						}()
+						app.cmd_buffer.command = ''
+						buf.mode = .normal
+						return
+					}
 					else {}
 				}
 			}
