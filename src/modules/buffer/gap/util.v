@@ -5,7 +5,7 @@ import math
 const max_cap = 4096
 const gap_bytes = 64
 
-fn flatten_lines(lines [][]rune) []rune {
+fn flatten_lines(lines [][]rune) ([]rune, int) {
 	mut total_runes := 0
 	for line in lines {
 		total_runes += line.len + 1
@@ -15,7 +15,20 @@ fn flatten_lines(lines [][]rune) []rune {
 		runes << line
 	}
 
-	return runes
+	return runes, lines.len
+}
+
+pub fn calculate_num_lines(runes []rune) int {
+	mut lines := 1
+	for r in runes {
+		if r == `\n` {
+			lines++
+		}
+	}
+	if runes.len > 0 && runes[runes.len - 1] == `\n` {
+		lines--
+	}
+	return lines
 }
 
 fn (g GapBuffer) get_runes() []rune {

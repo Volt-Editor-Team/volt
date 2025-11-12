@@ -7,8 +7,9 @@ import fs { read_file_runes }
 // --- initialization ---
 pub struct GapBuffer {
 mut:
-	data []rune
-	gap  Gap
+	data       []rune
+	gap        Gap
+	line_count int
 }
 
 struct Gap {
@@ -18,38 +19,43 @@ mut:
 }
 
 pub fn GapBuffer.new() GapBuffer {
-	return GapBuffer{}
+	return GapBuffer{
+		line_count: 1
+	}
 }
 
 pub fn GapBuffer.from(data []rune) GapBuffer {
 	return GapBuffer{
-		data: []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
-		gap:  Gap{
+		data:       []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
+		gap:        Gap{
 			start: data.len
 			end:   data.len
 		}
+		line_count: calculate_num_lines(data)
 	}
 }
 
 pub fn GapBuffer.from_path(path string) GapBuffer {
 	data := read_file_runes(path) or { []rune{} }
 	return GapBuffer{
-		data: []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
-		gap:  Gap{
+		data:       []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
+		gap:        Gap{
 			start: data.len
 			end:   data.len
 		}
+		line_count: calculate_num_lines(data)
 	}
 }
 
 pub fn GapBuffer.prefilled(lines [][]rune) GapBuffer {
-	data := flatten_lines(lines)
+	data, num_lines := flatten_lines(lines)
 	return GapBuffer{
-		data: []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
-		gap:  Gap{
+		data:       []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
+		gap:        Gap{
 			start: data.len
 			end:   data.len
 		}
+		line_count: num_lines
 	}
 }
 
@@ -71,15 +77,31 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 	match val {
 		rune {
 			g.insert_rune(index, val)!
+			if val == `\n` {
+				g.line_count++
+			}
 		}
 		u8 {
 			g.insert_char(index, val)!
+			if val == u8(`\n`) {
+				g.line_count++
+			}
 		}
 		[]rune {
 			g.insert_runes(index, val)!
+			for i in val {
+				if i == `\n` {
+					g.line_count++
+				}
+			}
 		}
 		string {
 			g.insert_string(index, val)!
+			for i in val.runes_iterator() {
+				if i == `\n` {
+					g.line_count++
+				}
+			}
 		}
 		[]string {}
 	}
@@ -87,6 +109,12 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 
 pub fn (mut g GapBuffer) delete(cursor int, count int) ! {
 	g.shift_gap_to(cursor)
+	end := math.min(g.gap.end + count, g.data.len)
+	for i in g.gap.end .. end {
+		if g.data[i] == `\n` {
+			g.line_count--
+		}
+	}
 	g.gap.end = math.min(g.gap.end + count, g.data.len)
 }
 
@@ -100,17 +128,7 @@ pub fn (g GapBuffer) len() int {
 }
 
 pub fn (g GapBuffer) line_count() int {
-	mut lines := 1
-	runes := g.get_runes()
-	for r in runes {
-		if r == `\n` {
-			lines++
-		}
-	}
-	if runes.len > 0 && runes[runes.len - 1] == `\n` {
-		lines--
-	}
-	return lines
+	return g.line_count
 }
 
 pub fn (g GapBuffer) line_at(line_index int) []rune {

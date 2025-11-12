@@ -217,10 +217,9 @@ fn ui_loop(x voidptr) {
 	}
 
 	// debugging
-	ctx.draw_text(width - 30, height - 4, buf.logical_cursor.desired_col.str())
 	ctx.draw_text(width - 30, height - 3, buf.logical_cursor.visual_x.str())
 	ctx.draw_text(width - 30, height - 2, buf.type.str())
-	ctx.draw_text(width - 30, height - 5, buf.logical_cursor.flat_index.str())
+	ctx.draw_text(width - 30, height - 4, buf.buffer.line_count().str())
 
 	mut command_bar_y_pos := height
 

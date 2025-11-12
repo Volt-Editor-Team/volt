@@ -70,11 +70,13 @@ pub fn (r RopeBuffer) leaf_count() int {
 	return r.root.leaf_count()
 }
 
-pub fn line_count() int {
-	return 0
+pub fn (r RopeBuffer) line_count() int {
+	return r.root.line_count()
 }
 
 pub fn line_at(i int) string {
+	// like weight traversal tree using line_count
+	// then use ropedata nodes line_at
 	return ''
 }
 

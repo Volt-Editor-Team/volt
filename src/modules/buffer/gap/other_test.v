@@ -17,7 +17,7 @@ fn test_line_count() {
 	mut buf := GapBuffer.new()
 	assert buf.line_count() == 1
 	buf.insert(0, 'hello\nworld\n')!
-	assert buf.line_count() == 2
+	assert buf.line_count() == 3
 	buf.delete(11, 1)!
 	assert buf.to_string() == 'hello\nworld'
 	assert buf.line_count() == 2

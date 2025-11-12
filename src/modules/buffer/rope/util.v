@@ -79,6 +79,27 @@ fn (n &RopeNode) total_len() int {
 	}
 }
 
+fn (n &RopeNode) line_count() int {
+	if n == unsafe { nil } {
+		return 0
+	}
+	if n.left == unsafe { nil } && n.right == unsafe { nil } {
+		if n.data != none {
+			return n.data.line_count()
+		}
+		return 0
+	} else {
+		mut total := 0
+		if n.left != unsafe { nil } {
+			total += n.left.line_count()
+		}
+		if n.right != unsafe { nil } {
+			total += n.right.line_count()
+		}
+		return total
+	}
+}
+
 fn (n &RopeNode) leaf_count() int {
 	if n.left == unsafe { nil } && n.right == unsafe { nil } {
 		if n.data != none {
