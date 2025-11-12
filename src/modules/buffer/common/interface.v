@@ -32,4 +32,7 @@ pub interface CursorInterface {
 pub interface RopeData {
 	BufferInterface
 	split() (RopeData, RopeData)
+	last() int
+mut:
+	clear()
 }

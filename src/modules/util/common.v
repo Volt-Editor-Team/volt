@@ -1,5 +1,18 @@
 module util
 
+pub fn flatten_lines(lines [][]rune) ([]rune, int) {
+	mut total_runes := 0
+	for line in lines {
+		total_runes += line.len + 1
+	}
+	mut runes := []rune{cap: total_runes}
+	for line in lines {
+		runes << line
+	}
+
+	return runes, lines.len
+}
+
 pub fn get_char_width(ch rune, tabsize int) int {
 	match ch {
 		`\t` {

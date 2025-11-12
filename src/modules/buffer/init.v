@@ -6,7 +6,7 @@ import cursor { LogicalCursor }
 import util { Mode, PersistantMode }
 import buffer.common { BufferInterface }
 import buffer.list { ListBuffer }
-// import buffer.rope
+import buffer.rope { RopeBuffer }
 import buffer.gap { GapBuffer }
 
 pub enum BufferType {
@@ -82,20 +82,8 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 				p_mode:  buf.p_mode
 			}
 		}
-		// .rope {
-		// 	new_buffer := RopeBuffer.prefilled(lines)
-		// 	return Buffer{
-		// 		label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-		// 		name:    buf.name
-		// 		path:    buf.path
-		// 		tabsize: buf.tabsize
-		// 		buffer:  new_buffer
-		// 		mode:    buf.mode
-		// 		p_mode:  buf.p_mode
-		// 	}
-		// }
 		.rope {
-			new_buffer := ListBuffer.prefilled(lines)
+			new_buffer := RopeBuffer.prefilled(lines, GapBuffer.new())
 			return Buffer{
 				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
 				name:    buf.name
@@ -139,7 +127,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 			}
 		}
 		.rope {
-			new_buffer := ListBuffer.from_path(buf.path)
+			new_buffer := RopeBuffer.from_path(buf.path, GapBuffer.new())
 			return Buffer{
 				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
 				name:    buf.name

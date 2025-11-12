@@ -1,6 +1,7 @@
 module rope
 
 import buffer.common { InsertValue, get_insert_value_size }
+import math
 
 pub fn (r RopeBuffer) left() !&RopeNode {
 	if r.root == unsafe { nil } {
@@ -79,6 +80,24 @@ fn (n &RopeNode) total_len() int {
 	}
 }
 
+fn (n &RopeNode) find_line(line_idx int) !&RopeNode {
+	if n.left == unsafe { nil } && n.right == unsafe { nil } {
+		return unsafe { n }
+	} else {
+		if line_idx < n.line_count {
+			if n.left == unsafe { nil } {
+				return error('Invalid tree state: expected left node')
+			}
+			return n.left.find_line(line_idx)
+		} else {
+			if n.right == unsafe { nil } {
+				return error('Invalid tree state: expected right node')
+			}
+			return n.right.find_line(line_idx)
+		}
+	}
+}
+
 fn (n &RopeNode) line_count() int {
 	if n == unsafe { nil } {
 		return 0
@@ -96,7 +115,7 @@ fn (n &RopeNode) line_count() int {
 		if n.right != unsafe { nil } {
 			total += n.right.line_count()
 		}
-		return total
+		return total - 1
 	}
 }
 
@@ -133,13 +152,23 @@ fn (n &RopeNode) node_count() int {
 }
 
 fn (mut r RopeNode) insert(pos int, val InsertValue, offset int, node_cap int) !&RopeNode {
+	// if r.left == unsafe { nil } && r.right == unsafe { nil } {
+	// 	if r.data == none {
+	// 		return error('Invalid Node')
+	// 	} else {
+	// 		index := pos - offset
+	// 		r.data.insert(index, val)!
+	// 		r.check_split(node_cap)!
+	// 		// r.line_count = r.data.line_count()
+	// 	}
 	if r.left == unsafe { nil } && r.right == unsafe { nil } {
-		if r.data == none {
-			return error('Invalid Node')
-		} else {
+		if mut data := r.data {
 			index := pos - offset
-			r.data.insert(index, val)!
+			data.insert(index, val)!
 			r.check_split(node_cap)!
+			r.line_count = data.line_count()
+		} else {
+			return error('Invalid Node: missing data')
 		}
 	} else {
 		if pos < r.weight {
@@ -154,6 +183,7 @@ fn (mut r RopeNode) insert(pos int, val InsertValue, offset int, node_cap int) !
 			}
 			r.right.insert(pos, val, r.weight, node_cap)!
 		}
+		r.line_count = r.left.line_count() + r.right.line_count()
 	}
 	return r.check_rebalance()
 }

@@ -52,7 +52,9 @@ fn (mut n RopeNode) rotate_left() &RopeNode {
 	new_root.left = n
 
 	new_root.weight = new_root.left.total_len()
+	new_root.line_count = new_root.left.line_count()
 	n.weight = n.left.total_len()
+	n.line_count = n.left.line_count()
 
 	return new_root
 }
@@ -66,7 +68,9 @@ fn (mut n RopeNode) rotate_right() &RopeNode {
 	new_root.right = n
 
 	new_root.weight = new_root.left.total_len()
+	new_root.line_count = new_root.left.line_count()
 	n.weight = n.left.total_len()
+	n.line_count = n.left.line_count()
 
 	return new_root
 }
@@ -89,6 +93,7 @@ fn (mut node RopeNode) check_split(node_cap int) ! {
 					data: right
 				}
 				node.weight = left.len()
+				node.line_count = left.line_count()
 			}
 
 			// recursive check left to split
