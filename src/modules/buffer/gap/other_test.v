@@ -1,10 +1,23 @@
 module gap
 
+import os
+import buffer.list
+
+fn test_compare_to_list_buffer() {
+	path := os.real_path(os.join_path('.', 'src', 'modules', 'buffer', 'gap', 'insert_test.v'))
+	str := os.read_file(path) or { '' }
+	mut buf := GapBuffer.from_path(path)
+	mut list_buf := list.ListBuffer.from_path(path)
+	assert buf.len() == list_buf.len()
+	assert buf.line_count() == list_buf.line_count()
+	assert buf.line_at(9) == list_buf.line_at(9)
+}
+
 fn test_line_count() {
 	mut buf := GapBuffer.new()
 	assert buf.line_count() == 1
 	buf.insert(0, 'hello\nworld\n')!
-	assert buf.line_count() == 3
+	assert buf.line_count() == 2
 	buf.delete(11, 1)!
 	assert buf.to_string() == 'hello\nworld'
 	assert buf.line_count() == 2

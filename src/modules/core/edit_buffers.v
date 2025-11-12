@@ -9,6 +9,7 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		label:   b.label
 		name:    b.name
 		path:    b.path
+		type:    b.type
 		tabsize: default_tabsize
 		mode:    .normal
 		p_mode:  b.p_mode
@@ -28,6 +29,7 @@ pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
 		label:   b.label
 		name:    b.name
 		path:    b.path
+		type:    b.type
 		tabsize: default_tabsize
 		mode:    .normal
 		p_mode:  b.p_mode
@@ -50,6 +52,7 @@ pub fn (mut app App) add_directory_buffer() {
 	app.add_prefilled_buffer(Buffer{
 		name:   'DIRECTORY'
 		path:   parent_dir
+		type:   .list
 		p_mode: util.PersistantMode.directory
 	}, lines)
 }
@@ -59,6 +62,7 @@ pub fn (mut app App) add_stats_buffer() {
 	app.add_prefilled_buffer(Buffer{
 		name: 'DOCTOR'
 		path: 'V DOCTOR OUTPUT'
+		type: .gap
 		mode: .normal
 	}, lines)
 }
@@ -68,6 +72,7 @@ pub fn (mut app App) add_help_buffer() {
 	app.add_prefilled_buffer(Buffer{
 		name: 'HELP'
 		path: 'HELP DOCUMENTATION'
+		type: .list
 		mode: .normal
 	}, help_path)
 }

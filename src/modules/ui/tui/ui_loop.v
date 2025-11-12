@@ -217,23 +217,10 @@ fn ui_loop(x voidptr) {
 	}
 
 	// debugging
-	// ctx.draw_text(width - 30, height - 8, 'new_col: ' + new_col.str())
-	// ctx.draw_text(width - 30, height - 7, 'wrap_points: ' + wrap_points.str())
-	// ctx.draw_text(width - 30, height - 6, 'wrap_offset: ' + wrap_offset.str())
-	// mut line := buf.lines[logical_idx]
-	// mut wrap_points := view.build_wrap_points(line)
-	// num_wraps := app.viewport.get_wrapped_index(wrap_points, buf.visual_cursor.y)
-	// ctx.draw_text(width - 30, height - 5, 'x: ' + buf.visual_cursor.y.str())
-
-	// ctx.draw_text(width - 30, height - 5, view.width.str())
 	ctx.draw_text(width - 30, height - 4, buf.logical_cursor.desired_col.str())
 	ctx.draw_text(width - 30, height - 3, buf.logical_cursor.visual_x.str())
-	// mut offset := 0
-	// for i in 0 .. buf.logical_cursor.y {
-	// 	offset += buf.buffer.line_at(i).len + 1 // +1 for newline
-	// }
-	// index := offset + buf.logical_cursor.x
-	// ctx.draw_text(width - 30, height - 2, index.str())
+	ctx.draw_text(width - 30, height - 2, buf.type.str())
+	ctx.draw_text(width - 30, height - 5, buf.logical_cursor.flat_index.str())
 
 	mut command_bar_y_pos := height
 

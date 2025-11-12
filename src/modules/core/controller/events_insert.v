@@ -27,7 +27,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							0
 						}
 						total_lines := buf.buffer.line_count()
-						buf.buffer.delete(buf.logical_cursor.flat_index, 1) or { return }
+						buf.buffer.delete(buf.logical_cursor.flat_index - 1, 1) or { return }
 						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if buf.buffer.line_count() != total_lines {
 							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len

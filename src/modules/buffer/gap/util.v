@@ -5,6 +5,19 @@ import math
 const max_cap = 4096
 const gap_bytes = 64
 
+fn flatten_lines(lines [][]rune) []rune {
+	mut total_runes := 0
+	for line in lines {
+		total_runes += line.len + 1
+	}
+	mut runes := []rune{cap: total_runes}
+	for line in lines {
+		runes << line
+	}
+
+	return runes
+}
+
 fn (g GapBuffer) get_runes() []rune {
 	return []rune{len: g.data.len - (g.gap.end - g.gap.start), init: if index >= g.gap.start {
 		g.data[index + (g.gap.end - g.gap.start)]

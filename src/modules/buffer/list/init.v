@@ -1,6 +1,6 @@
 module list
 
-import fs { read_file }
+import fs { read_file_lines }
 import buffer.common { InsertValue }
 
 pub struct ListBuffer {
@@ -9,7 +9,7 @@ pub mut:
 }
 
 pub fn ListBuffer.from_path(path string) ListBuffer {
-	lines := read_file(path) or { [][]rune{len: 1} }
+	lines := read_file_lines(path) or { [][]rune{len: 1} }
 	mut buf := ListBuffer{
 		lines: lines
 	}
@@ -85,7 +85,7 @@ pub fn (buf ListBuffer) len() int {
 	for line in buf.lines {
 		res += line.len
 	}
-	return res
+	return res + buf.lines.len
 }
 
 pub fn (buf ListBuffer) line_count() int {

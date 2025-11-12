@@ -29,6 +29,7 @@ fn main() {
 						} else {
 							core_app.add_new_buffer(
 								mode:   .normal
+								type:   .list
 								p_mode: .default
 							)
 							core_app.buffers[core_app.active_buffer].open_fuzzy_find()
@@ -40,6 +41,7 @@ fn main() {
 					core_app.add_new_buffer(
 						name:   arg
 						path:   arg
+						type:   .gap
 						mode:   .normal
 						p_mode: .default
 					)
