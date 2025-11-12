@@ -41,7 +41,7 @@ fn main() {
 					core_app.add_new_buffer(
 						name:   arg
 						path:   arg
-						type:   .gap
+						type:   .list
 						mode:   .normal
 						p_mode: .default
 					)
