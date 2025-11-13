@@ -28,8 +28,9 @@ pub mut:
 	mode   Mode           = .normal
 	p_mode PersistantMode = .default
 	// core internal structures
-	type   BufferType      = .gap
-	buffer BufferInterface = ListBuffer.from_path('')
+	type     BufferType      = .gap
+	buffer   BufferInterface = ListBuffer.from_path('')
+	cur_line []rune
 	// cursor         CursorInterface
 	saved_cursor   LogicalCursor
 	logical_cursor LogicalCursor
@@ -59,40 +60,43 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 		.list {
 			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 		.gap {
 			new_buffer := GapBuffer.prefilled(lines)
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 		.rope {
 			new_buffer := RopeBuffer.prefilled(lines, GapBuffer.new())
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 	}
@@ -103,40 +107,43 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.list {
 			new_buffer := ListBuffer.from_path(buf.path)
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 		.gap {
 			new_buffer := GapBuffer.from_path(buf.path)
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 		.rope {
 			new_buffer := RopeBuffer.from_path(buf.path, GapBuffer.new())
 			return Buffer{
-				label:   if buf.label == 'Scratch' { buf.name } else { buf.label }
-				name:    buf.name
-				path:    buf.path
-				tabsize: buf.tabsize
-				buffer:  new_buffer
-				type:    buf.type
-				mode:    buf.mode
-				p_mode:  buf.p_mode
+				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				name:     buf.name
+				path:     buf.path
+				tabsize:  buf.tabsize
+				buffer:   new_buffer
+				cur_line: new_buffer.line_at(0)
+				type:     buf.type
+				mode:     buf.mode
+				p_mode:   buf.p_mode
 			}
 		}
 	}

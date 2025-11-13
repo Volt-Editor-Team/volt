@@ -31,11 +31,13 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 						if buf.buffer.line_count() != total_lines {
 							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
-							buf.logical_cursor.move_up_buffer(buf.buffer, buf.tabsize)
-							buf.logical_cursor.move_to_x(buf.buffer, prev_line_len, buf.tabsize)
+							buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
+								buf.tabsize)
+							buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
+								buf.tabsize)
 						} else {
 							if buf.logical_cursor.x > 0 {
-								buf.logical_cursor.move_to_x(buf.buffer, buf.logical_cursor.x - 1,
+								buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x - 1,
 									buf.tabsize)
 							}
 						}
@@ -43,8 +45,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 					.enter {
 						buf.buffer.insert(buf.logical_cursor.flat_index, `\n`) or { return }
-						buf.logical_cursor.move_to_start_next_line_buffer(buf.buffer,
-							buf.tabsize)
+						buf.logical_cursor.move_to_start_next_line_buffer(mut buf.cur_line,
+							buf.buffer, buf.tabsize)
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 					else {
@@ -56,7 +58,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
 
-							buf.logical_cursor.move_right_buffer(buf.buffer, buf.tabsize)
+							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
+								buf.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 					}

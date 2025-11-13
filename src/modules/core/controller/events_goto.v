@@ -13,8 +13,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				for i in 0 .. buf.logical_cursor.y {
 					offset += buf.buffer.line_at(i).len + 1 // +1 for newline
 				}
+				buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 				buf.logical_cursor.flat_index = offset + buf.logical_cursor.x
-				buf.logical_cursor.move_to_x(buf.buffer, buf.logical_cursor.x, buf.tabsize)
+				buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x, buf.tabsize)
 				buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 				buf.mode = .normal
 			}
@@ -34,8 +35,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				for i in 0 .. buf.logical_cursor.y {
 					offset += buf.buffer.line_at(i).len + 1 // +1 for newline
 				}
+				buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 				buf.logical_cursor.flat_index = offset + buf.logical_cursor.x
-				buf.logical_cursor.move_to_x(buf.buffer, buf.logical_cursor.x, buf.tabsize)
+				buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x, buf.tabsize)
 				buf.update_offset(visual_wraps, app.viewport.height, app.viewport.margin)
 				buf.mode = .normal
 			}
