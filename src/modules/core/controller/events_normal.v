@@ -197,6 +197,20 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			match mod {
 				.none {
 					match key {
+						.escape {
+							// restore settings
+							buf.path = buf.temp_path
+							buf.p_mode = buf.temp_mode
+							buf.mode = .normal
+							buf.logical_cursor = buf.temp_cursor
+							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+								app.viewport.margin)
+
+							// delete temp stuff
+							buf.temp_label = ''
+							buf.temp_data.clear()
+							buf.file_ch.close()
+						}
 						.j, .down {
 							if buf.logical_cursor.y < buf.temp_data.len - 1 {
 								buf.logical_cursor.y++
@@ -231,25 +245,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									p_mode:  .default
 								)
 							}
-						}
-						else {}
-					}
-				}
-				.ctrl {
-					match key {
-						.q {
-							// restore settings
-							buf.path = buf.temp_path
-							buf.p_mode = buf.temp_mode
-							buf.mode = .normal
-							buf.logical_cursor = buf.temp_cursor
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
-
-							// delete temp stuff
-							buf.temp_label = ''
-							buf.temp_data.clear()
-							buf.file_ch.close()
 						}
 						else {}
 					}

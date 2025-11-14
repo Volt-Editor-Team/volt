@@ -8,8 +8,10 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		match key {
 			// file fuzzy finder
 			.f {
-				app.cmd_buffer.command = ''
-				buf.open_fuzzy_find()
+				if buf.p_mode != .fuzzy {
+					app.cmd_buffer.command = ''
+					buf.open_fuzzy_find()
+				}
 			}
 			// directory fuzzy finder
 			.d {}
