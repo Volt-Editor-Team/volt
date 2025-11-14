@@ -32,7 +32,7 @@ fn main() {
 								type:   .list
 								p_mode: .default
 							)
-							core_app.buffers[core_app.active_buffer].open_fuzzy_find()
+							core_app.buffers[core_app.active_buffer].open_fuzzy_find(.file)
 						}
 					} else {
 						panic('use "." only as the first argument')
@@ -46,7 +46,7 @@ fn main() {
 						p_mode: .default
 					)
 					if open_fuzzy {
-						core_app.buffers[core_app.active_buffer].open_fuzzy_find()
+						core_app.buffers[core_app.active_buffer].open_fuzzy_find(.file)
 						open_fuzzy = false
 					}
 				}

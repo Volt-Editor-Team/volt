@@ -115,7 +115,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					// fuzzy finder
 					'fzf' {
 						app.cmd_buffer.command = ''
-						buf.open_fuzzy_find()
+						buf.open_fuzzy_find(.file)
 					}
 					'btype' {
 						go fn [mut buf] () {

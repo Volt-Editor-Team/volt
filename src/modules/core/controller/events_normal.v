@@ -236,14 +236,21 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_label = ''
 								buf.temp_data.clear()
 
-								app.add_new_buffer(
-									name:    os.file_name(file)
-									path:    file
-									tabsize: buf.tabsize
-									type:    .gap
-									mode:    .normal
-									p_mode:  .default
-								)
+								if os.is_dir(os.join_path_single(fs.get_working_dir(),
+									file))
+								{
+									os.chdir(os.join_path_single(fs.get_working_dir(),
+										file)) or { return }
+								} else {
+									app.add_new_buffer(
+										name:    os.file_name(file)
+										path:    file
+										tabsize: buf.tabsize
+										type:    .gap
+										mode:    .normal
+										p_mode:  .default
+									)
+								}
 							}
 						}
 						else {}

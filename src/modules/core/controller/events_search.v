@@ -10,11 +10,16 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			.f {
 				if buf.p_mode != .fuzzy {
 					app.cmd_buffer.command = ''
-					buf.open_fuzzy_find()
+					buf.open_fuzzy_find(.file)
 				}
 			}
 			// directory fuzzy finder
-			.d {}
+			.d {
+				if buf.p_mode != .fuzzy {
+					app.cmd_buffer.command = ''
+					buf.open_fuzzy_find(.directory)
+				}
+			}
 			// f<char>
 			else {}
 		}

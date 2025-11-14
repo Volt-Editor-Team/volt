@@ -5,6 +5,11 @@ import math
 import util.fuzzy
 import fs
 
+pub enum SearchType {
+	file
+	directory
+}
+
 pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) bool {
 	// Compute the cursor's relative position inside the viewport
 	rel_pos := buf.logical_cursor.y - buf.row_offset + visual_wraps
@@ -25,7 +30,7 @@ pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) 
 	return false
 }
 
-pub fn (mut buf Buffer) open_fuzzy_find() {
+pub fn (mut buf Buffer) open_fuzzy_find(search_type SearchType) {
 	// if fuzzy is already running, return
 	if buf.p_mode == .fuzzy {
 		return
@@ -45,15 +50,25 @@ pub fn (mut buf Buffer) open_fuzzy_find() {
 
 	// walk path
 	buf.file_ch = chan string{cap: 1000}
-	go fn [mut buf] () {
+	go fn [mut buf, search_type] () {
 		walk_path := fs.get_dir_or_parent_dir(buf.path)
-		os.walk(walk_path, fn [mut buf] (file string) {
-			if buf.p_mode == .fuzzy {
-				if os.is_file(file) && !fuzzy.is_ignored(file) {
-					buf.file_ch <- file[buf.path.len + 1..]
+		os.walk_with_context(walk_path, &buf, fn [search_type] (ctx voidptr, file string) {
+			b := unsafe { &Buffer(ctx) }
+			if b.p_mode == .fuzzy {
+				match search_type {
+					.file {
+						if os.is_file(file) && !fuzzy.is_ignored(file) {
+							b.file_ch <- file[b.path.len + 1..]
+						}
+					}
+					.directory {
+						if os.is_dir(file) && !fuzzy.is_ignored(file) {
+							b.file_ch <- file[b.path.len + 1..]
+						}
+					}
 				}
 			} else {
-				buf.file_ch.close()
+				b.file_ch.close()
 				return
 			}
 		})
