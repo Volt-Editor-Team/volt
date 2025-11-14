@@ -110,7 +110,8 @@ fn ui_loop(x voidptr) {
 				}
 				visual_x_index := visual_cache[x_index]
 				wraps = visual_x_index / view.width
-				x_pos := visual_x_index % view.width + view.col_offset + view.line_num_to_text_gap
+				x_pos := visual_x_index % view.width + view.col_offset +
+					buf.buffer.line_count().str().len + 1
 				y_pos := i + wraps + wrap_offset + buffer_gap
 
 				if y_pos > view.height - buffer_gap {
@@ -143,7 +144,8 @@ fn ui_loop(x voidptr) {
 					0
 				}
 				last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
-				cursor_x := last_x % view.width + view.col_offset + view.line_num_to_text_gap
+				cursor_x := last_x % view.width + view.col_offset +
+					buf.buffer.line_count().str().len + 1
 				cursor_y := i + last_wraps + wrap_offset + buffer_gap
 				if cursor_y > view.height - buffer_gap {
 					break render_lines
