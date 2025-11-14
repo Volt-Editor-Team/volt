@@ -29,25 +29,8 @@ pub fn event_loop(input UserInput, x voidptr) {
 		.goto {
 			handle_goto_mode_event(x, input.mod, input.e, input.code)
 		}
-		// .directory {
-		// 	match input.code {
-		// 		.k, .up, .j, .down, .h, .left, .l, .right, .colon, .i {
-		// 			handle_normal_mode_event(x, input.e, input.code)
-		// 		}
-		// 		else {
-		// 			handle_directory_mode_event(x, input.e, input.code)
-		// 		}
-		// 	}
-		// }
-		// .fuzzy {
-		// 	match input.code {
-		// 		.colon, .b, .n {
-		// 			handle_normal_mode_event(x, input.e, input.code)
-		// 		}
-		// 		else {
-		// 			handle_fuzzy_mode_event(x, input.mod, input.e, input.code)
-		// 		}
-		// 	}
-		// }
+		.search {
+			handle_search_mode_event(x, input.mod, input.e, input.code)
+		}
 	}
 }

@@ -7,9 +7,8 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 		.default, .directory {
 			if event == .key_down {
 				match key {
-					.f {
-						app.cmd_buffer.command = ''
-						buf.open_fuzzy_find()
+					.escape {
+						buf.mode = .normal
 					}
 					else {
 						buf.mode = .normal

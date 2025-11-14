@@ -11,6 +11,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	// global normal mode
 	if event == .key_down {
 		match key {
+			.f {
+				buf.mode = .search
+			}
 			.space {
 				buf.mode = .menu
 			}

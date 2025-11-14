@@ -28,6 +28,7 @@ pub enum Mode {
 	command
 	menu
 	goto
+	search
 }
 
 pub fn mode_str(m Mode, pm PersistantMode) string {
@@ -51,6 +52,9 @@ pub fn mode_str(m Mode, pm PersistantMode) string {
 		.goto {
 			'GOTO'
 		}
+		.search {
+			'SEARCH'
+		}
 	}
 }
 
@@ -73,6 +77,9 @@ pub fn get_command_bg_color(m Mode, pm PersistantMode) tui.Color {
 			colors.neutral_grey
 		}
 		.goto {
+			colors.neutral_grey
+		}
+		.search {
 			colors.neutral_grey
 		}
 	}

@@ -8,7 +8,7 @@ import term
 import math
 import os
 
-fn ui_loop(x voidptr) {
+fn full_redraw(x voidptr) {
 	width, height := term.get_terminal_size()
 
 	// get app pointer, terminal size, and clear to prep for updates
@@ -20,7 +20,6 @@ fn ui_loop(x voidptr) {
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
 	mut command_str := util.mode_str(buf.mode, buf.p_mode)
-	theme := tui_app.theme
 
 	// --- draw background ---
 	ctx.draw_background(1, 1, width, height, tui_app.theme)
@@ -73,7 +72,7 @@ fn ui_loop(x voidptr) {
 					1
 				}
 
-				ctx.set_colors(theme.active_line_bg_color, line_num_active_color)
+				ctx.set_colors(tui_app.theme.active_line_bg_color, line_num_active_color)
 				for wrap in 0 .. total_lines {
 					active_line_index := i + wrap + wrap_offset + buffer_gap + 1
 					if active_line_index > view.height {
@@ -90,7 +89,7 @@ fn ui_loop(x voidptr) {
 					break render_lines
 				}
 				// render just line number for inactive line
-				ctx.set_colors(theme.background_color, line_num_inactive_color)
+				ctx.set_colors(tui_app.theme.background_color, line_num_inactive_color)
 				ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1, line_num_label)
 				ctx.reset_colors()
 			}
@@ -124,11 +123,11 @@ fn ui_loop(x voidptr) {
 					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 					ctx.reset_colors()
 				} else if y_index == buf.logical_cursor.y {
-					ctx.set_colors(theme.active_line_bg_color, text_color)
+					ctx.set_colors(tui_app.theme.active_line_bg_color, text_color)
 					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 					ctx.reset_colors()
 				} else {
-					ctx.set_colors(theme.background_color, text_color)
+					ctx.set_colors(tui_app.theme.background_color, text_color)
 					ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 					ctx.reset_colors()
 				}
@@ -164,27 +163,27 @@ fn ui_loop(x voidptr) {
 		start := 1 + buffer_gap
 		start_x := buf.temp_data.len.str().len + 1
 		input_string := '> ${buf.temp_label}'
-		ctx.set_bg_color(theme.background_color)
+		ctx.set_bg_color(tui_app.theme.background_color)
 		ctx.draw_text(1, start, input_string)
 		file_count_text := '( walked: ${buf.temp_data.len} / ${buf.temp_int} )'
 		ctx.draw_text(width - file_count_text.len - 2, start, file_count_text)
 		if buf.mode == .insert {
 			// the cursor is a lie but it looks good
-			ctx.set_bg_color(theme.insert_cursor_color)
+			ctx.set_bg_color(tui_app.theme.insert_cursor_color)
 			ctx.draw_text(input_string.len + 1, start, ' ')
 			if buf.temp_data.len > 0 {
-				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 				ctx.draw_line(0, 1 + start, width - 1, 1 + start)
 				ctx.draw_text(start_x + 1, 1 + start, buf.temp_data[0].string())
 			}
-			ctx.set_bg_color(theme.background_color)
+			ctx.set_bg_color(tui_app.theme.background_color)
 		}
 		for i, line_runes in buf.temp_data[start_row..end_row] {
 			line := line_runes.string()
 			mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
 			file_ext := os.file_ext(line)
 			if buf.mode == .normal && i == buf.logical_cursor.y {
-				ctx.set_bg_color(theme.active_line_bg_color)
+				ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 				ctx.draw_line(0, i + 1 + start, width - 1, i + 1 + start)
 			}
 			if file_ext in constants.ext_icons {
@@ -193,7 +192,7 @@ fn ui_loop(x voidptr) {
 				line_num_label = filetype.icon +
 					' '.repeat(buf.buffer.line_count().str().len - filetype.icon.len)
 				if buf.mode == .insert && i == 0 {
-					ctx.set_bg_color(theme.active_line_bg_color)
+					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 				}
 				ctx.set_color(fg_color)
 				ctx.draw_text(1, i + 1 + start, line_num_label)
@@ -207,14 +206,14 @@ fn ui_loop(x voidptr) {
 					ctx.set_color(colors.lavender_violet)
 				}
 				if buf.mode == .insert && i == 0 {
-					ctx.set_bg_color(theme.active_line_bg_color)
+					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				} else {
 					ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
 				}
 				ctx.reset_color()
 			}
-			ctx.set_bg_color(theme.background_color)
+			ctx.set_bg_color(tui_app.theme.background_color)
 		}
 	}
 
@@ -228,14 +227,14 @@ fn ui_loop(x voidptr) {
 	if buf.mode == util.Mode.command {
 		command_bar_y_pos--
 		// draw command bar
-		ctx.set_bg_color(theme.command_bar_color)
+		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
 
 		ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
 		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
 
-		ctx.set_bg_color(theme.command_bar_color)
+		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		// buf.path
 		if buf.path.starts_with('Error') {
 			ctx.set_color(colors.dark_red)
@@ -260,7 +259,7 @@ fn ui_loop(x voidptr) {
 		buf.logical_cursor.x = app.cmd_buffer.command.len + 2
 		buf.logical_cursor.y = height
 
-		ctx.set_bg_color(theme.background_color)
+		ctx.set_bg_color(tui_app.theme.background_color)
 		// 1. Clear the entire command line with spaces
 		// width is the terminal width
 		ctx.draw_text(0, buf.logical_cursor.y, ' '.repeat(width - 1))
@@ -273,19 +272,19 @@ fn ui_loop(x voidptr) {
 
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
-		ctx.set_bg_color(theme.insert_cursor_color)
+		ctx.set_bg_color(tui_app.theme.insert_cursor_color)
 		ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
 		ctx.reset_bg_color()
 	} else {
 		// draw command bar
-		ctx.set_bg_color(theme.command_bar_color)
+		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
 
 		ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 		ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
 		ctx.draw_text(5, command_bar_y_pos, term.bold(command_str))
 
-		ctx.set_bg_color(theme.command_bar_color)
+		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		// buf.path
 		if buf.path.starts_with('Error') {
 			ctx.set_color(colors.dark_red)
