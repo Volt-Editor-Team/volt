@@ -8,6 +8,7 @@ import buffer.common { BufferInterface }
 import buffer.list { ListBuffer }
 import buffer.rope { RopeBuffer }
 import buffer.gap { GapBuffer }
+import os
 
 pub enum BufferType {
 	gap
@@ -24,7 +25,7 @@ pub mut:
 	// public attributes
 	label     string         = 'Scratch'
 	name      string         = 'Scratch'
-	path      string         = 'Scratch'
+	path      string         = os.getwd()
 	prev_mode Mode           = .normal
 	mode      Mode           = .normal
 	p_mode    PersistantMode = .default
@@ -44,6 +45,7 @@ pub mut:
 pub struct TempData {
 pub mut:
 	temp_label  string
+	temp_string string
 	temp_data   [][]rune
 	temp_int    int
 	temp_cursor LogicalCursor
@@ -61,7 +63,8 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 		.list {
 			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize
@@ -75,7 +78,8 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 		.gap {
 			new_buffer := GapBuffer.prefilled(lines)
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize
@@ -89,7 +93,8 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 		.rope {
 			new_buffer := RopeBuffer.prefilled(lines, GapBuffer.new())
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize
@@ -108,7 +113,8 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.list {
 			new_buffer := ListBuffer.from_path(buf.path)
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize
@@ -122,7 +128,8 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.gap {
 			new_buffer := GapBuffer.from_path(buf.path)
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize
@@ -136,7 +143,8 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.rope {
 			new_buffer := RopeBuffer.from_path(buf.path, GapBuffer.new())
 			return Buffer{
-				label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
+				label:    buf.label
 				name:     buf.name
 				path:     buf.path
 				tabsize:  buf.tabsize

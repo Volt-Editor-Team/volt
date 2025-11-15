@@ -30,7 +30,7 @@ pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) 
 	return false
 }
 
-pub fn (mut buf Buffer) open_fuzzy_find(search_type SearchType) {
+pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 	// if fuzzy is already running, return
 	if buf.p_mode == .fuzzy {
 		return
@@ -50,20 +50,20 @@ pub fn (mut buf Buffer) open_fuzzy_find(search_type SearchType) {
 
 	// walk path
 	buf.file_ch = chan string{cap: 1000}
-	go fn [mut buf, search_type] () {
-		walk_path := fs.get_dir_or_parent_dir(buf.path)
-		os.walk_with_context(walk_path, &buf, fn [search_type] (ctx voidptr, file string) {
+	go fn [mut buf, path, search_type] () {
+		walk_path := fs.get_dir_or_parent_dir(path)
+		os.walk_with_context(walk_path, &buf, fn [path, search_type] (ctx voidptr, file string) {
 			b := unsafe { &Buffer(ctx) }
 			if b.p_mode == .fuzzy {
 				match search_type {
 					.file {
 						if os.is_file(file) && !fuzzy.is_ignored(file) {
-							b.file_ch <- file[b.path.len + 1..]
+							b.file_ch <- file[path.len + 1..]
 						}
 					}
 					.directory {
 						if os.is_dir(file) && !fuzzy.is_ignored(file) {
-							b.file_ch <- file[b.path.len + 1..]
+							b.file_ch <- file[path.len + 1..]
 						}
 					}
 				}
@@ -78,6 +78,7 @@ pub fn (mut buf Buffer) open_fuzzy_find(search_type SearchType) {
 	go fn [mut buf] () {
 		mut last_query := ''
 		mut master_list := []string{}
+		buf.temp_int = 0
 		for {
 			if buf.p_mode != .fuzzy {
 				return

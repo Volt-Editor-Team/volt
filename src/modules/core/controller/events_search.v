@@ -13,14 +13,14 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			.f {
 				if buf.p_mode != .fuzzy {
 					app.cmd_buffer.command = ''
-					buf.open_fuzzy_find(.file)
+					buf.open_fuzzy_find(app.working_dir, .file)
 				}
 			}
 			// directory fuzzy finder
 			.d {
 				if buf.p_mode != .fuzzy {
 					app.cmd_buffer.command = ''
-					buf.open_fuzzy_find(.directory)
+					buf.open_fuzzy_find(app.working_dir, .directory)
 				}
 			}
 			// f<char>

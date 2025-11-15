@@ -14,10 +14,10 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						buf.prev_mode = buf.mode
 						buf.mode = .search
 						timer := time.now()
-						go fn [mut buf, timer, temp] () {
+						go fn [app, mut buf, timer, temp] () {
 							for buf.prev_mode == .menu && buf.mode == .search {
 								if time.since(timer).milliseconds() > 200 {
-									buf.open_fuzzy_find(.file)
+									buf.open_fuzzy_find(app.working_dir, .file)
 									break
 								}
 							}

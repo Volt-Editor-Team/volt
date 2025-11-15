@@ -28,7 +28,7 @@ fn full_redraw(x voidptr) {
 	multiple_buffers := app.buffers.len > 1
 	buffer_gap := int(multiple_buffers)
 	if multiple_buffers {
-		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].label + ' '}
+		buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
 		ctx.draw_tabs(buffer_names, app.active_buffer, width, tui_app.theme)
 	}
 
@@ -220,7 +220,7 @@ fn full_redraw(x voidptr) {
 	// debugging
 	// ctx.draw_text(width - 30, height - 3, buf.logical_cursor.visual_x.str())
 	// ctx.draw_text(width - 30, height - 2, buf.cur_line.str())
-	ctx.draw_text(width - 30, height - 4, buf.prev_mode.str())
+	// ctx.draw_text(width - 30, height - 4, buf.temp_string.str())
 
 	mut command_bar_y_pos := height
 

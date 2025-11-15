@@ -226,7 +226,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.logical_cursor.y--
 							}
 						}
-						.enter {
+						// for switch fuzzy search directory
+						.tab {
 							if buf.temp_data.len > 0 {
 								file := buf.temp_data[buf.logical_cursor.y].string()
 
@@ -239,13 +240,60 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 								// delete temp stuff
 								buf.temp_label = ''
-								buf.temp_data.clear()
+								// buf.temp_data.clear()
+								buf.file_ch.close()
+								buf.temp_string = os.abs_path(file)
 
-								if os.is_dir(os.join_path_single(fs.get_working_dir(),
-									file))
-								{
-									os.chdir(os.join_path_single(fs.get_working_dir(),
-										file)) or { return }
+								if os.is_dir(buf.temp_string) {
+									buf.open_fuzzy_find(buf.temp_string, .directory)
+								}
+							}
+						}
+						.o {
+							if buf.temp_data.len > 0 {
+								file := buf.temp_data[buf.logical_cursor.y].string()
+
+								buf.path = buf.temp_path
+								buf.p_mode = buf.temp_mode
+								buf.mode = .normal
+								buf.logical_cursor = buf.temp_cursor
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
+
+								// delete temp stuff
+								buf.temp_label = ''
+								// buf.temp_data.clear()
+								buf.file_ch.close()
+								buf.temp_string = os.abs_path(file)
+
+								if os.is_dir(buf.temp_string) {
+									buf.open_fuzzy_find(buf.temp_string, .file)
+								}
+							}
+						}
+						.enter {
+							if buf.temp_data.len > 0 {
+								file := buf.temp_data[buf.logical_cursor.y].string()
+
+								buf.path = buf.temp_path
+								buf.p_mode = buf.temp_mode
+								buf.mode = .normal
+								buf.logical_cursor = buf.temp_cursor
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
+
+								// delete temp stuff
+								buf.temp_data.clear()
+								mut new_path := os.join_path_single(app.working_dir, file)
+								if buf.temp_string != '' {
+									new_path = os.join_path_single(os.abs_path(buf.temp_string),
+										file)
+									buf.temp_string = new_path
+								}
+
+								if os.is_dir(new_path) {
+									os.chdir(new_path) or { return }
+									app.working_dir = new_path
 								} else {
 									app.add_new_buffer(
 										name:    os.file_name(file)
@@ -256,6 +304,36 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										p_mode:  .default
 									)
 								}
+							}
+						}
+						else {}
+					}
+				}
+				.shift {
+					match key {
+						// for switch fuzzy search directory
+						.tab {
+							// file := buf.temp_data[buf.logical_cursor.y].string()
+
+							// buf.path = buf.temp_path
+							buf.p_mode = buf.temp_mode
+							buf.mode = .normal
+							buf.logical_cursor = buf.temp_cursor
+							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+								app.viewport.margin)
+
+							// delete temp stuff
+							// buf.temp_data.clear()
+							buf.file_ch.close()
+
+							search_path := if buf.temp_string == '' {
+								app.working_dir
+							} else {
+								os.abs_path(buf.temp_string)
+							}
+							buf.temp_string = os.dir(search_path)
+							if os.is_dir(buf.temp_string) {
+								buf.open_fuzzy_find(buf.temp_string, .directory)
 							}
 						}
 						else {}

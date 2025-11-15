@@ -15,7 +15,9 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		p_mode:  b.p_mode
 	)
 
-	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
+	// if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
+	if app.buffers.len == 1 && app.buffers[app.active_buffer].label == 'Scratch'
+		&& app.buffers[app.active_buffer].name == 'Scratch' {
 		app.buffers[0] = new_buf
 	} else {
 		app.buffers << new_buf

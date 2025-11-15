@@ -76,6 +76,31 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					.shift {
 						match key {
 							.enter {}
+							// for switch fuzzy search directory
+							.tab {
+								// file := buf.temp_data[buf.logical_cursor.y].string()
+
+								// buf.path = buf.temp_path
+								buf.p_mode = buf.temp_mode
+								buf.mode = .normal
+								buf.logical_cursor = buf.temp_cursor
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
+
+								// delete temp stuff
+								// buf.temp_data.clear()
+								buf.file_ch.close()
+
+								search_path := if buf.temp_string == '' {
+									app.working_dir
+								} else {
+									os.abs_path(buf.temp_string)
+								}
+								buf.temp_string = os.abs_path(os.dir(search_path))
+								if os.is_dir(buf.temp_string) {
+									buf.open_fuzzy_find(buf.temp_string, .directory)
+								}
+							}
 							else {}
 						}
 					}
@@ -100,6 +125,29 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 					else {
 						match key {
+							// for switch fuzzy search directory
+							.tab {
+								if buf.temp_data.len > 0 {
+									file := buf.temp_data[buf.logical_cursor.y].string()
+
+									buf.path = buf.temp_path
+									buf.p_mode = buf.temp_mode
+									buf.mode = .normal
+									buf.logical_cursor = buf.temp_cursor
+									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+										app.viewport.margin)
+
+									// delete temp stuff
+									buf.temp_label = ''
+									// buf.temp_data.clear()
+									buf.file_ch.close()
+									buf.temp_string = os.abs_path(file)
+
+									if os.is_dir(buf.temp_string) {
+										buf.open_fuzzy_find(buf.temp_string, .directory)
+									}
+								}
+							}
 							.enter {
 								if buf.temp_data.len > 0 {
 									buf.path = buf.temp_path
