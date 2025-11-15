@@ -144,7 +144,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			// delete character
 			.backspace {
 				// remove char before index
-				if app.cmd_buffer.command.len > 0 {
+				if app.cmd_buffer.command.len > 2 {
 					app.cmd_buffer.remove_char(app.cmd_buffer.command.len - 1)
 				}
 			}
