@@ -9,6 +9,10 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	if event == .key_down {
 		match key {
 			.escape {
+				// not for temporary buffers
+				if buf.p_mode != .fuzzy || buf.p_mode != .directory {
+					buf.prev_mode = buf.mode
+				}
 				buf.mode = .normal
 				return
 			}

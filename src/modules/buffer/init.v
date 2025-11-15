@@ -22,11 +22,12 @@ pub struct Buffer {
 	TempData
 pub mut:
 	// public attributes
-	label  string         = 'Scratch'
-	name   string         = 'Scratch'
-	path   string         = 'Scratch'
-	mode   Mode           = .normal
-	p_mode PersistantMode = .default
+	label     string         = 'Scratch'
+	name      string         = 'Scratch'
+	path      string         = 'Scratch'
+	prev_mode Mode           = .normal
+	mode      Mode           = .normal
+	p_mode    PersistantMode = .default
 	// core internal structures
 	type     BufferType      = .gap
 	buffer   BufferInterface = ListBuffer.from_path('')

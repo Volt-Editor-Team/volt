@@ -1,5 +1,7 @@
 module controller
 
+import time
+
 pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
@@ -7,6 +9,21 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 		match buf.p_mode {
 			.default, .directory {
 				match key {
+					.f {
+						temp := buf.prev_mode
+						buf.prev_mode = buf.mode
+						buf.mode = .search
+						timer := time.now()
+						go fn [mut buf, timer, temp] () {
+							for buf.prev_mode == .menu && buf.mode == .search {
+								if time.since(timer).milliseconds() > 200 {
+									buf.open_fuzzy_find(.file)
+									break
+								}
+							}
+							buf.prev_mode = temp
+						}()
+					}
 					.q {
 						app.cmd_buffer.command = ''
 						if buf.p_mode == .directory {

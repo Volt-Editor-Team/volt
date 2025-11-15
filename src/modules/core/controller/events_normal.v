@@ -12,18 +12,23 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	if event == .key_down {
 		match key {
 			.f {
+				buf.prev_mode = buf.mode
 				buf.mode = .search
 			}
 			.space {
+				buf.prev_mode = buf.mode
 				buf.mode = .menu
 			}
 			.g {
+				buf.prev_mode = buf.mode
 				buf.mode = .goto
 			}
 			.i {
+				buf.prev_mode = buf.mode
 				buf.mode = .insert
 			}
 			.colon {
+				buf.prev_mode = buf.mode
 				buf.saved_cursor = buf.logical_cursor
 				buf.mode = .command
 			}

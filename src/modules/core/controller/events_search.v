@@ -7,6 +7,9 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	if event == .key_down {
 		match key {
 			// file fuzzy finder
+			.escape {
+				buf.mode = .normal
+			}
 			.f {
 				if buf.p_mode != .fuzzy {
 					app.cmd_buffer.command = ''
