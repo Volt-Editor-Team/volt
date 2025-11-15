@@ -2,6 +2,7 @@ module controller
 
 import time
 // import fs
+import os
 
 pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -27,7 +28,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				buf.logical_cursor = buf.saved_cursor
 			}
 			.enter {
-				match cmd_str {
+				match cmd_str[2..] {
 					// quit
 					'q', 'quit' {
 						app.cmd_buffer.command = ''
@@ -87,6 +88,12 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						}
 						app.close_buffer()
 					}
+					// print working directory
+					'pwd' {
+						buf.mode = .normal
+						app.cmd_buffer.command = os.getwd()
+						buf.logical_cursor = buf.saved_cursor
+					}
 					// open doctor
 					'doctor' {
 						buf.mode = .normal
@@ -100,11 +107,14 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						} else {
 							if app.stats.len == 0 {
-								go fn [mut buf] () {
-									temp := buf.path
-									buf.path = 'Error: Stats not available'
+								go fn [mut app] () {
+									// temp := buf.path
+									// buf.path = 'Error: Stats not available'
+									// time.sleep(2 * time.second)
+									// buf.path = temp
+									app.cmd_buffer.command = 'Error: Stats not available'
 									time.sleep(2 * time.second)
-									buf.path = temp
+									app.cmd_buffer.command = ''
 								}()
 								return
 							}

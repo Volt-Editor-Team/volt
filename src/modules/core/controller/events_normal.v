@@ -10,6 +10,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	mut buf := &app.buffers[app.active_buffer]
 	// global normal mode
 	if event == .key_down {
+		if app.cmd_buffer.command.len > 0 {
+			app.cmd_buffer.command = ''
+		}
 		match key {
 			.f {
 				buf.prev_mode = buf.mode
@@ -31,6 +34,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				buf.prev_mode = buf.mode
 				buf.saved_cursor = buf.logical_cursor
 				buf.mode = .command
+				app.cmd_buffer.command = ': '
 			}
 			.b {
 				if app.buffers.len > 1 {

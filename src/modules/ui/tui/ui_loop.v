@@ -224,7 +224,7 @@ fn full_redraw(x voidptr) {
 
 	mut command_bar_y_pos := height
 
-	if buf.mode == util.Mode.command {
+	if buf.mode == util.Mode.command || app.cmd_buffer.command.len > 2 {
 		command_bar_y_pos--
 		// draw command bar
 		ctx.set_bg_color(tui_app.theme.command_bar_color)
@@ -236,13 +236,12 @@ fn full_redraw(x voidptr) {
 
 		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		// buf.path
-		if buf.path.starts_with('Error') {
-			ctx.set_color(colors.dark_red)
-		} else {
-			ctx.set_color(colors.white)
-		}
 
-		mut path_to_draw := buf.path
+		mut path_to_draw := if buf.label == 'Scratch' && buf.name == 'Scratch' {
+			'Scratch'
+		} else {
+			buf.path
+		}
 		if path_to_draw.len > width - 30 {
 			buf_split := buf.path.split(os.path_separator)
 			path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
@@ -265,16 +264,23 @@ fn full_redraw(x voidptr) {
 		ctx.draw_text(0, buf.logical_cursor.y, ' '.repeat(width - 1))
 
 		// 2. Draw the ':' prompt
-		ctx.draw_text(0, buf.logical_cursor.y, ':')
+		// ctx.draw_text(0, buf.logical_cursor.y, ':')
 
 		// 3. Draw the command buffer
+		if app.cmd_buffer.command.starts_with('Error') {
+			ctx.set_color(colors.dark_red)
+		} else {
+			ctx.set_color(colors.white)
+		}
 		ctx.draw_text(2, buf.logical_cursor.y, app.cmd_buffer.command)
 
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
-		ctx.set_bg_color(tui_app.theme.insert_cursor_color)
-		ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
-		ctx.reset_bg_color()
+		if buf.mode == util.Mode.command {
+			ctx.set_bg_color(tui_app.theme.insert_cursor_color)
+			ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
+			ctx.reset_bg_color()
+		}
 	} else {
 		// draw command bar
 		ctx.set_bg_color(tui_app.theme.command_bar_color)
@@ -286,17 +292,21 @@ fn full_redraw(x voidptr) {
 
 		ctx.set_bg_color(tui_app.theme.command_bar_color)
 		// buf.path
-		if buf.path.starts_with('Error') {
-			ctx.set_color(colors.dark_red)
+		mut path_to_draw := if buf.label == 'Scratch' && buf.name == 'Scratch' {
+			'Scratch'
 		} else {
-			ctx.set_color(colors.white)
+			buf.path
 		}
-		mut path_to_draw := buf.path
 		if path_to_draw.len > width - 30 {
 			buf_split := buf.path.split(os.path_separator)
 			path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
 				buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
 		}
+		// if app.cmd_buffer.command.starts_with('Error') {
+		// 	ctx.set_color(colors.dark_red)
+		// } else {
+		// 	ctx.set_color(colors.white)
+		// }
 		ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 		ctx.reset_color()
 		pos_string := (buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
