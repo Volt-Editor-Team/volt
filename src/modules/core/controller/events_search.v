@@ -24,6 +24,7 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			.d {
 				if buf.p_mode != .fuzzy {
 					app.cmd_buffer.command = ''
+					buf.temp_string = app.working_dir
 					buf.open_fuzzy_find(app.working_dir, .directory)
 				}
 			}

@@ -282,9 +282,10 @@ fn full_redraw(x voidptr) {
 	}
 
 	// -- debugging --
-	// ctx.draw_text(width - 30, height - 3, buf.logical_cursor.visual_x.str())
-	// ctx.draw_text(width - 30, height - 2, buf.cur_line.str())
-	// ctx.draw_text(width - 30, height - 4, buf.temp_string.str())
+	// ctx.draw_text(width - 90, height - 4, 'this path: ' + buf.path)
+	// ctx.draw_text(width - 90, height - 3, 'wd: ' + os.getwd())
+	// ctx.draw_text(width - 90, height - 2, 'function: ' +
+	// 	controller.update_path(buf.path, os.getwd()).str())
 
 	// -- status bar --
 	mut command_bar_y_pos := height

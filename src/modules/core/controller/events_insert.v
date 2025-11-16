@@ -132,7 +132,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								if buf.temp_data.len > 0 {
 									file := buf.temp_data[buf.logical_cursor.y].string()
 
-									buf.path = buf.temp_path
+									// buf.path = buf.temp_path
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									buf.logical_cursor = buf.temp_cursor
@@ -152,24 +152,38 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.enter {
 								if buf.temp_data.len > 0 {
-									buf.path = buf.temp_path
+									file := buf.temp_data[buf.logical_cursor.y].string()
+
+									// buf.path = buf.temp_path
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									buf.logical_cursor = buf.temp_cursor
 									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 										app.viewport.margin)
 
-									file := buf.temp_data[0].string()
-									app.add_new_buffer(
-										name:    os.file_name(file)
-										path:    file
-										tabsize: buf.tabsize
-										mode:    .normal
-										p_mode:  .default
-									)
 									// delete temp stuff
-									buf.temp_label = ''
+									mut new_path := buf.temp_string + os.path_separator + file
+
+									if os.is_dir(new_path) {
+										prev_wd := app.working_dir
+										os.chdir(new_path) or { return }
+										app.working_dir = os.getwd()
+										for mut buffer in app.buffers {
+											buffer.path = update_path(prev_wd + os.path_separator +
+												buffer.path, app.working_dir)
+										}
+									} else {
+										app.add_new_buffer(
+											name:    os.file_name(file)
+											path:    file
+											tabsize: buf.tabsize
+											type:    .gap
+											mode:    .normal
+											p_mode:  .default
+										)
+									}
 									buf.temp_data.clear()
+									buf.menu_state = false
 								}
 							}
 							.backspace {
