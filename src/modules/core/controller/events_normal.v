@@ -8,33 +8,42 @@ import math
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
+	buf.temp_string = key.str()
 	// global normal mode
 	if event == .key_down {
 		if app.cmd_buffer.command.len > 0 {
 			app.cmd_buffer.command = ''
 		}
 		match key {
+			.exclamation {
+				buf.menu_state = !buf.menu_state
+			}
 			.f {
 				buf.prev_mode = buf.mode
 				buf.mode = .search
+				buf.menu_state = true
 			}
 			.space {
 				buf.prev_mode = buf.mode
 				buf.mode = .menu
+				buf.menu_state = true
 			}
 			.g {
 				buf.prev_mode = buf.mode
 				buf.mode = .goto
+				buf.menu_state = true
 			}
 			.i {
 				buf.prev_mode = buf.mode
 				buf.mode = .insert
+				buf.menu_state = false
 			}
 			.colon {
 				buf.prev_mode = buf.mode
 				buf.saved_cursor = buf.logical_cursor
 				buf.mode = .command
 				app.cmd_buffer.command = ': '
+				buf.menu_state = false
 			}
 			.b {
 				if app.buffers.len > 1 {
@@ -219,16 +228,21 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.temp_label = ''
 							buf.temp_data.clear()
 							buf.file_ch.close()
+							buf.menu_state = false
 						}
 						.j, .down {
 							if buf.logical_cursor.y < buf.temp_data.len - 1 {
 								buf.logical_cursor.y++
 							}
+							// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							// 	app.viewport.margin)
 						}
 						.k, .up {
 							if buf.logical_cursor.y > 0 {
 								buf.logical_cursor.y--
 							}
+							// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+							// 	app.viewport.margin)
 						}
 						// for switch fuzzy search directory
 						.tab {

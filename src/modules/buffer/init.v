@@ -40,6 +40,7 @@ pub mut:
 	// other important attributes
 	tabsize    int
 	row_offset int
+	menu_state bool
 }
 
 pub struct TempData {

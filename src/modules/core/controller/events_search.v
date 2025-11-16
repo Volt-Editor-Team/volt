@@ -6,9 +6,13 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	// global normal mode
 	if event == .key_down {
 		match key {
+			.exclamation {
+				buf.menu_state = !buf.menu_state
+			}
 			// file fuzzy finder
 			.escape {
 				buf.mode = .normal
+				buf.menu_state = false
 			}
 			.f {
 				if buf.p_mode != .fuzzy {

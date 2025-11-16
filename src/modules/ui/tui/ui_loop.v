@@ -217,11 +217,76 @@ fn full_redraw(x voidptr) {
 		}
 	}
 
-	// debugging
+	// -- draw menu --
+	if buf.menu_state == true && buf.mode != .insert {
+		mut key_bindings := normal_menu.clone()
+		match buf.mode {
+			.normal {
+				match buf.p_mode {
+					.default {}
+					.fuzzy {
+						key_bindings = fuzzy_menu.clone()
+					}
+					.directory {
+						key_bindings = directory_menu.clone()
+					}
+				}
+			}
+			.insert {}
+			.command {}
+			.menu {
+				key_bindings = menu_menu.clone()
+			}
+			.goto {
+				key_bindings = goto_menu.clone()
+			}
+			.search {
+				key_bindings = search_menu.clone()
+			}
+		}
+		menu_top := height / 3
+		menu_bottom := menu_top + key_bindings.len + 1
+		mut max_key_length := 0
+		for key in key_bindings.keys() {
+			if key.len > max_key_length {
+				max_key_length = key.len
+			}
+		}
+		mut max_value_length := 0
+		for value in key_bindings.values() {
+			if value.len > max_value_length {
+				max_value_length = value.len
+			}
+		}
+
+		menu_left := width / 2 - (max_key_length + max_value_length + 6) / 2
+		menu_right := menu_left + max_key_length + max_value_length + 6
+		ctx.draw_background(menu_left, menu_top, menu_right, menu_bottom, tui_app.theme)
+		ctx.set_colors(tui_app.theme.background_color, tui_app.theme.normal_text_color)
+		for x_pos in menu_left + 1 .. menu_right {
+			ctx.draw_text(x_pos, menu_top, '-')
+			ctx.draw_text(x_pos, menu_bottom, '-')
+		}
+		for y_pos in menu_top + 1 .. menu_bottom {
+			ctx.draw_text(menu_left, y_pos, '|')
+			ctx.draw_text(menu_right, y_pos, '|')
+		}
+
+		mut i := 0
+		ctx.draw_text(menu_left + 3, menu_top, command_str)
+		for key, value in key_bindings {
+			ctx.draw_text(menu_left + 2, menu_top + i + 1, key + ' '.repeat(2 +
+				(max_key_length - key.len)) + value)
+			i++
+		}
+	}
+
+	// -- debugging --
 	// ctx.draw_text(width - 30, height - 3, buf.logical_cursor.visual_x.str())
 	// ctx.draw_text(width - 30, height - 2, buf.cur_line.str())
 	// ctx.draw_text(width - 30, height - 4, buf.temp_string.str())
 
+	// -- status bar --
 	mut command_bar_y_pos := height
 
 	if buf.mode == util.Mode.command || app.cmd_buffer.command.len > 2 {

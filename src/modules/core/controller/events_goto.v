@@ -5,6 +5,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 	mut buf := &app.buffers[app.active_buffer]
 	if event == .key_down {
 		match key {
+			.exclamation {
+				buf.menu_state = !buf.menu_state
+			}
 			.g {
 				buf.logical_cursor.y = 0
 				buf.logical_cursor.x = 0
@@ -18,6 +21,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x, buf.tabsize)
 				buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
 				buf.mode = .normal
+				buf.menu_state = false
 			}
 			.e {
 				buf.logical_cursor.y = buf.buffer.line_count() - 1
@@ -40,9 +44,11 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x, buf.tabsize)
 				buf.update_offset(visual_wraps, app.viewport.height, app.viewport.margin)
 				buf.mode = .normal
+				buf.menu_state = false
 			}
 			else {
 				buf.mode = .normal
+				buf.menu_state = false
 			}
 		}
 	}
