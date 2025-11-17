@@ -134,15 +134,9 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						buf.open_fuzzy_find(app.working_dir, .file)
 					}
 					'btype', 'buffer-type' {
-						go fn [mut buf] () {
-							temp := buf.path
-							buf.path = 'Buffer type: ${buf.type}'
-							time.sleep(2 * time.second)
-							buf.path = temp
-						}()
-						app.cmd_buffer.command = ''
 						buf.mode = .normal
-						return
+						app.cmd_buffer.command = 'Buffer type: ${buf.type}'
+						buf.logical_cursor = buf.saved_cursor
 					}
 					else {}
 				}

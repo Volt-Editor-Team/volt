@@ -158,3 +158,12 @@ fn test_insert_from_file() {
 	buf.insert(0, str)!
 	assert buf.len() == str.runes().len
 }
+
+fn test_insert_tab() {
+	mut buf := GapBuffer.new()
+	assert buf.data == []
+	assert buf.debug_string() == '[gap: 0]\ncapacity: 0'
+	buf.insert_rune(0, `\t`)!
+	assert buf.to_string() == '\t'
+	assert buf.debug_string() == '\t[gap: 63]\ncapacity: 64'
+}

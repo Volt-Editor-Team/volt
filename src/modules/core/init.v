@@ -60,6 +60,7 @@ pub fn App.new(width int, height int) &App {
 	buffers << Buffer.from_path(Buffer{
 		type:       .list
 		menu_state: true
+		tabsize:    default_tabsize
 	})
 	app.buffers = buffers
 	app.active_buffer = 0

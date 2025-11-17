@@ -141,15 +141,3 @@ pub:
 	e    EventType
 	code KeyCode
 }
-
-fn is_printable_key(key KeyCode) bool {
-	return match key {
-		.a, .b, .c, .d, .e, .f, .g, .h, .i, .j, .k, .l, .m, .n, .o, .p, .q, .r, .s, .t, .u, .v, .w,
-		.x, .y, .z, ._0, ._1, ._2, ._3, ._4, ._5, ._6, ._7, ._8, ._9 {
-			true
-		}
-		else {
-			false
-		}
-	}
-}

@@ -55,19 +55,17 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 					else {
-						if is_printable_key(key) {
-							mut ch := u8(key).ascii_str()
-							if mod == .shift {
-								ch = ch.to_upper()
-							}
-
-							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
-							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-
-							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
-								buf.tabsize)
-							buf.logical_cursor.update_desired_col(app.viewport.width)
+						mut ch := rune(int(key))
+						if mod == .shift {
+							ch = ch.to_upper()
 						}
+
+						buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
+						buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+
+						buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
+							buf.tabsize)
+						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 				}
 			}
@@ -196,9 +194,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.mode = .command
 							}
 							else {
-								if is_printable_key(key) {
-									buf.temp_label += key.str()
-								}
+								buf.temp_label += rune(int(key)).str()
 							}
 						}
 					}

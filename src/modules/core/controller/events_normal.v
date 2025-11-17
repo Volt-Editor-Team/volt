@@ -193,6 +193,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 								buf.logical_cursor.x = 0
 								buf.logical_cursor.y = 0
+								buf.logical_cursor.flat_index = 0
 							}
 						}
 						.backspace {
@@ -203,6 +204,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 							buf.logical_cursor.x = 0
 							buf.logical_cursor.y = 0
+							buf.logical_cursor.flat_index = 0
 						}
 						else {}
 					}
