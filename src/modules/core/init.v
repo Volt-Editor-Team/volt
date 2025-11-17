@@ -57,7 +57,10 @@ pub fn App.new(width int, height int) &App {
 	}
 
 	mut buffers := []Buffer{}
-	buffers << Buffer.from_path(Buffer{ type: .list })
+	buffers << Buffer.from_path(Buffer{
+		type:       .list
+		menu_state: true
+	})
 	app.buffers = buffers
 	app.active_buffer = 0
 

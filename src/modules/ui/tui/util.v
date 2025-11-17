@@ -12,8 +12,8 @@ pub fn get_terminal_size() (int, int) {
 	return term.get_terminal_size()
 }
 
-fn (mut ctx TuiContext) draw_background(start_x int, start_y int, end_x int, end_y int, theme TuiTheme) {
-	ctx.set_bg_color(theme.background_color)
+fn (mut ctx TuiContext) draw_background(start_x int, start_y int, end_x int, end_y int, color ui.Color) {
+	ctx.set_bg_color(color)
 	ctx.draw_rect(start_x, start_y, end_x, end_y)
 	ctx.reset_bg_color()
 }

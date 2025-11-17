@@ -28,7 +28,12 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				buf.logical_cursor = buf.saved_cursor
 			}
 			.enter {
-				match cmd_str[2..] {
+				command := cmd_str[2..]
+				if command.starts_with('cd') && command.len > 2 {
+					return
+				}
+				// simple commands
+				match command {
 					// quit
 					'q', 'quit' {
 						app.cmd_buffer.command = ''
@@ -56,13 +61,13 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						}
 					}
 					// help
-					'help' {
+					'h', 'help' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
 						app.add_help_buffer()
 					}
-					// change directory
-					'cd' {
+					// change directory buffer
+					'cd', 'change-directory' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
 
@@ -78,7 +83,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						}
 					}
 					// close buffer
-					'cb' {
+					'cb', 'close-buffer' {
 						app.cmd_buffer.command = ''
 						if buf.p_mode == .directory {
 							app.has_directory_buffer = false
@@ -89,13 +94,13 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						app.close_buffer()
 					}
 					// print working directory
-					'pwd' {
+					'pwd', 'print-working-directory' {
 						buf.mode = .normal
 						app.cmd_buffer.command = os.getwd()
 						buf.logical_cursor = buf.saved_cursor
 					}
 					// open doctor
-					'doctor' {
+					'doc', 'doctor' {
 						buf.mode = .normal
 						app.cmd_buffer.command = ''
 						buf.logical_cursor = buf.saved_cursor
@@ -118,16 +123,17 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 								}()
 								return
 							}
+							app.get_doctor_info()
 							app.add_stats_buffer()
 							app.has_stats_opened = true
 						}
 					}
 					// fuzzy finder
-					'fzf' {
+					'fzf', 'fuzzy-find' {
 						app.cmd_buffer.command = ''
 						buf.open_fuzzy_find(app.working_dir, .file)
 					}
-					'btype' {
+					'btype', 'buffer-type' {
 						go fn [mut buf] () {
 							temp := buf.path
 							buf.path = 'Buffer type: ${buf.type}'

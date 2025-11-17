@@ -28,9 +28,10 @@ fn main() {
 							open_fuzzy = true
 						} else {
 							core_app.add_new_buffer(
-								mode:   .normal
-								type:   .list
-								p_mode: .default
+								mode:       .normal
+								type:       .list
+								p_mode:     .default
+								menu_state: true
 							)
 							mut buffer := &core_app.buffers[core_app.active_buffer]
 							buffer.open_fuzzy_find(buffer.path, .file)
@@ -40,11 +41,12 @@ fn main() {
 					}
 				} else {
 					core_app.add_new_buffer(
-						name:   arg
-						path:   arg
-						type:   .list
-						mode:   .normal
-						p_mode: .default
+						name:       arg
+						path:       arg
+						type:       .list
+						mode:       .normal
+						p_mode:     .default
+						menu_state: true
 					)
 					if open_fuzzy {
 						mut buffer := &core_app.buffers[core_app.active_buffer]
