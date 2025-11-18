@@ -82,6 +82,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 								// delete temp stuff
 								buf.temp_label = ''
+								buf.temp_int = 0
 								buf.temp_data.clear()
 								buf.file_ch.close()
 								buf.p_mode = buf.temp_mode
@@ -122,6 +123,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 									// delete temp stuff
 									buf.temp_label = ''
+									buf.temp_int = 0
 									buf.temp_data.clear()
 									buf.file_ch.close()
 									buf.temp_string += os.path_separator + file
@@ -176,6 +178,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										}
 									}
 									buf.temp_label = ''
+									buf.temp_int = 0
 									buf.temp_data.clear()
 									buf.menu_state = false
 								}

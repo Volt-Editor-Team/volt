@@ -4,6 +4,7 @@ import os
 import math
 import util.fuzzy
 import fs
+import time
 
 pub enum SearchType {
 	file
@@ -35,33 +36,44 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 	if buf.p_mode == .fuzzy {
 		return
 	}
-	buf.temp_path = buf.path
-	buf.temp_cursor = buf.logical_cursor
-	buf.temp_mode = buf.p_mode
+	walk_path := fs.get_dir_or_parent_dir(path)
+	first_level := os.ls(walk_path) or { [] }
+	if first_level.len == 0 {
+		return
+	}
+
+	// buf.temp_path = buf.path
+	// buf.temp_cursor = buf.logical_cursor
+	// buf.temp_mode = buf.p_mode
 
 	buf.p_mode = .fuzzy
 
 	buf.logical_cursor.x = 0
 	buf.logical_cursor.y = 0
 	buf.row_offset = 0
-	// buf.update_visual_cursor(app.viewport.width)
+	// // buf.update_visual_cursor(app.viewport.width)
 
 	// walk path
 	buf.file_ch = chan string{cap: 1000}
-	go fn [mut buf, path, search_type] () {
-		walk_path := fs.get_dir_or_parent_dir(path)
-		os.walk_with_context(walk_path, &buf, fn [path, search_type] (ctx voidptr, file string) {
+	go fn [mut buf, walk_path, search_type] () {
+		if buf.p_mode != .fuzzy || buf.file_ch.closed {
+			return
+		}
+		os.walk_with_context(walk_path, &buf, fn [walk_path, search_type] (ctx voidptr, file string) {
 			b := unsafe { &Buffer(ctx) }
+			if b.file_ch.closed {
+				return
+			}
 			if b.p_mode == .fuzzy {
 				match search_type {
 					.file {
 						if os.is_file(file) && !fuzzy.is_ignored(file) {
-							b.file_ch <- file[path.len + 1..]
+							b.file_ch <- file[walk_path.len + 1..]
 						}
 					}
 					.directory {
 						if os.is_dir(file) && !fuzzy.is_ignored(file) {
-							b.file_ch <- file[path.len + 1..]
+							b.file_ch <- file[walk_path.len + 1..]
 						}
 					}
 				}
@@ -72,18 +84,25 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 		})
 	}()
 
+	time.sleep(1 * time.millisecond)
 	// worker thread
 	go fn [mut buf] () {
+		if buf.p_mode != .fuzzy || buf.file_ch.closed {
+			return
+		}
 		mut last_query := ''
 		mut master_list := []string{}
 		buf.temp_int = 0
 		for {
-			if buf.p_mode != .fuzzy {
+			if buf.p_mode != .fuzzy || buf.file_ch.closed {
 				return
 			}
 
 			// non-blocking channel receive with timeout
 			for {
+				if buf.file_ch.closed {
+					return
+				}
 				select {
 					file := <-buf.file_ch {
 						lock {
@@ -99,9 +118,8 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 			}
 			if buf.temp_label != last_query || buf.temp_label.len == 0 {
 				last_query = buf.temp_label
-				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut master_list)
+				fuzzy.fuzzyfind(buf.temp_label, mut buf.temp_data, mut master_list, buf.file_ch.closed)
 			}
-			// time.sleep(1 * time.millisecond)
 		}
 	}()
 }

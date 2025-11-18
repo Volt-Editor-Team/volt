@@ -50,12 +50,18 @@ fn compare_fuzzy_result(a FuzzyResult, b FuzzyResult) int {
 	}
 }
 
-pub fn fuzzyfind(query string, mut lines [][]rune, mut master_list []string) {
+pub fn fuzzyfind(query string, mut lines [][]rune, mut master_list []string, channel_closed bool) {
+	if channel_closed {
+		return
+	}
 	// Preallocate the result array
 	mut result := []FuzzyResult{cap: master_list.len}
 
 	// Fill the array
 	for entry in master_list {
+		if channel_closed {
+			return
+		}
 		q := query.to_lower()
 		e := entry.to_lower()
 		if util.is_subsequence(q, e) {
