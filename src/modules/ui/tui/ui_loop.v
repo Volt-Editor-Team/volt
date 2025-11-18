@@ -178,6 +178,7 @@ fn full_redraw(x voidptr) {
 		file_count_text := '( walked: ${buf.temp_data.len} / ${buf.temp_int} )'
 		ctx.draw_text(width - file_count_text.len - 2, start, file_count_text)
 		if buf.mode == .insert {
+			// draw the input string to match
 			// the cursor is a lie but it looks good
 			ctx.set_bg_color(tui_app.theme.insert_cursor_color)
 			ctx.draw_text(input_string.len + 1, start, ' ')
@@ -188,14 +189,19 @@ fn full_redraw(x voidptr) {
 			}
 			ctx.set_bg_color(tui_app.theme.background_color)
 		}
+		// draw search results
 		for i, line_runes in buf.temp_data[start_row..end_row] {
 			line := line_runes.string()
+			y_index := i + start_row
 			mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
 			file_ext := os.file_ext(line)
-			if buf.mode == .normal && i == buf.logical_cursor.y {
+			// highlight cursor line
+			if buf.mode != .insert && y_index == buf.logical_cursor.y {
 				ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 				ctx.draw_line(0, i + 1 + start, width - 1, i + 1 + start)
 			}
+			// draw icon if file
+			// if not file, fill with spaces
 			if file_ext in constants.ext_icons {
 				filetype := constants.ext_icons[file_ext]
 				fg_color := colors.hex_to_tui_color(filetype.color) or { colors.white }
@@ -211,7 +217,8 @@ fn full_redraw(x voidptr) {
 				line_num_label = ' '.repeat(allocated_line_num_width)
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 			}
-			for j, ch in line.runes_iterator() {
+			// draw actual line characters
+			for j, ch in line_runes {
 				if buf.temp_label.contains(ch.str()) {
 					ctx.set_color(colors.lavender_violet)
 				}
@@ -293,7 +300,7 @@ fn full_redraw(x voidptr) {
 
 	// -- debugging --
 	// ctx.draw_text(width - 90, height - 4, 'this path: ' + buf.path)
-	ctx.draw_text(width - 90, height - 3, view.col_offset.str())
+	// ctx.draw_text(width - 90, height - 3, buf.row_offset.str())
 	// ctx.draw_text(width - 90, height - 2, 'function: ' +
 	// controller.update_path(buf.path, os.getwd()).str())
 

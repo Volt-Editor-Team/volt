@@ -234,16 +234,16 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.j, .down {
 							if buf.logical_cursor.y < buf.temp_data.len - 1 {
 								buf.logical_cursor.y++
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
 							}
-							// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							// 	app.viewport.margin)
 						}
 						.k, .up {
 							if buf.logical_cursor.y > 0 {
 								buf.logical_cursor.y--
+								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+									app.viewport.margin)
 							}
-							// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							// 	app.viewport.margin)
 						}
 						// for switch fuzzy search directory
 						.tab {

@@ -195,6 +195,11 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							else {
 								buf.temp_label += rune(int(key)).str()
+								if buf.logical_cursor.y > buf.temp_data.len {
+									buf.logical_cursor.y = 0
+									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+										app.viewport.margin)
+								}
 							}
 						}
 					}
