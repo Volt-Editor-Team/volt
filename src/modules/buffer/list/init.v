@@ -52,15 +52,14 @@ pub fn (mut buf ListBuffer) insert(curs int, s InsertValue) ! {
 			return
 		}
 		string {
-			for r in s.runes_iterator() {
-				buf.insert_char(x, y, r)
-			}
+			runes := s.runes()
+			buf.insert_slice(x, y, runes)
 		}
 		[]string {
 			return
 		}
 		[]rune {
-			buf.insert_lines(y + 1, s)
+			buf.insert_slice(x, y, s)
 		}
 	}
 	// ch := s as rune

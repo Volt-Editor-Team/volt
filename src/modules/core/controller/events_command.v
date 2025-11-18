@@ -96,7 +96,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					// print working directory
 					'pwd', 'print-working-directory' {
 						buf.mode = .normal
-						app.cmd_buffer.command = os.getwd()
+						app.cmd_buffer.command = 'Working Directory: ' + os.getwd()
 						buf.logical_cursor = buf.saved_cursor
 					}
 					// open doctor

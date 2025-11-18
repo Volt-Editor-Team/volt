@@ -147,8 +147,10 @@ fn full_redraw(x voidptr) {
 			// Special case: cursor at end of line
 			if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
 				// find last column in this line (or 0 if empty)
+				// last_index := line[line.len - 1]
 				last_x := if line.len > 0 {
-					visual_cache[line.len - 1] + 1
+					// visual_cache[line.len - 1] + char_width
+					col
 				} else {
 					0
 				}
@@ -299,7 +301,7 @@ fn full_redraw(x voidptr) {
 	}
 
 	// -- debugging --
-	// ctx.draw_text(width - 90, height - 4, buf.temp_string)
+	// ctx.draw_text(width - 90, height - 4, buf.cur_line.str())
 	// ctx.draw_text(width - 90, height - 3, buf.path)
 	// ctx.draw_text(width - 90, height - 2, 'function: ' +
 	// controller.update_path(buf.path, os.getwd()).str())

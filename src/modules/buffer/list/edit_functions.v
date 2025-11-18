@@ -8,7 +8,26 @@ pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch rune) {
 	// buf.update_line_cache(y_pos)
 }
 
-pub fn (mut buf ListBuffer) insert_lines(y_pos int, lines []rune) {
+pub fn (mut buf ListBuffer) insert_slice(x_pos int, y_pos int, runes []rune) {
+	mut lines := [][]rune{}
+	mut cur_line := []rune{}
+	for ch in runes {
+		if ch == `\n` {
+			lines << cur_line
+			cur_line = []rune{}
+		} else {
+			cur_line << ch
+		}
+	}
+	lines << cur_line
+
+	buf.lines[y_pos].insert(x_pos, lines[0])
+	if lines.len > 1 {
+		buf.lines.insert(y_pos, lines[1..])
+	}
+}
+
+pub fn (mut buf ListBuffer) insert_line(y_pos int, lines []rune) {
 	buf.lines.insert(y_pos, lines)
 }
 

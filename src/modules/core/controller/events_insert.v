@@ -49,9 +49,21 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 					.enter {
-						buf.buffer.insert(buf.logical_cursor.flat_index, `\n`) or { return }
-						buf.logical_cursor.move_to_start_next_line_buffer(mut buf.cur_line,
-							buf.buffer, buf.tabsize)
+						mut previous_indentation := []rune{}
+						previous_indentation << `\n`
+						for ch in buf.cur_line {
+							if !ch.str().is_blank() {
+								break
+							} else {
+								previous_indentation << ch
+							}
+						}
+
+						buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
+							return
+						}
+						buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1, mut
+							buf.cur_line, buf.buffer, buf.tabsize)
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 					else {

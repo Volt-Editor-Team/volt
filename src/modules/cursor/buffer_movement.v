@@ -44,13 +44,13 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(mut cur_line []rune, buf Bu
 		mut closest := 0
 		for i, ch in cur_line {
 			if column >= log_curs.desired_col {
-				column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
+				// column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 				break
 			}
 			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 			closest = i
 		}
-		log_curs.x = if closest == cur_line.len - 1 && closest + column < log_curs.desired_col {
+		log_curs.x = if closest == cur_line.len - 1 && closest < log_curs.desired_col {
 			closest + 1
 		} else {
 			closest
@@ -97,6 +97,17 @@ pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(mut cur_line 
 	log_curs.x = 0
 	log_curs.flat_index -= prev_x
 	log_curs.set_visual_x(buf.line_at(log_curs.y), tabsize)
+}
+
+pub fn (mut log_curs LogicalCursor) move_to_x_next_line_buffer(x int, mut cur_line []rune, buf BufferInterface, tabsize int) {
+	// log_curs.move_down_buffer(mut cur_line, buf, tabsize)
+	// prev_x := log_curs.x
+	// line := buf.line_at(log_curs.y)
+	// log_curs.x = line.len
+	// log_curs.flat_index += line.len - prev_x
+	// log_curs.set_visual_x(buf.line_at(log_curs.y), tabsize)
+	log_curs.move_to_start_next_line_buffer(mut cur_line, buf, tabsize)
+	log_curs.move_to_x(cur_line, x, tabsize)
 }
 
 pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
