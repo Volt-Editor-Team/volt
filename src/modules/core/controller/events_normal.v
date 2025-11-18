@@ -250,19 +250,13 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							if buf.temp_data.len > 0 {
 								file := buf.temp_data[buf.logical_cursor.y].string()
 
-								buf.path = buf.temp_path
-								buf.p_mode = buf.temp_mode
-								buf.mode = .normal
-								// buf.logical_cursor = buf.temp_cursor
-								// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								// 	app.viewport.margin)
-
 								// delete temp stuff
 								buf.temp_label = ''
-								// buf.temp_data.clear()
+								buf.temp_data.clear()
 								buf.file_ch.close()
-								buf.temp_string = os.abs_path(file)
+								buf.temp_string += os.path_separator + file
 
+								buf.p_mode = buf.temp_mode
 								if os.is_dir(buf.temp_string) {
 									buf.open_fuzzy_find(buf.temp_string, .directory)
 								}
@@ -272,18 +266,12 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							if buf.temp_data.len > 0 {
 								file := buf.temp_data[buf.logical_cursor.y].string()
 
-								buf.path = buf.temp_path
-								buf.p_mode = buf.temp_mode
-								buf.mode = .normal
-								// buf.logical_cursor = buf.temp_cursor
-								// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								// 	app.viewport.margin)
-
 								// delete temp stuff
 								buf.temp_label = ''
-								// buf.temp_data.clear()
+								buf.temp_data.clear()
 								buf.file_ch.close()
-								buf.temp_string = os.abs_path(file)
+								buf.temp_string += os.path_separator + file
+								buf.p_mode = buf.temp_mode
 
 								if os.is_dir(buf.temp_string) {
 									buf.open_fuzzy_find(buf.temp_string, .file)
@@ -300,28 +288,40 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.logical_cursor = buf.temp_cursor
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
+								buf.file_ch.close()
 
 								// delete temp stuff
-								mut new_path := buf.temp_string + os.path_separator + file
+								mut path := buf.temp_string + os.path_separator + file
 
-								if os.is_dir(new_path) {
-									prev_wd := app.working_dir
-									os.chdir(new_path) or { return }
-									app.working_dir = os.getwd()
+								if os.is_dir(path) {
+									dir_path := path + os.path_separator
 									for mut buffer in app.buffers {
-										buffer.path = update_path(prev_wd + os.path_separator +
-											buffer.path, app.working_dir)
+										full_path := app.working_dir + os.path_separator +
+											buffer.path
+										if full_path.starts_with(dir_path) {
+											buffer.path = full_path.replace(dir_path,
+												'')
+										} else {
+											buffer.path = full_path
+										}
 									}
+									os.chdir(path) or { return }
+									app.working_dir = path
 								} else {
 									app.add_new_buffer(
 										name:    os.file_name(file)
-										path:    file
+										path:    path
 										tabsize: buf.tabsize
 										type:    .gap
 										mode:    .normal
 										p_mode:  .default
 									)
+									if path.starts_with(app.working_dir + os.path_separator) {
+										app.buffers[app.active_buffer].path = path.replace(
+											app.working_dir + os.path_separator, '')
+									}
 								}
+								buf.temp_label = ''
 								buf.temp_data.clear()
 								buf.menu_state = false
 							}
@@ -333,18 +333,13 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					match key {
 						// for switch fuzzy search directory
 						.tab {
-							// file := buf.temp_data[buf.logical_cursor.y].string()
-
 							// buf.path = buf.temp_path
-							buf.p_mode = buf.temp_mode
-							buf.mode = .normal
-							// buf.logical_cursor = buf.temp_cursor
-							// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							// 	app.viewport.margin)
 
 							// delete temp stuff
-							// buf.temp_data.clear()
+							buf.temp_label = ''
+							buf.temp_data.clear()
 							buf.file_ch.close()
+							buf.p_mode = buf.temp_mode
 
 							buf.temp_string = os.dir(buf.temp_string)
 							if os.is_dir(buf.temp_string) {

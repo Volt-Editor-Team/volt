@@ -39,9 +39,7 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 	buf.temp_cursor = buf.logical_cursor
 	buf.temp_mode = buf.p_mode
 
-	// buf.path = os.getwd()
 	buf.p_mode = .fuzzy
-	buf.mode = .insert
 
 	buf.logical_cursor.x = 0
 	buf.logical_cursor.y = 0

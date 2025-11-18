@@ -171,7 +171,7 @@ fn full_redraw(x voidptr) {
 		// draw for fuzzy
 		start := 1 + buffer_gap
 		allocated_line_num_width = 1
-		start_x := allocated_line_num_width + 1
+		start_x := allocated_line_num_width + 2
 		input_string := '> ${buf.temp_label}'
 		ctx.set_bg_color(tui_app.theme.background_color)
 		ctx.draw_text(1, start, input_string)
@@ -299,8 +299,8 @@ fn full_redraw(x voidptr) {
 	}
 
 	// -- debugging --
-	// ctx.draw_text(width - 90, height - 4, 'this path: ' + buf.path)
-	// ctx.draw_text(width - 90, height - 3, buf.row_offset.str())
+	// ctx.draw_text(width - 90, height - 4, buf.temp_string)
+	// ctx.draw_text(width - 90, height - 3, buf.path)
 	// ctx.draw_text(width - 90, height - 2, 'function: ' +
 	// controller.update_path(buf.path, os.getwd()).str())
 
