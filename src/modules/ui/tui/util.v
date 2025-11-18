@@ -37,8 +37,8 @@ fn (mut ctx TuiContext) draw_tabs(buffer_names []string, active_buffer int, widt
 	}
 }
 
-fn (mut ctx TuiContext) get_gutter_label_and_colors(cur_path string, cur_line []rune, y_index int, line_count int, p_mode PersistantMode, theme TuiTheme) (string, ui.Color, ui.Color, ui.Color) {
-	mut line_num_label := term.bold(' '.repeat(line_count.str().len - (y_index + 1).str().len) +
+fn (mut ctx TuiContext) get_gutter_label_and_colors(cur_path string, cur_line []rune, y_index int, allocated_text_width int, p_mode PersistantMode, theme TuiTheme) (string, ui.Color, ui.Color, ui.Color) {
+	mut line_num_label := term.bold(' '.repeat(allocated_text_width - (y_index + 1).str().len) +
 		(y_index + 1).str())
 	mut line_num_inactive_color := theme.inactive_line_number_color
 	mut line_num_active_color := theme.active_line_number_color
@@ -47,7 +47,7 @@ fn (mut ctx TuiContext) get_gutter_label_and_colors(cur_path string, cur_line []
 	if p_mode == .directory {
 		line := cur_line.string()
 		if fs.is_dir(cur_path + line) {
-			line_num_label = ' '.repeat(line_count.str().len)
+			line_num_label = ' '.repeat(allocated_text_width)
 			text_color = colors.royal_blue
 		} else {
 			file_ext := os.file_ext(line)
@@ -57,10 +57,10 @@ fn (mut ctx TuiContext) get_gutter_label_and_colors(cur_path string, cur_line []
 					colors.white
 				}
 				line_num_active_color = line_num_inactive_color
-				line_num_label = ' '.repeat(line_count.str().len - filetype.icon.len) +
+				line_num_label = ' '.repeat(allocated_text_width - filetype.icon.len) +
 					filetype.icon
 			} else {
-				line_num_label = ' '.repeat(line_count.str().len)
+				line_num_label = ' '.repeat(allocated_text_width)
 			}
 		}
 	}

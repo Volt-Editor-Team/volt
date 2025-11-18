@@ -33,11 +33,22 @@ fn full_redraw(x voidptr) {
 	}
 
 	start_row := buf.row_offset
-	mut end_row := start_row
-	if buf.p_mode != .fuzzy {
-		end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
-	} else {
-		end_row = math.min(buf.temp_data.len, buf.row_offset + view.height) // final line of buffer to render (+1 for inclusivity)
+	mut end_row := math.min(buf.buffer.line_count(), buf.row_offset + view.height)
+	mut allocated_line_num_width := math.max(buf.buffer.line_count().str().len, 5)
+
+	match buf.p_mode {
+		.default {
+			view.col_offset = 1
+		}
+		.directory {
+			view.col_offset = 2
+			allocated_line_num_width = 1
+		}
+		.fuzzy {
+			view.col_offset = 2
+			end_row = math.min(buf.temp_data.len, buf.row_offset + view.height)
+			allocated_line_num_width = 1
+		}
 	}
 
 	// --- render text ---
@@ -45,7 +56,6 @@ fn full_redraw(x voidptr) {
 		// render loop
 		mut wrap_offset := 0
 		mut wraps := 0
-		// render_lines: for i, line in buf.lines[start_row..end_row] {
 		render_lines: for i in 0 .. end_row - start_row {
 			// i is the row index of the actual renders screen
 			// y_index is the position in the buffer
@@ -59,7 +69,7 @@ fn full_redraw(x voidptr) {
 
 			// get line indices and characters
 			line_num_label, text_color, line_num_active_color, line_num_inactive_color := ctx.get_gutter_label_and_colors(buf.path,
-				line, y_index, buf.buffer.line_count(), buf.p_mode, tui_app.theme)
+				line, y_index, allocated_line_num_width, buf.p_mode, tui_app.theme)
 
 			// highlight active line and render line numbers
 			// this is rendered first, simulating line highlight over active line
@@ -109,8 +119,8 @@ fn full_redraw(x voidptr) {
 				}
 				visual_x_index := visual_cache[x_index]
 				wraps = visual_x_index / view.width
-				x_pos := visual_x_index % view.width + view.col_offset +
-					buf.buffer.line_count().str().len + 1
+				x_pos := visual_x_index % view.width + view.col_offset + allocated_line_num_width +
+					1
 				y_pos := i + wraps + wrap_offset + buffer_gap
 
 				if y_pos > view.height - buffer_gap {
@@ -143,8 +153,7 @@ fn full_redraw(x voidptr) {
 					0
 				}
 				last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
-				cursor_x := last_x % view.width + view.col_offset +
-					buf.buffer.line_count().str().len + 1
+				cursor_x := last_x % view.width + view.col_offset + allocated_line_num_width + 1
 				cursor_y := i + last_wraps + wrap_offset + buffer_gap
 				if cursor_y > view.height - buffer_gap {
 					break render_lines
@@ -161,7 +170,8 @@ fn full_redraw(x voidptr) {
 	} else {
 		// draw for fuzzy
 		start := 1 + buffer_gap
-		start_x := buf.temp_data.len.str().len + 1
+		allocated_line_num_width = 1
+		start_x := allocated_line_num_width + 1
 		input_string := '> ${buf.temp_label}'
 		ctx.set_bg_color(tui_app.theme.background_color)
 		ctx.draw_text(1, start, input_string)
@@ -190,7 +200,7 @@ fn full_redraw(x voidptr) {
 				filetype := constants.ext_icons[file_ext]
 				fg_color := colors.hex_to_tui_color(filetype.color) or { colors.white }
 				line_num_label = filetype.icon +
-					' '.repeat(buf.buffer.line_count().str().len - filetype.icon.len)
+					' '.repeat(allocated_line_num_width - filetype.icon.len)
 				if buf.mode == .insert && i == 0 {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 				}
@@ -198,7 +208,7 @@ fn full_redraw(x voidptr) {
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 				ctx.reset_color()
 			} else {
-				line_num_label = ' '.repeat(buf.buffer.line_count().str().len)
+				line_num_label = ' '.repeat(allocated_line_num_width)
 				ctx.draw_text(1, i + 1 + start, line_num_label)
 			}
 			for j, ch in line.runes_iterator() {
@@ -283,7 +293,7 @@ fn full_redraw(x voidptr) {
 
 	// -- debugging --
 	// ctx.draw_text(width - 90, height - 4, 'this path: ' + buf.path)
-	// ctx.draw_text(width - 90, height - 3, buf.cur_line.str())
+	ctx.draw_text(width - 90, height - 3, view.col_offset.str())
 	// ctx.draw_text(width - 90, height - 2, 'function: ' +
 	// controller.update_path(buf.path, os.getwd()).str())
 
