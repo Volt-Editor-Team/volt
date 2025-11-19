@@ -19,7 +19,7 @@ fn full_redraw(x voidptr) {
 	// relavent info for rendering
 	mut view := &app.viewport
 	mut buf := app.buffers[app.active_buffer]
-	mut command_str := util.mode_str(buf.mode, buf.p_mode)
+	mut command_str := util.mode_str(buf.mode, buf.p_mode, buf.prev_mode)
 
 	// --- draw background ---
 	ctx.draw_background(1, 1, width, height, tui_app.theme.background_color)
@@ -260,7 +260,11 @@ fn full_redraw(x voidptr) {
 				key_bindings = goto_menu.clone()
 			}
 			.search {
-				key_bindings = search_menu.clone()
+				if buf.prev_mode == .menu {
+					key_bindings = menu_menu.clone()
+				} else {
+					key_bindings = search_menu.clone()
+				}
 			}
 		}
 		menu_top := height / 3

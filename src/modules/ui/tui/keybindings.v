@@ -58,7 +58,8 @@ pub const command_menu = [
 ]
 pub const directory_menu = map[string]string{}
 pub const menu_menu = {
-	'f': 'open search mode (opens fuzzy in 200ms)'
+	'ff': 'fuzzy find [FILE]'
+	'fd': 'fuzzy find [DIR]'
 }
 pub const fuzzy_menu = {
 	'j,k':                'move through listed files'
@@ -72,7 +73,11 @@ pub const goto_menu = {
 	'h': 'go to beginning of line'
 	's': 'go to first character of line'
 }
+
 pub const search_menu = {
+	'f <char>': 'go to next occurance of <char>'
+}
+pub const fuzzy_search_menu = {
 	'f': 'fuzzy find [FILE]'
 	'd': 'fuzzy find [DIR]'
 }

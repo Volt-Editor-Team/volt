@@ -31,7 +31,7 @@ pub enum Mode {
 	search
 }
 
-pub fn mode_str(m Mode, pm PersistantMode) string {
+pub fn mode_str(m Mode, pm PersistantMode, prev_mode Mode) string {
 	return match m {
 		.insert {
 			'INSERT'
@@ -53,7 +53,11 @@ pub fn mode_str(m Mode, pm PersistantMode) string {
 			'GOTO'
 		}
 		.search {
-			'SEARCH'
+			if prev_mode == .menu {
+				'MENU'
+			} else {
+				'SEARCH'
+			}
 		}
 	}
 }
