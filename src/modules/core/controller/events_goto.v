@@ -8,6 +8,40 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 			.exclamation {
 				buf.menu_state = !buf.menu_state
 			}
+			.l {
+				if buf.p_mode != .fuzzy {
+					buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len, buf.tabsize)
+					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+						app.viewport.margin)
+					buf.mode = .normal
+					buf.menu_state = false
+				}
+			}
+			.h {
+				if buf.p_mode != .fuzzy {
+					buf.logical_cursor.move_to_x(buf.cur_line, 0, buf.tabsize)
+					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+						app.viewport.margin)
+					buf.mode = .normal
+					buf.menu_state = false
+				}
+			}
+			.s {
+				if buf.p_mode != .fuzzy {
+					mut index := 0
+					for ch in buf.cur_line {
+						if !ch.str().is_blank() {
+							break
+						}
+						index++
+					}
+					buf.logical_cursor.move_to_x(buf.cur_line, index, buf.tabsize)
+					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+						app.viewport.margin)
+					buf.mode = .normal
+					buf.menu_state = false
+				}
+			}
 			.g {
 				if buf.p_mode == .fuzzy {
 					buf.logical_cursor.y = 0

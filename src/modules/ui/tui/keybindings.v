@@ -9,6 +9,7 @@ pub struct Command {
 pub const normal_menu = {
 	'!':       'toggle menu'
 	'h,j,k,l': 'cursor movement'
+	'd':       'delete character'
 	':':       'open command mode'
 	'space':   'menu mode'
 	'f':       'open seach mode'
@@ -67,6 +68,9 @@ pub const fuzzy_menu = {
 pub const goto_menu = {
 	'g': 'go to start'
 	'e': 'go to end'
+	'l': 'go just past end of line'
+	'h': 'go to beginning of line'
+	's': 'go to first character of line'
 }
 pub const search_menu = {
 	'f': 'fuzzy find [FILE]'

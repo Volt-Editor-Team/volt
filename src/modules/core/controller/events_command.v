@@ -12,7 +12,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 		cmd_str := app.cmd_buffer.command
 		if buf.p_mode == .fuzzy && mod == .ctrl && key == .q {
 			// restore settings
-			buf.path = buf.temp_path
+			// buf.path = buf.temp_path
 			buf.p_mode = buf.temp_mode
 			buf.mode = .normal
 			buf.logical_cursor = buf.temp_cursor

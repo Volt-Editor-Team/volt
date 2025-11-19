@@ -43,15 +43,22 @@ pub mut:
 	menu_state bool
 }
 
+pub enum FuzzyType {
+	none
+	file
+	dir
+}
+
 pub struct TempData {
 pub mut:
-	temp_label  string
-	temp_string string
-	temp_data   [][]rune
-	temp_int    int
-	temp_cursor LogicalCursor
-	temp_mode   PersistantMode
-	temp_path   string
+	temp_label      string
+	temp_string     string
+	temp_data       [][]rune
+	temp_int        int
+	temp_cursor     LogicalCursor
+	temp_mode       PersistantMode
+	temp_path       string
+	temp_fuzzy_type FuzzyType
 }
 
 pub struct CommandBuffer {

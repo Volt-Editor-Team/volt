@@ -92,16 +92,18 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							.tab {
 								// buf.path = buf.temp_path
 
-								// delete temp stuff
-								buf.temp_label = ''
-								buf.temp_int = 0
-								buf.temp_data.clear()
-								buf.file_ch.close()
-								buf.p_mode = buf.temp_mode
-
-								buf.temp_string = os.dir(buf.temp_string)
-								if os.is_dir(buf.temp_string) {
-									buf.open_fuzzy_find(buf.temp_string, .directory)
+								if buf.temp_fuzzy_type == .dir {
+									buf.temp_path = os.dir(buf.temp_path)
+									if os.is_dir(buf.temp_path) {
+										// delete temp stuff
+										buf.temp_label = ''
+										buf.temp_int = 0
+										buf.temp_data.clear()
+										buf.file_ch.close()
+										// reset and open fuzzy again
+										buf.p_mode = buf.temp_mode
+										buf.open_fuzzy_find(buf.temp_path, .directory)
+									}
 								}
 							}
 							else {}
@@ -111,7 +113,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						match key {
 							.q {
 								// restore settings
-								buf.path = buf.temp_path
+								// buf.path = buf.temp_path
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								buf.logical_cursor = buf.temp_cursor
@@ -131,18 +133,20 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// for switch fuzzy search directory
 							.tab {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+									if buf.temp_fuzzy_type == .dir {
+										file := buf.temp_data[buf.logical_cursor.y].string()
+										buf.temp_path += os.path_separator + file
 
-									// delete temp stuff
-									buf.temp_label = ''
-									buf.temp_int = 0
-									buf.temp_data.clear()
-									buf.file_ch.close()
-									buf.temp_string += os.path_separator + file
-
-									buf.p_mode = buf.temp_mode
-									if os.is_dir(buf.temp_string) {
-										buf.open_fuzzy_find(buf.temp_string, .directory)
+										if os.is_dir(buf.temp_path) {
+											// delete temp stuff
+											buf.temp_label = ''
+											buf.temp_int = 0
+											buf.temp_data.clear()
+											buf.file_ch.close()
+											// reset and open fuzzy again
+											buf.p_mode = buf.temp_mode
+											buf.open_fuzzy_find(buf.temp_path, .directory)
+										}
 									}
 								}
 							}
@@ -159,7 +163,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.file_ch.close()
 
 									// delete temp stuff
-									mut path := buf.temp_string + os.path_separator + file
+									mut path := buf.temp_path + os.path_separator + file
 
 									if os.is_dir(path) {
 										dir_path := path + os.path_separator

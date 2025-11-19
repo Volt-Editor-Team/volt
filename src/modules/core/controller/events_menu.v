@@ -21,8 +21,12 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.menu_state = false
 							for buf.prev_mode == .menu && buf.mode == .search {
 								if time.since(timer).milliseconds() > 200 {
-									buf.open_fuzzy_find(app.working_dir, .file)
-									break
+									if buf.p_mode != .fuzzy {
+										buf.temp_path = app.working_dir
+										buf.mode = .insert
+										buf.temp_fuzzy_type = .file
+										buf.open_fuzzy_find(app.working_dir, .file)
+									}
 								}
 							}
 							buf.menu_state = true
