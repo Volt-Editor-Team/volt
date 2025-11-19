@@ -5,6 +5,10 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	mut buf := &app.buffers[app.active_buffer]
 	// global normal mode
 	if event == .key_down {
+		if mod == .alt && key == .m {
+			buf.menu_state = !buf.menu_state
+			return
+		}
 		// file fuzzy finder
 		if key == .f && buf.prev_mode == .menu && buf.p_mode != .fuzzy {
 			buf.temp_path = app.working_dir
@@ -22,15 +26,15 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			return
 		}
 		match key {
-			.exclamation {
-				buf.menu_state = !buf.menu_state
-			}
 			.escape {
 				buf.mode = .normal
 				buf.menu_state = false
 			}
 			// f<char>
-			else {}
+			else {
+				buf.mode = .normal
+				buf.menu_state = false
+			}
 		}
 	}
 }

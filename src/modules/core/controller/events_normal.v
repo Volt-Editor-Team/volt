@@ -10,13 +10,14 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	mut buf := &app.buffers[app.active_buffer]
 	// global normal mode
 	if event == .key_down {
+		if mod == .alt && key == .m {
+			buf.menu_state = !buf.menu_state
+			return
+		}
 		if app.cmd_buffer.command.len > 0 {
 			app.cmd_buffer.command = ''
 		}
 		match key {
-			.exclamation {
-				buf.menu_state = !buf.menu_state
-			}
 			.f {
 				buf.prev_mode = buf.mode
 				buf.mode = .search

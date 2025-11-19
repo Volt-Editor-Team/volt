@@ -4,10 +4,11 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
 	if event == .key_down {
+		if mod == .alt && key == .m {
+			buf.menu_state = !buf.menu_state
+			return
+		}
 		match key {
-			.exclamation {
-				buf.menu_state = !buf.menu_state
-			}
 			.l {
 				if buf.p_mode != .fuzzy {
 					buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len, buf.tabsize)

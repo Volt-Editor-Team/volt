@@ -7,7 +7,7 @@ pub struct Command {
 }
 
 pub const normal_menu = {
-	'!':       'toggle menu'
+	'alt m':   'toggle menu'
 	'h,j,k,l': 'cursor movement'
 	'd':       'delete character'
 	':':       'open command mode'
@@ -60,6 +60,7 @@ pub const directory_menu = map[string]string{}
 pub const menu_menu = {
 	'ff': 'fuzzy find [FILE]'
 	'fd': 'fuzzy find [DIR]'
+	'q':  'close buffer'
 }
 pub const fuzzy_menu = {
 	'j,k':                'move through listed files'

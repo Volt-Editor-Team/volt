@@ -4,12 +4,13 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
 	if event == .key_down {
+		if mod == .alt && key == .m {
+			buf.menu_state = !buf.menu_state
+			return
+		}
 		match buf.p_mode {
 			.default, .directory {
 				match key {
-					.exclamation {
-						buf.menu_state = !buf.menu_state
-					}
 					.f {
 						buf.prev_mode = buf.mode
 						buf.mode = .search

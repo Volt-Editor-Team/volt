@@ -367,41 +367,50 @@ fn full_redraw(x voidptr) {
 		// 4. Draw the cursor block at the right position
 		// cursor_pos := app.cmd_buffer.command.len + 2
 		if buf.mode == util.Mode.command {
-			mut commands := unsafe { command_menu }
+			commands := command_menu.filter(it.name.starts_with(app.cmd_buffer.command[2..])
+				|| it.aliases.any(it.starts_with(app.cmd_buffer.command[2..])))
 
-			if app.cmd_buffer.command.len > 2 {
-				mut matching_commands := commands.filter(
-					it.name.starts_with(app.cmd_buffer.command[2..])
-					|| it.aliases.any(it.starts_with(app.cmd_buffer.command[2..])))
-				if matching_commands.len > 0 {
-					commands = unsafe { matching_commands }
+			// if app.cmd_buffer.command.len > 2 {
+			// 	mut matching_commands := commands.filter(
+			// 		it.name.starts_with(app.cmd_buffer.command[2..])
+			// 		|| it.aliases.any(it.starts_with(app.cmd_buffer.command[2..])))
+			// 	if matching_commands.len > 0 {
+			// 		commands = unsafe { matching_commands }
+			// 	}
+			// }
+			if commands.len > 0 {
+				left_pad := 3
+				num_sections := 5
+				section_width := (width - left_pad) / num_sections
+				cmd_menu_top := command_bar_y_pos - if commands.len > 1 {
+					math.min(6, (commands.len / num_sections) + 1)
+				} else {
+					3
 				}
-			}
-			left_pad := 3
-			num_sections := 5
-			section_width := (width - left_pad) / num_sections
-			cmd_menu_top := command_bar_y_pos - if commands.len > 1 {
-				math.min(6, (commands.len / num_sections) + 1)
-			} else if commands.len == 0 {
-				6
-			} else {
-				3
-			}
-			cmd_menu_bottom := command_bar_y_pos - 1
-			ctx.set_bg_color(colors.dark_grey_blue)
-			ctx.draw_rect(0, cmd_menu_top, width - 1, cmd_menu_bottom)
+				cmd_menu_bottom := command_bar_y_pos - 1
+				ctx.set_bg_color(colors.dark_grey_blue)
+				ctx.draw_rect(0, cmd_menu_top, width - 1, cmd_menu_bottom)
 
-			for i, command in commands {
-				cmd_x := left_pad + (i % num_sections) * section_width
-				cmd_y := cmd_menu_top + (i / num_sections)
-				if commands.len == 1 {
-					ctx.draw_text(cmd_x, cmd_y, command.name)
-					ctx.draw_text(cmd_x, cmd_y + 1, command.aliases.str())
-					ctx.draw_text(cmd_x, cmd_y + 2, command.desc)
+				for i, command in commands {
+					cmd_x := left_pad + (i % num_sections) * section_width
+					cmd_y := cmd_menu_top + (i / num_sections)
+					if commands.len == 1 {
+						ctx.draw_text(cmd_x, cmd_y, command.name)
+						ctx.draw_text(cmd_x, cmd_y + 1, command.aliases.str())
+						ctx.draw_text(cmd_x, cmd_y + 2, command.desc)
+					}
+					for offset, ch in command.name.runes_iterator() {
+						if app.cmd_buffer.command.contains(ch.str())
+							&& offset <= app.cmd_buffer.command.len {
+							ctx.set_color(colors.lavender_violet)
+						}
+						ctx.draw_text(cmd_x + offset, cmd_y, ch.str())
+						ctx.reset_color()
+					}
+					// ctx.draw_text(cmd_x, cmd_y, command.name)
 				}
-				ctx.draw_text(cmd_x, cmd_y, command.name)
+				ctx.reset_bg_color()
 			}
-			ctx.reset_bg_color()
 
 			ctx.set_bg_color(tui_app.theme.insert_cursor_color)
 			ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
