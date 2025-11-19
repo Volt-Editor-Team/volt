@@ -13,6 +13,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len, buf.tabsize)
 					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						app.viewport.margin)
+					buf.logical_cursor.update_desired_col(app.viewport.width)
 					buf.mode = .normal
 					buf.menu_state = false
 				}
@@ -22,6 +23,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					buf.logical_cursor.move_to_x(buf.cur_line, 0, buf.tabsize)
 					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						app.viewport.margin)
+					buf.logical_cursor.update_desired_col(app.viewport.width)
 					buf.mode = .normal
 					buf.menu_state = false
 				}
@@ -38,6 +40,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					buf.logical_cursor.move_to_x(buf.cur_line, index, buf.tabsize)
 					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						app.viewport.margin)
+					buf.logical_cursor.update_desired_col(app.viewport.width)
 					buf.mode = .normal
 					buf.menu_state = false
 				}
