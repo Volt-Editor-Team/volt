@@ -34,20 +34,25 @@ pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
 		frame_fn:       full_redraw
 		capture_events: true
 		hide_cursor:    true
-		frame_rate:     30
+		frame_rate:     60
 	)
 }
 
 pub fn event_wrapper(e &t.Event, x voidptr) {
-	tui_app := get_tui(x)
-	event_type := convert_event_type(e.typ)
-	key_code := convert_key_code(e.code)
-	modifier := convert_modifier(e.modifiers)
-	input := ctl.UserInput{
-		mod:  modifier
-		e:    event_type
-		code: key_code
-	}
+	if e.typ == .key_down {
+		mut tui_app := get_tui(x)
+		mut app := ctl.get_app(tui_app.core)
+		mut buf := &app.buffers[app.active_buffer]
+		event_type := convert_event_type(e.typ)
+		key_code := convert_key_code(e.code)
+		modifier := convert_modifier(e.modifiers)
+		input := ctl.UserInput{
+			mod:  modifier
+			e:    event_type
+			code: key_code
+		}
 
-	ctl.event_loop(input, tui_app.core)
+		ctl.event_loop(input, tui_app.core)
+		buf.needs_render = true
+	}
 }

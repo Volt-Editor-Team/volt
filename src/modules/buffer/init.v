@@ -38,9 +38,10 @@ pub mut:
 	logical_cursor LogicalCursor
 	file_ch        chan string
 	// other important attributes
-	tabsize    int
-	row_offset int
-	menu_state bool
+	tabsize      int
+	row_offset   int
+	menu_state   bool
+	needs_render bool = true
 }
 
 pub enum FuzzyType {
