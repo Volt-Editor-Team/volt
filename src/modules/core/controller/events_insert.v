@@ -23,61 +23,63 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	match buf.p_mode {
 		.default, .directory {
 			if event == .key_down {
-				match key {
-					.backspace {
-						prev_line_len := if buf.logical_cursor.y > 0 {
-							buf.buffer.line_at(buf.logical_cursor.y - 1).len
-						} else {
-							0
-						}
-						total_lines := buf.buffer.line_count()
-						buf.buffer.delete(buf.logical_cursor.flat_index - 1, 1) or { return }
-						buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-						// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
-						if buf.buffer.line_count() != total_lines {
-							buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
-							buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-								buf.tabsize)
-							buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
-								buf.tabsize)
-						} else {
-							if buf.logical_cursor.x > 0 {
-								buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x - 1,
-									buf.tabsize)
-							}
-						}
-						buf.logical_cursor.update_desired_col(app.viewport.width)
-					}
-					.enter {
-						mut previous_indentation := []rune{}
-						previous_indentation << `\n`
-						for ch in buf.cur_line {
-							if !ch.str().is_blank() {
-								break
+				if buf.mode != .command {
+					match key {
+						.backspace {
+							prev_line_len := if buf.logical_cursor.y > 0 {
+								buf.buffer.line_at(buf.logical_cursor.y - 1).len
 							} else {
-								previous_indentation << ch
+								0
 							}
+							total_lines := buf.buffer.line_count()
+							buf.buffer.delete(buf.logical_cursor.flat_index - 1, 1) or { return }
+							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+							// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
+							if buf.buffer.line_count() != total_lines {
+								buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
+								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
+									buf.tabsize)
+								buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
+									buf.tabsize)
+							} else {
+								if buf.logical_cursor.x > 0 {
+									buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x - 1,
+										buf.tabsize)
+								}
+							}
+							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
+						.enter {
+							mut previous_indentation := []rune{}
+							previous_indentation << `\n`
+							for ch in buf.cur_line {
+								if !ch.str().is_blank() {
+									break
+								} else {
+									previous_indentation << ch
+								}
+							}
 
-						buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
-							return
+							buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
+								return
+							}
+							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1, mut
+								buf.cur_line, buf.buffer, buf.tabsize)
+							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
-						buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1, mut
-							buf.cur_line, buf.buffer, buf.tabsize)
-						buf.logical_cursor.update_desired_col(app.viewport.width)
-					}
-					else {
-						mut ch := rune(int(key))
-						if mod == .shift {
-							ch = ch.to_upper()
+						else {
+							mut ch := rune(int(key))
+							if mod == .shift {
+								ch = ch.to_upper()
+							}
+
+							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
+							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+
+							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
+								buf.tabsize)
+							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
-
-						buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
-						buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-
-						buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
-							buf.tabsize)
-						buf.logical_cursor.update_desired_col(app.viewport.width)
 					}
 				}
 			}

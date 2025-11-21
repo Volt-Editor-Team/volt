@@ -34,7 +34,11 @@ fn full_redraw(x voidptr) {
 		}
 
 		start_row := buf.row_offset
-		mut end_row := math.min(buf.buffer.line_count(), buf.row_offset + view.height)
+		mut end_row := math.min(buf.buffer.line_count(), buf.row_offset + view.height) - if buf.mode == .command {
+			1
+		} else {
+			0
+		}
 		mut allocated_line_num_width := math.max(buf.buffer.line_count().str().len, 5)
 
 		match buf.p_mode {
@@ -315,7 +319,7 @@ fn full_redraw(x voidptr) {
 		// -- status bar --
 		mut command_bar_y_pos := height
 
-		if buf.mode == util.Mode.command || app.cmd_buffer.command.len > 2 {
+		if buf.mode == .command || app.cmd_buffer.command.len > 2 {
 			command_bar_y_pos--
 			// draw command menu
 			// draw command bar
@@ -347,13 +351,15 @@ fn full_redraw(x voidptr) {
 			ctx.reset_bg_color()
 
 			// draw command mode prompt
-			buf.logical_cursor.x = app.cmd_buffer.command.len + 2
-			buf.logical_cursor.y = height
+			// if buf.mode == .command {
+			// 	buf.logical_cursor.x = app.cmd_buffer.command.len + 2
+			// 	buf.logical_cursor.y = height
+			// }
 
 			ctx.set_bg_color(tui_app.theme.background_color)
 			// 1. Clear the entire command line with spaces
 			// width is the terminal width
-			ctx.draw_text(0, buf.logical_cursor.y, ' '.repeat(width - 1))
+			ctx.draw_text(0, height, ' '.repeat(width - 1))
 
 			// 2. Draw the ':' prompt
 			// ctx.draw_text(0, buf.logical_cursor.y, ':')
@@ -364,7 +370,7 @@ fn full_redraw(x voidptr) {
 			} else {
 				ctx.set_color(colors.white)
 			}
-			ctx.draw_text(2, buf.logical_cursor.y, app.cmd_buffer.command)
+			ctx.draw_text(2, height, app.cmd_buffer.command)
 
 			// 4. Draw the cursor block at the right position
 			// cursor_pos := app.cmd_buffer.command.len + 2
@@ -415,7 +421,7 @@ fn full_redraw(x voidptr) {
 				}
 
 				ctx.set_bg_color(tui_app.theme.insert_cursor_color)
-				ctx.draw_text(buf.logical_cursor.x, buf.logical_cursor.y, ' ')
+				ctx.draw_text(app.cmd_buffer.command.len + 2, height, ' ')
 				ctx.reset_bg_color()
 			}
 		} else {
