@@ -55,6 +55,10 @@ pub const command_menu = [
 		aliases: ['btype']
 		desc:    'display the storage type being used by current buffer'
 	},
+	Command{
+		name: 'encoding'
+		desc: 'display the encoding of this file.'
+	},
 ]
 pub const directory_menu = map[string]string{}
 pub const menu_menu = {

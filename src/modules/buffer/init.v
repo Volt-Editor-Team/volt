@@ -8,6 +8,7 @@ import buffer.common { BufferInterface }
 import buffer.list { ListBuffer }
 import buffer.rope { RopeBuffer }
 import buffer.gap { GapBuffer }
+import fs
 import os
 
 pub enum BufferType {
@@ -23,9 +24,10 @@ pub struct Buffer {
 	TempData
 pub mut:
 	// public attributes
-	label     string         = 'Scratch'
-	name      string         = 'Scratch'
-	path      string         = os.getwd()
+	label     string = 'Scratch'
+	name      string = 'Scratch'
+	path      string = os.getwd()
+	encoding  fs.Encoding
 	prev_mode Mode           = .normal
 	mode      Mode           = .normal
 	p_mode    PersistantMode = .default
@@ -77,6 +79,7 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type
@@ -93,6 +96,7 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type
@@ -109,6 +113,7 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type
@@ -121,6 +126,9 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 }
 
 pub fn Buffer.from_path(buf Buffer) Buffer {
+	data := os.read_bytes(buf.path) or { []u8{} }
+	encoding := fs.detect_encoding(data)
+
 	match buf.type {
 		.list {
 			new_buffer := ListBuffer.from_path(buf.path)
@@ -130,6 +138,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type
@@ -146,6 +155,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type
@@ -162,6 +172,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				name:       buf.name
 				path:       buf.path
 				tabsize:    buf.tabsize
+				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
 				type:       buf.type

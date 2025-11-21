@@ -138,6 +138,11 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 						app.cmd_buffer.command = 'Buffer type: ${buf.type}'
 						buf.logical_cursor = buf.saved_cursor
 					}
+					'encoding' {
+						buf.mode = .normal
+						app.cmd_buffer.command = buf.encoding.str()
+						buf.logical_cursor = buf.saved_cursor
+					}
 					else {}
 				}
 			}
