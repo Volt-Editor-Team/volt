@@ -327,7 +327,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										name:    os.file_name(file)
 										path:    path
 										tabsize: buf.tabsize
-										type:    .gap
+										type:    .list
 										mode:    .normal
 										p_mode:  .default
 									)

@@ -11,6 +11,7 @@ mut:
 	data       []rune
 	gap        Gap
 	line_count int
+	line_cache []int = [0]
 }
 
 struct Gap {
@@ -80,12 +81,22 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 			g.insert_rune(index, val)!
 			if val == `\n` {
 				g.line_count++
+				for idx, _ in g.line_cache {
+					if idx > index {
+						g.line_cache[idx]++
+					}
+				}
 			}
 		}
 		u8 {
 			g.insert_char(index, val)!
 			if val == u8(`\n`) {
 				g.line_count++
+				for idx, _ in g.line_cache {
+					if idx > index {
+						g.line_cache[idx]++
+					}
+				}
 			}
 		}
 		[]rune {
@@ -93,6 +104,11 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 			for i in val {
 				if i == `\n` {
 					g.line_count++
+					for idx, _ in g.line_cache {
+						if idx > i {
+							g.line_cache[idx]++
+						}
+					}
 				}
 			}
 		}
@@ -101,6 +117,11 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 			for i in val.runes_iterator() {
 				if i == `\n` {
 					g.line_count++
+					for idx, _ in g.line_cache {
+						if idx > i {
+							g.line_cache[idx]++
+						}
+					}
 				}
 			}
 		}
@@ -114,6 +135,11 @@ pub fn (mut g GapBuffer) delete(cursor int, count int) ! {
 	for i in g.gap.end .. end {
 		if g.data[i] == `\n` {
 			g.line_count--
+			for idx, _ in g.line_cache {
+				if idx <= i {
+					g.line_cache[idx]--
+				}
+			}
 		}
 	}
 	g.gap.end = math.min(g.gap.end + count, g.data.len)
@@ -125,7 +151,7 @@ pub fn (g GapBuffer) to_string() string {
 }
 
 pub fn (g GapBuffer) len() int {
-	return g.data[..g.gap.start].len + g.data[g.gap.end..].len
+	return g.data.len - (g.gap.end - g.gap.start) - 1
 }
 
 pub fn (g GapBuffer) line_count() int {
@@ -140,11 +166,19 @@ pub fn (g GapBuffer) line_at(line_index int) []rune {
 
 	mut current_line := 0
 	mut start := 0
+	if line_index < g.line_cache.len {
+		current_line = line_index
+		start = g.line_cache[current_line]
+	} else {
+		current_line = g.line_cache.len - 1
+		start = g.line_cache[current_line]
+	}
 
 	// find start of requested line
 	for start < runes.len && current_line < line_index {
 		if runes[start] == `\n` {
 			current_line++
+			unsafe { g.line_cache << start + 1 }
 		}
 		start++
 	}

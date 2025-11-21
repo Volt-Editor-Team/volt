@@ -307,7 +307,7 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		// ctx.draw_text(width - 90, height - 4, buf.temp_int.str())
+		// ctx.draw_text(width - 90, height - 4, buf.buffer.line_at(buf.logical_cursor.y).str())
 		// ctx.draw_text(width - 90, height - 3, buf.temp_path)
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())

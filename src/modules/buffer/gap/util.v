@@ -18,12 +18,10 @@ pub fn calculate_num_lines(runes []rune) int {
 	return lines
 }
 
-fn (g GapBuffer) get_runes() []rune {
-	return []rune{len: g.data.len - (g.gap.end - g.gap.start), init: if index >= g.gap.start {
-		g.data[index + (g.gap.end - g.gap.start)]
-	} else {
-		g.data[index]
-	}}
+pub fn (g GapBuffer) get_runes() []rune {
+	mut temp := g.data[..g.gap.start]
+	temp << g.data[g.gap.end..]
+	return temp
 }
 
 pub fn (g GapBuffer) debug_string() string {

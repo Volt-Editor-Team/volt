@@ -84,7 +84,7 @@ pub fn (buf ListBuffer) len() int {
 	for line in buf.lines {
 		res += line.len
 	}
-	return res + buf.lines.len
+	return res + buf.lines.len - 1
 }
 
 pub fn (buf ListBuffer) line_count() int {

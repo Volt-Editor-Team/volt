@@ -126,10 +126,14 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 }
 
 pub fn Buffer.from_path(buf Buffer) Buffer {
+	mut type := buf.type
 	data := os.read_bytes(buf.path) or { []u8{} }
+	if data.len > 2000000 {
+		type = .list
+	}
 	encoding := fs.detect_encoding(data)
 
-	match buf.type {
+	match type {
 		.list {
 			new_buffer := ListBuffer.from_path(buf.path)
 			return Buffer{
@@ -141,7 +145,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
-				type:       buf.type
+				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
 				menu_state: buf.menu_state
@@ -158,7 +162,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
-				type:       buf.type
+				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
 				menu_state: buf.menu_state
@@ -175,7 +179,7 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
-				type:       buf.type
+				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
 				menu_state: buf.menu_state

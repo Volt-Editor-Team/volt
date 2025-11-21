@@ -82,12 +82,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						visual_wraps += buf.buffer.line_at(cur_index).len / app.viewport.width
 						cur_index--
 					}
-					mut offset := 0
-					for i in 0 .. buf.logical_cursor.y {
-						offset += buf.buffer.line_at(i).len + 1 // +1 for newline
-					}
 					buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-					buf.logical_cursor.flat_index = offset + buf.logical_cursor.x
+					buf.logical_cursor.flat_index = buf.buffer.len()
 					buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x, buf.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 					buf.update_offset(visual_wraps, app.viewport.height, app.viewport.margin)
