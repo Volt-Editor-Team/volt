@@ -9,6 +9,10 @@ pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch rune) {
 }
 
 pub fn (mut buf ListBuffer) insert_slice(x_pos int, y_pos int, runes []rune) {
+	if runes.len == 1 && runes.first() == `\n` {
+		buf.insert_newline(x_pos, y_pos)
+		return
+	}
 	mut lines := [][]rune{}
 	mut cur_line := []rune{}
 	for ch in runes {
