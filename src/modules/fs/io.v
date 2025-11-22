@@ -8,7 +8,10 @@ pub enum Encoding {
 	utf16be
 }
 
-pub fn detect_encoding(data []u8) Encoding {
+pub fn detect_encoding(path string) Encoding {
+	mut f := os.open(path) or { os.File{} }
+	defer { f.close() }
+	data := f.read_bytes(2)
 	if data.len >= 2 {
 		if data[0] == 0xFF && data[1] == 0xFE {
 			return .utf16le
@@ -20,7 +23,7 @@ pub fn detect_encoding(data []u8) Encoding {
 	return .utf8
 }
 
-fn decode_utf16le(data []u8) string {
+fn decode_utf16le(data []u8) []rune {
 	mut runes := []rune{}
 	mut i := 2 // skip 0xFF 0xFE BOM
 
@@ -48,17 +51,57 @@ fn decode_utf16le(data []u8) string {
 		runes << rune(unit)
 	}
 
-	return runes.string()
+	return runes
 }
 
-fn load_text_file(path string) !string {
-	data := os.read_bytes(path)!
-	encoding := detect_encoding(data)
+fn load_text_file(path string) []rune {
+	encoding := detect_encoding(path)
 
 	return match encoding {
-		.utf16le { decode_utf16le(data) }
-		.utf16be { 'UTF-16 BE not implemented yet' }
-		.utf8 { data.bytestr() }
+		.utf16le {
+			decode_utf16le(os.read_bytes(path) or { [] })
+		}
+		.utf16be {
+			'UTF-16 BE not implemented yet'.runes()
+		}
+		.utf8 {
+			(os.read_file(path) or { '' }).runes()
+		}
+	}
+}
+
+fn load_text_lines(path string) [][]rune {
+	encoding := detect_encoding(path)
+
+	return match encoding {
+		.utf16le {
+			mut all_runes := decode_utf16le(os.read_bytes(path) or { [] })
+			mut lines := [][]rune{}
+			mut cur_line := []rune{cap: 200}
+
+			for ch in all_runes {
+				if ch == `\r` {
+					continue
+				} else if ch == `\n` {
+					lines << cur_line
+					cur_line.clear()
+				} else {
+					cur_line << ch
+				}
+			}
+
+			if cur_line.len > 0 {
+				lines << cur_line
+			}
+
+			lines
+		}
+		.utf16be {
+			['UTF-16 BE not implemented yet'.runes()]
+		}
+		.utf8 {
+			(os.read_lines(path) or { [''] }).map(it.runes())
+		}
 	}
 }
 
@@ -67,9 +110,7 @@ pub fn read_file_runes(path string) ![]rune {
 
 	if os.exists(abs_path) {
 		if os.is_file(abs_path) && os.is_readable(abs_path) {
-			// lines := os.read_file(abs_path) or { '' }
-			lines := load_text_file(abs_path) or { '' }
-			return lines.runes()
+			return load_text_file(abs_path)
 		} else {
 			return error('Unable to read file')
 		}
@@ -83,9 +124,7 @@ pub fn read_file_lines(path string) ![][]rune {
 
 	if os.exists(abs_path) {
 		if os.is_file(abs_path) && os.is_readable(abs_path) {
-			str := load_text_file(abs_path) or { '' }
-			lines := str.split_into_lines()
-			return [][]rune{len: lines.len, init: lines[index].runes()}
+			return load_text_lines(abs_path)
 		} else {
 			return error('Unable to read file')
 		}

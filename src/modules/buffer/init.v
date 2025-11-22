@@ -128,11 +128,11 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 
 pub fn Buffer.from_path(buf Buffer) Buffer {
 	mut type := buf.type
+	encoding := fs.detect_encoding(buf.path)
 	data := os.read_bytes(buf.path) or { []u8{} }
 	if data.len > 2000000 {
 		type = .list
 	}
-	encoding := fs.detect_encoding(data)
 
 	match type {
 		.list {

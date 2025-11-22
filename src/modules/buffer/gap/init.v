@@ -81,47 +81,28 @@ pub fn (mut g GapBuffer) insert(index int, val InsertValue) ! {
 			g.insert_rune(index, val)!
 			if val == `\n` {
 				g.line_count++
-				for idx, _ in g.line_cache {
-					if idx > index {
-						g.line_cache[idx]++
-					}
-				}
 			}
 		}
 		u8 {
 			g.insert_char(index, val)!
 			if val == u8(`\n`) {
 				g.line_count++
-				for idx, _ in g.line_cache {
-					if idx > index {
-						g.line_cache[idx]++
-					}
-				}
 			}
 		}
 		[]rune {
 			g.insert_runes(index, val)!
-			for i in val {
-				if i == `\n` {
+			// 1) Find new lines
+			for _, r in val {
+				if r == `\n` {
 					g.line_count++
-					for idx, _ in g.line_cache {
-						if idx > i {
-							g.line_cache[idx]++
-						}
-					}
 				}
 			}
 		}
 		string {
 			g.insert_string(index, val)!
-			for i in val.runes_iterator() {
-				if i == `\n` {
+			for _, v in val {
+				if v == `\n` {
 					g.line_count++
-					for idx, _ in g.line_cache {
-						if idx > i {
-							g.line_cache[idx]++
-						}
-					}
 				}
 			}
 		}
@@ -166,19 +147,11 @@ pub fn (g GapBuffer) line_at(line_index int) []rune {
 
 	mut current_line := 0
 	mut start := 0
-	if line_index < g.line_cache.len {
-		current_line = line_index
-		start = g.line_cache[current_line]
-	} else {
-		current_line = g.line_cache.len - 1
-		start = g.line_cache[current_line]
-	}
 
 	// find start of requested line
 	for start < runes.len && current_line < line_index {
 		if runes[start] == `\n` {
 			current_line++
-			unsafe { g.line_cache << start + 1 }
 		}
 		start++
 	}
@@ -188,12 +161,10 @@ pub fn (g GapBuffer) line_at(line_index int) []rune {
 		return []rune{}
 	}
 
-	// find end of line
 	mut end := start
 	for end < runes.len && runes[end] != `\n` {
 		end++
 	}
-
 	return runes[start..end]
 }
 

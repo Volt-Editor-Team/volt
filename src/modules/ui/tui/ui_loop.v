@@ -53,7 +53,7 @@ fn full_redraw(x voidptr) {
 
 		match buf.p_mode {
 			.default {
-				view.col_offset = 1
+				view.col_offset = 2
 			}
 			.directory {
 				view.col_offset = 2
@@ -322,7 +322,11 @@ fn full_redraw(x voidptr) {
 					}
 				}
 				.search {
-					key_bindings = search_menu.clone()
+					if buf.prev_mode == .menu {
+						key_bindings = menu_menu.clone()
+					} else {
+						key_bindings = search_menu.clone()
+					}
 				}
 			}
 			menu_top := height / 3
@@ -363,8 +367,8 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		// ctx.draw_text(width - 90, height - 4, buf.buffer.line_at(buf.logical_cursor.y).str())
-		// ctx.draw_text(width - 90, height - 3, buf.temp_cursor.y.str())
+		// ctx.draw_text(width - 90, height - 4, buf.cur_line.string())
+		// ctx.draw_text(width - 90, height - 3, buf.cur_line.str())
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())
 

@@ -50,7 +50,7 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(mut cur_line []rune, buf Bu
 			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 			closest = i
 		}
-		log_curs.x = if closest == cur_line.len - 1 && closest < log_curs.desired_col {
+		log_curs.x = if closest == cur_line.len - 1 && column < log_curs.desired_col {
 			closest + 1
 		} else {
 			closest
@@ -79,7 +79,7 @@ pub fn (mut log_curs LogicalCursor) move_up_buffer(mut cur_line []rune, buf Buff
 			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 			closest = i
 		}
-		log_curs.x = if closest == cur_line.len - 1 && closest < log_curs.desired_col {
+		log_curs.x = if closest == cur_line.len - 1 && column < log_curs.desired_col {
 			closest + 1
 		} else {
 			closest
