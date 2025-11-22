@@ -292,7 +292,11 @@ fn full_redraw(x voidptr) {
 
 		// -- draw menu --
 		if buf.menu_state == true && buf.mode != .insert {
-			mut key_bindings := normal_menu.clone()
+			mut key_bindings := if app.os == 'windows' {
+				normal_menu_windows.clone()
+			} else {
+				normal_menu.clone()
+			}
 			match buf.mode {
 				.normal {
 					match buf.p_mode {
@@ -311,14 +315,14 @@ fn full_redraw(x voidptr) {
 					key_bindings = menu_menu.clone()
 				}
 				.goto {
-					key_bindings = goto_menu.clone()
+					key_bindings = if buf.p_mode == .fuzzy {
+						fuzzy_goto_menu.clone()
+					} else {
+						goto_menu.clone()
+					}
 				}
 				.search {
-					if buf.prev_mode == .menu {
-						key_bindings = menu_menu.clone()
-					} else {
-						key_bindings = search_menu.clone()
-					}
+					key_bindings = search_menu.clone()
 				}
 			}
 			menu_top := height / 3

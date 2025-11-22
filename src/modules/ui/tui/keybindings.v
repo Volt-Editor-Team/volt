@@ -6,8 +6,17 @@ pub struct Command {
 	desc    string
 }
 
+pub const normal_menu_windows = {
+	'CTRL + m': 'toggle menu'
+	'h,j,k,l':  'cursor movement'
+	'd':        'delete character'
+	':':        'open command mode'
+	'space':    'menu mode'
+	'f':        'open seach mode'
+}
+
 pub const normal_menu = {
-	'alt m':   'toggle menu'
+	'ALT + m': 'toggle menu'
 	'h,j,k,l': 'cursor movement'
 	'd':       'delete character'
 	':':       'open command mode'
@@ -68,9 +77,18 @@ pub const menu_menu = {
 }
 pub const fuzzy_menu = {
 	'j,k':                'move through listed files'
-	'enter on file':      'open file in buffer'
-	'enter on directory': 'change working directory'
+	'ENTER on file':      'open file in buffer'
+	'ENTER on directory': 'change working directory'
+	',':                  'multiselect files to open'
+	'TAB':                'fuzzy search specific directory'
+	'SHIFT + TAB':        'fuzzy search parent directory'
+	'`':                  'swap between fuzzy searching files and directories'
 }
+pub const fuzzy_goto_menu = {
+	'g': 'go to start'
+	'e': 'go to end'
+}
+
 pub const goto_menu = {
 	'g': 'go to start'
 	'e': 'go to end'
@@ -81,8 +99,4 @@ pub const goto_menu = {
 
 pub const search_menu = {
 	'f <char>': 'go to next occurance of <char>'
-}
-pub const fuzzy_search_menu = {
-	'f': 'fuzzy find [FILE]'
-	'd': 'fuzzy find [DIR]'
 }

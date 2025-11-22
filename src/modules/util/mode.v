@@ -53,11 +53,7 @@ pub fn mode_str(m Mode, pm PersistantMode, prev_mode Mode) string {
 			'GOTO'
 		}
 		.search {
-			if prev_mode == .menu {
-				'MENU'
-			} else {
-				'SEARCH'
-			}
+			'SEARCH'
 		}
 	}
 }

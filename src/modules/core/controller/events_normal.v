@@ -10,9 +10,19 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	mut buf := &app.buffers[app.active_buffer]
 	// global normal mode
 	if event == .key_down {
-		if mod == .alt && key == .m {
-			buf.menu_state = !buf.menu_state
-			return
+		match app.os {
+			'windows' {
+				if mod == .ctrl && key == .m {
+					buf.menu_state = !buf.menu_state
+					return
+				}
+			}
+			else {
+				if mod == .alt && key == .m {
+					buf.menu_state = !buf.menu_state
+					return
+				}
+			}
 		}
 		if app.cmd_buffer.command.len > 0 {
 			app.cmd_buffer.command = ''
@@ -314,6 +324,11 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						}
 						.comma {
 							if buf.temp_data.len > 0 {
+								if buf.temp_cursor.y < 0
+									|| buf.temp_cursor.y > buf.temp_data.len - 1 {
+									buf.temp_cursor.y = math.min(buf.temp_data.len - 1,
+										buf.temp_cursor.y)
+								}
 								file := buf.temp_data[buf.temp_cursor.y].string()
 								mut path := buf.temp_path + os.path_separator + file
 

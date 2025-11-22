@@ -7,6 +7,8 @@ import ui { ColorScheme }
 import os
 
 pub struct App {
+pub:
+	os string = @OS
 pub mut:
 	working_dir   string
 	buffers       []Buffer

@@ -4,9 +4,19 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
 	if event == .key_down {
-		if mod == .alt && key == .m {
-			buf.menu_state = !buf.menu_state
-			return
+		match app.os {
+			'windows' {
+				if mod == .ctrl && key == .m {
+					buf.menu_state = !buf.menu_state
+					return
+				}
+			}
+			else {
+				if mod == .alt && key == .m {
+					buf.menu_state = !buf.menu_state
+					return
+				}
+			}
 		}
 		match key {
 			.l {
