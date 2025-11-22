@@ -12,6 +12,7 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		// file fuzzy finder
 		if key == .f && buf.prev_mode == .menu && buf.p_mode != .fuzzy {
 			buf.temp_path = app.working_dir
+			buf.temp_list.clear()
 			buf.mode = .insert
 			buf.temp_fuzzy_type = .file
 			buf.open_fuzzy_find(app.working_dir, .file)
@@ -20,6 +21,7 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		// directory fuzzy finder
 		if key == .d && buf.prev_mode == .menu && buf.p_mode != .fuzzy {
 			buf.temp_path = app.working_dir
+			buf.temp_list.clear()
 			buf.mode = .insert
 			buf.temp_fuzzy_type = .dir
 			buf.open_fuzzy_find(app.working_dir, .directory)

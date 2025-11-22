@@ -57,6 +57,7 @@ pub mut:
 	temp_label      string
 	temp_string     string
 	temp_data       [][]rune
+	temp_list       []string
 	temp_int        int
 	temp_cursor     LogicalCursor
 	temp_mode       PersistantMode

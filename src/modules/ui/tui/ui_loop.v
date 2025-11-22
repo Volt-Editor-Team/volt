@@ -34,10 +34,20 @@ fn full_redraw(x voidptr) {
 		}
 
 		start_row := buf.row_offset
-		mut end_row := math.min(buf.buffer.line_count(), buf.row_offset + view.height) - if buf.mode == .command {
-			1
+		mut end_row := start_row
+
+		if buf.p_mode == .fuzzy {
+			end_row = math.min(buf.temp_data.len, buf.row_offset + view.height) - if buf.mode == .command {
+				1
+			} else {
+				0
+			}
 		} else {
-			0
+			end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height) - if buf.mode == .command {
+				1
+			} else {
+				0
+			}
 		}
 		mut allocated_line_num_width := math.max(buf.buffer.line_count().str().len, 5)
 
@@ -177,36 +187,66 @@ fn full_redraw(x voidptr) {
 			}
 		} else {
 			// draw for fuzzy
-			start := 1 + buffer_gap
+			// draw input line
+			mut start := 1 + buffer_gap
+			first_line := start
 			allocated_line_num_width = 1
-			start_x := allocated_line_num_width + 2
 			input_string := '> ${buf.temp_label}'
 			ctx.set_bg_color(tui_app.theme.background_color)
 			ctx.draw_text(1, start, input_string)
 			file_count_text := '( walked: ${buf.temp_data.len} / ${buf.temp_int} )'
-			ctx.draw_text(width - file_count_text.len - 2, start, file_count_text)
+			ctx.draw_text(width - file_count_text.len - 2, first_line, file_count_text)
+
+			start_x := allocated_line_num_width + 2
+
+			start++ // increment to draw after input line
+
+			// draw selections
+			ctx.set_color(colors.deep_indigo)
+			for i, selected in buf.temp_list {
+				selected_path := selected.replace(buf.temp_path + os.path_separator, '')
+				file_ext := os.file_ext(selected)
+				if file_ext in constants.ext_icons {
+					filetype := constants.ext_icons[file_ext]
+					fg_color := colors.hex_to_tui_color(filetype.color) or { colors.white }
+					line_num_label := filetype.icon +
+						' '.repeat(allocated_line_num_width - filetype.icon.len)
+					ctx.set_color(fg_color)
+					ctx.draw_text(1, i + start, line_num_label)
+					ctx.set_color(colors.deep_indigo)
+				}
+
+				ctx.draw_text(start_x, start + i, selected_path)
+			}
+			ctx.reset_color()
+			start += buf.temp_list.len // increment to draw after selections
 			if buf.mode == .insert {
 				// draw the input string to match
 				// the cursor is a lie but it looks good
 				ctx.set_bg_color(tui_app.theme.insert_cursor_color)
-				ctx.draw_text(input_string.len + 1, start, ' ')
+				ctx.draw_text(input_string.len + 1, first_line, ' ')
 				if buf.temp_data.len > 0 {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
-					ctx.draw_line(0, 1 + start, width - 1, 1 + start)
-					ctx.draw_text(start_x + 1, 1 + start, buf.temp_data[0].string())
+					ctx.draw_line(0, start, width - 1, start)
+					ctx.draw_text(start_x, start, buf.temp_data[0].string())
 				}
 				ctx.set_bg_color(tui_app.theme.background_color)
 			}
+			// start -= buf.temp_list.len // increment to draw after selections
+
 			// draw search results
-			for i, line_runes in buf.temp_data[start_row..end_row] {
+			for i, line_runes in buf.temp_data#[start_row..end_row] {
 				line := line_runes.string()
 				y_index := i + start_row
 				mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
 				file_ext := os.file_ext(line)
 				// highlight cursor line
-				if buf.mode != .insert && y_index == buf.logical_cursor.y {
+				if (buf.mode != .insert && y_index == buf.logical_cursor.y)
+					|| (buf.mode == .insert && i + start_row == 0) {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
-					ctx.draw_line(0, i + 1 + start, width - 1, i + 1 + start)
+					ctx.draw_line(0, i + start, width - 1, i + start)
+				} else {
+					ctx.set_bg_color(tui_app.theme.background_color)
 				}
 				// draw icon if file
 				// if not file, fill with spaces
@@ -219,26 +259,34 @@ fn full_redraw(x voidptr) {
 						ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 					}
 					ctx.set_color(fg_color)
-					ctx.draw_text(1, i + 1 + start, line_num_label)
+					ctx.draw_text(1, i + start, line_num_label)
 					ctx.reset_color()
 				} else {
 					line_num_label = ' '.repeat(allocated_line_num_width)
-					ctx.draw_text(1, i + 1 + start, line_num_label)
+					ctx.draw_text(1, i + start, line_num_label)
 				}
 				// draw actual line characters
 				for j, ch in line_runes {
+					mut char_to_draw := ch.str()
 					if buf.temp_label.contains(ch.str()) {
 						ctx.set_color(colors.lavender_violet)
 					}
+					if buf.temp_list.contains(buf.temp_path + os.path_separator +
+						line_runes.string())
+					{
+						ctx.set_color(colors.dark_red)
+						if j == line_runes.len - 1 {
+							char_to_draw += ' [ SELECTED ]'
+						}
+					}
 					if buf.mode == .insert && i == 0 {
 						ctx.set_bg_color(tui_app.theme.active_line_bg_color)
-						ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
+						ctx.draw_text(j + start_x, i + start, char_to_draw)
 					} else {
-						ctx.draw_text(j + 1 + start_x, i + 1 + start, ch.str())
+						ctx.draw_text(j + start_x, i + start, char_to_draw)
 					}
 					ctx.reset_color()
 				}
-				ctx.set_bg_color(tui_app.theme.background_color)
 			}
 		}
 
@@ -312,7 +360,7 @@ fn full_redraw(x voidptr) {
 
 		// -- debugging --
 		// ctx.draw_text(width - 90, height - 4, buf.buffer.line_at(buf.logical_cursor.y).str())
-		// ctx.draw_text(width - 90, height - 3, buf.temp_path)
+		ctx.draw_text(width - 90, height - 3, buf.cur_line.string())
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())
 

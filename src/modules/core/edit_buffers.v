@@ -3,9 +3,35 @@ module core
 import buffer { Buffer }
 import util
 import fs { get_working_dir_paths }
+import os
 
 pub fn (mut app App) add_new_buffer(b Buffer) {
-	new_buf := Buffer.from_path(
+	mut new_buf := Buffer.from_path(
+		label:      b.label
+		name:       b.name
+		path:       b.path
+		type:       b.type
+		tabsize:    default_tabsize
+		mode:       .normal
+		p_mode:     b.p_mode
+		menu_state: b.menu_state
+	)
+	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
+		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')
+	}
+
+	// if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
+	if app.buffers.len == 1 && app.buffers[app.active_buffer].label == 'Scratch'
+		&& app.buffers[app.active_buffer].name == 'Scratch' {
+		app.buffers[0] = new_buf
+	} else {
+		app.buffers << new_buf
+		app.change_active_buffer(app.buffers.len - 1)
+	}
+}
+
+pub fn (mut app App) append_new_buffer(b Buffer) {
+	mut new_buf := Buffer.from_path(
 		label:      b.label
 		name:       b.name
 		path:       b.path
@@ -16,14 +42,11 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		menu_state: b.menu_state
 	)
 
-	// if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
-	if app.buffers.len == 1 && app.buffers[app.active_buffer].label == 'Scratch'
-		&& app.buffers[app.active_buffer].name == 'Scratch' {
-		app.buffers[0] = new_buf
-	} else {
-		app.buffers << new_buf
-		app.change_active_buffer(app.buffers.len - 1)
+	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
+		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')
 	}
+
+	app.buffers << new_buf
 }
 
 pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {

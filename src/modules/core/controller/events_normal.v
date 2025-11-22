@@ -255,40 +255,79 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						// for switch fuzzy search directory
 						.tab {
 							if buf.temp_data.len > 0 {
-								if buf.temp_fuzzy_type == .dir {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.logical_cursor.y].string()
 
-									buf.temp_path += os.path_separator + file
+								path := buf.temp_path + os.path_separator + file
 
-									if os.is_dir(buf.temp_path) {
-										// delete temp stuff
-										buf.temp_label = ''
-										buf.temp_data.clear()
-										buf.file_ch.close()
-										buf.p_mode = buf.temp_mode
-										// reset and open fuzzy
-										buf.open_fuzzy_find(buf.temp_path, .directory)
-									}
+								if os.is_dir(path) {
+									buf.temp_path = path
+									// delete temp stuff
+									buf.temp_label = ''
+									buf.temp_data.clear()
+									buf.file_ch.close()
+									buf.p_mode = buf.temp_mode
+									buf.temp_fuzzy_type = .dir
+									// reset and open fuzzy
+									buf.open_fuzzy_find(buf.temp_path, .directory)
 								}
+							}
+						}
+						.backtick {
+							if buf.temp_fuzzy_type == .dir {
+								buf.temp_label = ''
+								buf.temp_data.clear()
+								buf.file_ch.close()
+								buf.p_mode = buf.temp_mode
+								buf.temp_fuzzy_type = .file
+								// reset and open fuzzy
+								buf.open_fuzzy_find(buf.temp_path, .file)
+							} else if buf.temp_fuzzy_type == .file {
+								buf.temp_label = ''
+								buf.temp_data.clear()
+								buf.file_ch.close()
+								buf.p_mode = buf.temp_mode
+								buf.temp_fuzzy_type = .dir
+								// reset and open fuzzy
+								buf.open_fuzzy_find(buf.temp_path, .directory)
 							}
 						}
 						.o {
 							if buf.temp_data.len > 0 {
-								if buf.temp_fuzzy_type == .dir {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.logical_cursor.y].string()
 
-									buf.temp_path += os.path_separator + file
+								path := buf.temp_path + os.path_separator + file
 
-									if os.is_dir(buf.temp_path) {
-										// delete temp stuff
-										buf.temp_label = ''
-										buf.temp_int = 0
-										buf.temp_data.clear()
-										buf.file_ch.close()
-										// reset and open fuzzy
-										buf.p_mode = buf.temp_mode
-										buf.temp_fuzzy_type = .file
-										buf.open_fuzzy_find(buf.temp_path, .file)
+								if os.is_dir(path) {
+									buf.temp_path = path
+									// delete temp stuff
+									buf.temp_label = ''
+									buf.temp_int = 0
+									buf.temp_data.clear()
+									buf.file_ch.close()
+									// reset and open fuzzy
+									buf.p_mode = buf.temp_mode
+									buf.temp_fuzzy_type = .file
+									buf.open_fuzzy_find(buf.temp_path, .file)
+								}
+							}
+						}
+						.comma {
+							if buf.temp_data.len > 0 {
+								file := buf.temp_data[buf.logical_cursor.y].string()
+								mut path := buf.temp_path + os.path_separator + file
+
+								if os.is_file(path) {
+									if buf.temp_list.contains(path) {
+										mut index := 0
+										for p in buf.temp_list {
+											if p == path {
+												break
+											}
+											index++
+										}
+										buf.temp_list.delete(index)
+									} else {
+										buf.temp_list << path
 									}
 								}
 							}
@@ -323,19 +362,36 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									os.chdir(path) or { return }
 									app.working_dir = path
 								} else {
-									app.add_new_buffer(
-										name:    os.file_name(file)
-										path:    path
-										tabsize: buf.tabsize
-										type:    .list
-										mode:    .normal
-										p_mode:  .default
-									)
-									if path.starts_with(app.working_dir + os.path_separator) {
-										app.buffers[app.active_buffer].path = path.replace(
-											app.working_dir + os.path_separator, '')
+									if buf.temp_list.len == 0 {
+										buf.temp_list << path
 									}
 								}
+								file_list := buf.temp_list.clone()
+								tabsize := buf.tabsize
+
+								for i, paths in file_list {
+									if i == 0 {
+										app.add_new_buffer(
+											name:    os.file_name(paths)
+											path:    paths
+											tabsize: tabsize
+											type:    .gap
+											mode:    .normal
+											p_mode:  .default
+										)
+									} else {
+										app.append_new_buffer(
+											name:    os.file_name(paths)
+											path:    paths
+											tabsize: tabsize
+											type:    .gap
+											mode:    .normal
+											p_mode:  .default
+										)
+									}
+								}
+								app.active_buffer = app.buffers.len - 1
+								buf.temp_list.clear()
 								buf.temp_label = ''
 								buf.temp_int = 0
 								buf.temp_data.clear()
@@ -349,19 +405,17 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					match key {
 						// for switch fuzzy search directory
 						.tab {
-							// buf.path = buf.temp_path
-							if buf.temp_fuzzy_type == .dir {
-								buf.temp_path = os.dir(buf.temp_path)
-								if os.is_dir(buf.temp_path) {
-									// delete temp stuff
-									buf.temp_label = ''
-									buf.temp_int = 0
-									buf.temp_data.clear()
-									buf.file_ch.close()
-									buf.p_mode = buf.temp_mode
-									// reset and open fuzzy
-									buf.open_fuzzy_find(buf.temp_path, .directory)
-								}
+							buf.temp_path = os.dir(buf.temp_path)
+							if os.is_dir(buf.temp_path) {
+								// delete temp stuff
+								buf.temp_label = ''
+								buf.temp_int = 0
+								buf.temp_data.clear()
+								buf.file_ch.close()
+								buf.p_mode = buf.temp_mode
+								buf.temp_fuzzy_type = .dir
+								// reset and open fuzzy
+								buf.open_fuzzy_find(buf.temp_path, .directory)
 							}
 						}
 						else {}
