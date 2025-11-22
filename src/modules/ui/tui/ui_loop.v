@@ -37,17 +37,9 @@ fn full_redraw(x voidptr) {
 		mut end_row := start_row
 
 		if buf.p_mode == .fuzzy {
-			end_row = math.min(buf.temp_data.len, buf.row_offset + view.height) - if buf.mode == .command {
-				1
-			} else {
-				0
-			}
+			end_row = math.min(buf.temp_data.len, buf.row_offset + view.height)
 		} else {
-			end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height) - if buf.mode == .command {
-				1
-			} else {
-				0
-			}
+			end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height)
 		}
 		mut allocated_line_num_width := math.max(buf.buffer.line_count().str().len, 5)
 
@@ -367,8 +359,8 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		// ctx.draw_text(width - 90, height - 4, buf.cur_line.string())
-		// ctx.draw_text(width - 90, height - 3, buf.cur_line.str())
+		// ctx.draw_text(width - 90, height - 4, buf.logical_cursor.flat_index.str())
+		// ctx.draw_text(width - 90, height - 3, buf.cur_line.string())
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())
 

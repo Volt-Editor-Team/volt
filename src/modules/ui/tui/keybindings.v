@@ -92,6 +92,7 @@ pub const fuzzy_goto_menu = {
 pub const goto_menu = {
 	'g': 'go to start'
 	'e': 'go to end'
+	'E': 'go to end of last line'
 	'l': 'go just past end of line'
 	'h': 'go to beginning of line'
 	's': 'go to first character of line'

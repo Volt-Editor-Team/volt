@@ -1,11 +1,7 @@
 module list
 
 pub fn (mut buf ListBuffer) insert_char(x_pos int, y_pos int, ch rune) {
-	// mut line := buf.lines[y_pos]
-	// new_line := line[..x_pos] + ch + line[x_pos..]
-	// buf.lines[y_pos] = new_line
 	buf.lines[y_pos].insert(x_pos, ch)
-	// buf.update_line_cache(y_pos)
 }
 
 pub fn (mut buf ListBuffer) insert_slice(x_pos int, y_pos int, runes []rune) {
@@ -13,6 +9,7 @@ pub fn (mut buf ListBuffer) insert_slice(x_pos int, y_pos int, runes []rune) {
 		buf.insert_newline(x_pos, y_pos)
 		return
 	}
+
 	mut lines := [][]rune{}
 	mut cur_line := []rune{}
 	for ch in runes {
@@ -23,11 +20,13 @@ pub fn (mut buf ListBuffer) insert_slice(x_pos int, y_pos int, runes []rune) {
 			cur_line << ch
 		}
 	}
-	lines << cur_line
+	if cur_line.len > 0 {
+		lines << cur_line
+	}
 
 	buf.lines[y_pos].insert(x_pos, lines[0])
 	if lines.len > 1 {
-		buf.lines.insert(y_pos, lines[1..])
+		buf.lines.insert(y_pos + 1, lines[1..])
 	}
 }
 
@@ -36,15 +35,16 @@ pub fn (mut buf ListBuffer) insert_line(y_pos int, lines []rune) {
 }
 
 pub fn (mut buf ListBuffer) insert_newline(x_pos int, y_pos int) {
-	cur_line := buf.lines[y_pos]
-	left := cur_line[..x_pos]
-	right := cur_line[x_pos..]
+	cur := buf.lines[y_pos]
 
-	buf.lines[y_pos] = left
+	// Right side becomes the new line
+	right := cur[x_pos..]
+
+	// Left side remains as current line
+	buf.lines[y_pos] = cur[..x_pos]
+
+	// Insert right side below
 	buf.lines.insert(y_pos + 1, right)
-	// buf.visual_col.insert(y_pos + 1, []int{})
-	// buf.update_line_cache(y_pos)
-	// buf.update_line_cache(y_pos + 1)
 }
 
 pub fn (mut buf ListBuffer) remove_char(x_pos int, y_pos int) {

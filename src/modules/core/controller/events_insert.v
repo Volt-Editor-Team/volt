@@ -56,8 +56,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.enter {
 							mut previous_indentation := []rune{}
 							previous_indentation << `\n`
-							for ch in buf.cur_line {
-								if !ch.str().is_blank() {
+							for i, ch in buf.cur_line {
+								if !ch.str().is_blank() || i == buf.logical_cursor.x {
 									break
 								} else {
 									previous_indentation << ch
