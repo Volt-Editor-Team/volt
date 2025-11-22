@@ -48,8 +48,8 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 
 	buf.p_mode = .fuzzy
 
-	buf.logical_cursor.x = 0
-	buf.logical_cursor.y = 0
+	// buf.logical_cursor.x = 0
+	// buf.logical_cursor.y = 0
 	buf.row_offset = 0
 	// // buf.update_visual_cursor(app.viewport.width)
 

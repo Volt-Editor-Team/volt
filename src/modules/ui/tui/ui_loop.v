@@ -241,7 +241,7 @@ fn full_redraw(x voidptr) {
 				mut line_num_label := ' '.repeat(buf.temp_data.len.str().len)
 				file_ext := os.file_ext(line)
 				// highlight cursor line
-				if (buf.mode != .insert && y_index == buf.logical_cursor.y)
+				if (buf.mode != .insert && y_index == buf.temp_cursor.y)
 					|| (buf.mode == .insert && i + start_row == 0) {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
 					ctx.draw_line(0, i + start, width - 1, i + start)
@@ -360,7 +360,7 @@ fn full_redraw(x voidptr) {
 
 		// -- debugging --
 		// ctx.draw_text(width - 90, height - 4, buf.buffer.line_at(buf.logical_cursor.y).str())
-		ctx.draw_text(width - 90, height - 3, buf.cur_line.string())
+		// ctx.draw_text(width - 90, height - 3, buf.temp_cursor.y.str())
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())
 

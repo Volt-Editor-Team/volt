@@ -228,7 +228,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// buf.path = buf.temp_path
 							buf.p_mode = buf.temp_mode
 							buf.mode = .normal
-							buf.logical_cursor = buf.temp_cursor
+							// buf.logical_cursor = buf.temp_cursor
 							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 								app.viewport.margin)
 
@@ -239,15 +239,15 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.menu_state = false
 						}
 						.j, .down {
-							if buf.logical_cursor.y < buf.temp_data.len - 1 {
-								buf.logical_cursor.y++
+							if buf.temp_cursor.y < buf.temp_data.len - 1 {
+								buf.temp_cursor.y++
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 							}
 						}
 						.k, .up {
-							if buf.logical_cursor.y > 0 {
-								buf.logical_cursor.y--
+							if buf.temp_cursor.y > 0 {
+								buf.temp_cursor.y--
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 							}
@@ -255,7 +255,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						// for switch fuzzy search directory
 						.tab {
 							if buf.temp_data.len > 0 {
-								file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.temp_cursor.y].string()
 
 								path := buf.temp_path + os.path_separator + file
 
@@ -293,7 +293,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						}
 						.o {
 							if buf.temp_data.len > 0 {
-								file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.temp_cursor.y].string()
 
 								path := buf.temp_path + os.path_separator + file
 
@@ -304,6 +304,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_int = 0
 									buf.temp_data.clear()
 									buf.file_ch.close()
+									buf.temp_cursor.y = 0
 									// reset and open fuzzy
 									buf.p_mode = buf.temp_mode
 									buf.temp_fuzzy_type = .file
@@ -313,7 +314,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						}
 						.comma {
 							if buf.temp_data.len > 0 {
-								file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.temp_cursor.y].string()
 								mut path := buf.temp_path + os.path_separator + file
 
 								if os.is_file(path) {
@@ -329,17 +330,18 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									} else {
 										buf.temp_list << path
 									}
+									buf.temp_label = ''
 								}
 							}
 						}
 						.enter {
 							if buf.temp_data.len > 0 {
-								file := buf.temp_data[buf.logical_cursor.y].string()
+								file := buf.temp_data[buf.temp_cursor.y].string()
 
 								// buf.path = buf.temp_path
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
-								buf.logical_cursor = buf.temp_cursor
+								// buf.logical_cursor = buf.temp_cursor
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 								buf.file_ch.close()

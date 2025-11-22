@@ -14,9 +14,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				if buf.p_mode != .fuzzy || buf.p_mode != .directory {
 					buf.prev_mode = buf.mode
 				}
-				// if buf.p_mode == .fuzzy {
-				// 	buf.logical_cursor.y = math.min(buf.temp_data.len - 1, buf.logical_cursor.y)
-				// }
+				if buf.p_mode == .fuzzy {
+					buf.temp_cursor.y = math.min(buf.temp_data.len - 1, buf.temp_cursor.y)
+				}
 				buf.mode = .normal
 				return
 			}
@@ -119,7 +119,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								// buf.path = buf.temp_path
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
-								buf.logical_cursor = buf.temp_cursor
+								// buf.logical_cursor = buf.temp_cursor
 								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 									app.viewport.margin)
 
@@ -155,7 +155,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.tab {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+									file := buf.temp_data[buf.temp_cursor.y].string()
 
 									path := buf.temp_path + os.path_separator + file
 
@@ -174,7 +174,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.comma {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+									file := buf.temp_data[buf.temp_cursor.y].string()
 									mut path := buf.temp_path + os.path_separator + file
 
 									if os.is_file(path) {
@@ -190,17 +190,18 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										} else {
 											buf.temp_list << path
 										}
+										buf.temp_label = ''
 									}
 								}
 							}
 							.enter {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.logical_cursor.y].string()
+									file := buf.temp_data[buf.temp_cursor.y].string()
 
 									// buf.path = buf.temp_path
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
-									buf.logical_cursor = buf.temp_cursor
+									// buf.logical_cursor = buf.temp_cursor
 									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 										app.viewport.margin)
 									buf.file_ch.close()
@@ -269,8 +270,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							else {
 								buf.temp_label += rune(int(key)).str()
-								if buf.logical_cursor.y > buf.temp_data.len {
-									buf.logical_cursor.y = 0
+								if buf.temp_cursor.y > buf.temp_data.len {
+									buf.temp_cursor.y = 0
 									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 										app.viewport.margin)
 								}
