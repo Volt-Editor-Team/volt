@@ -162,7 +162,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.tab {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.temp_cursor.y].string()
+									file := buf.temp_data[0].string()
 
 									path := buf.temp_path + os.path_separator + file
 
@@ -203,7 +203,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.enter {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.temp_cursor.y].string()
+									file := buf.temp_data[0].string()
 
 									// buf.path = buf.temp_path
 									buf.p_mode = buf.temp_mode
