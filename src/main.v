@@ -34,6 +34,13 @@ fn main() {
 								menu_state: true
 							)
 							mut buffer := &core_app.buffers[core_app.active_buffer]
+							buffer.temp_path = core_app.working_dir
+							buffer.temp_list.clear()
+							buffer.temp_cursor.y = 0
+							buffer.temp_cursor.x = 0
+							buffer.mode = .insert
+							buffer.temp_fuzzy_type = .file
+							buffer.menu_state = false
 							buffer.open_fuzzy_find(buffer.path, .file)
 						}
 					} else {
@@ -50,6 +57,13 @@ fn main() {
 					)
 					if open_fuzzy {
 						mut buffer := &core_app.buffers[core_app.active_buffer]
+						buffer.temp_path = core_app.working_dir
+						buffer.temp_list.clear()
+						buffer.temp_cursor.y = 0
+						buffer.temp_cursor.x = 0
+						buffer.mode = .insert
+						buffer.temp_fuzzy_type = .file
+						buffer.menu_state = false
 						buffer.open_fuzzy_find(buffer.path, .file)
 						open_fuzzy = false
 					}

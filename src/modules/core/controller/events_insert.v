@@ -94,6 +94,13 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					.shift {
 						match key {
 							.enter {}
+							.colon {
+								buf.prev_mode = buf.mode
+								buf.saved_cursor = buf.logical_cursor
+								buf.mode = .command
+								app.cmd_buffer.command = ': '
+								buf.menu_state = false
+							}
 							// for switch fuzzy search directory
 							.tab {
 								buf.temp_path = os.dir(buf.temp_path)
@@ -174,7 +181,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.comma {
 								if buf.temp_data.len > 0 {
-									file := buf.temp_data[buf.temp_cursor.y].string()
+									file := buf.temp_data[0].string()
 									mut path := buf.temp_path + os.path_separator + file
 
 									if os.is_file(path) {
@@ -265,8 +272,11 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								}
 							}
 							.colon {
+								buf.prev_mode = buf.mode
 								buf.saved_cursor = buf.logical_cursor
 								buf.mode = .command
+								app.cmd_buffer.command = ': '
+								buf.menu_state = false
 							}
 							else {
 								buf.temp_label += rune(int(key)).str()

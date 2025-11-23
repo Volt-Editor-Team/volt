@@ -14,11 +14,12 @@
 
 - [x] Buffer flicker -- instead of redrawing entire screen, only redraw changes
   - [ ] implement redraws at line level. current draws the entire buffer once per key stroke; however this is not ideal as it reduces but doesn't eliminate screen flickering.
+- [ ] improve fuzzy search scoring
 - [ ] implement a way to load larger files faster.
+- [ ] make scrolling smoother
 
 ## Other
 
-- [ ] improve fuzzy search scoring
 - [ ] implement more testing for buffer operations
   - [ ] not sure where but make tests for other modules as well
 - [ ] syntax highlighting

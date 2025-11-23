@@ -23,7 +23,11 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 		}
 		match key {
 			.escape {
-				buf.mode = .normal
+				if buf.prev_mode == .insert {
+					buf.mode = .insert
+				} else {
+					buf.mode = .normal
+				}
 				app.cmd_buffer.command = ''
 				buf.logical_cursor = buf.saved_cursor
 			}
