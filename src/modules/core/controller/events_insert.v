@@ -6,6 +6,7 @@ import math
 pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
+	mut view := &app.viewport
 	// global normal mode
 	if event == .key_down {
 		match key {
@@ -80,8 +81,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 
-							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
-								buf.tabsize)
+							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
+								view.visible_lines, buf.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 					}
@@ -98,7 +99,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.prev_mode = buf.mode
 								buf.saved_cursor = buf.logical_cursor
 								buf.mode = .command
-								app.cmd_buffer.command = ': '
+								buf.cmd.command = ': '
 								buf.menu_state = false
 							}
 							// for switch fuzzy search directory
@@ -127,8 +128,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-									app.viewport.margin)
+								view.update_offset(buf.logical_cursor.y)
 
 								// delete temp stuff
 								buf.temp_label = ''
@@ -209,8 +209,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									// buf.logical_cursor = buf.temp_cursor
-									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-										app.viewport.margin)
+									view.update_offset(buf.logical_cursor.y)
 									buf.file_ch.close()
 
 									// delete temp stuff
@@ -275,15 +274,14 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.prev_mode = buf.mode
 								buf.saved_cursor = buf.logical_cursor
 								buf.mode = .command
-								app.cmd_buffer.command = ': '
+								buf.cmd.command = ': '
 								buf.menu_state = false
 							}
 							else {
 								buf.temp_label += rune(int(key)).str()
 								if buf.temp_cursor.y > buf.temp_data.len {
 									buf.temp_cursor.y = 0
-									buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-										app.viewport.margin)
+									view.update_offset(buf.logical_cursor.y)
 								}
 							}
 						}

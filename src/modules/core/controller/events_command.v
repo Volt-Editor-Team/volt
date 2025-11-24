@@ -7,16 +7,17 @@ import os
 pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
+	mut view := &app.viewport
 
 	if event == .key_down {
-		cmd_str := app.cmd_buffer.command
+		cmd_str := buf.cmd.command
 		if buf.p_mode == .fuzzy && mod == .ctrl && key == .q {
 			// restore settings
 			// buf.path = buf.temp_path
 			buf.p_mode = buf.temp_mode
 			buf.mode = .normal
 			buf.logical_cursor = buf.temp_cursor
-			buf.update_offset(app.viewport.visual_wraps, app.viewport.height, app.viewport.margin)
+			view.update_offset(buf.logical_cursor.y)
 			// delete temp stuff
 			buf.temp_label = ''
 			buf.temp_data.clear()
@@ -28,8 +29,8 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				} else {
 					buf.mode = .normal
 				}
-				app.cmd_buffer.command = ''
-				buf.logical_cursor = buf.saved_cursor
+				buf.cmd.command = ''
+				// buf.logical_cursor = buf.saved_cursor
 			}
 			.enter {
 				command := cmd_str[2..]
@@ -40,7 +41,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				match command {
 					// quit
 					'q', 'quit' {
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						exit(0)
 					}
 					// write/save file
@@ -57,7 +58,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 								// 	buf.lines = read_file(buf.path) or { [''] }
 								// 	// buf.update_all_line_cache()
 								// }
-								// app.cmd_buffer.command = ''
+								// buf.cmd.command = ''
 								// buf.mode = .normal
 								// buf.logical_cursor = buf.saved_cursor
 								// // 					buf.update_visual_cursor(app.viewport.width)
@@ -67,13 +68,13 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					// help
 					'h', 'help' {
 						buf.mode = .normal
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						app.add_help_buffer()
 					}
 					// change directory buffer
 					'cd', 'change-directory' {
 						buf.mode = .normal
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 
 						if app.has_directory_buffer {
 							for i, buffer in app.buffers {
@@ -88,7 +89,7 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					}
 					// close buffer
 					'cb', 'close-buffer' {
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						if buf.p_mode == .directory {
 							app.has_directory_buffer = false
 						}
@@ -100,13 +101,13 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					// print working directory
 					'pwd', 'print-working-directory' {
 						buf.mode = .normal
-						app.cmd_buffer.command = 'Working Directory: ' + os.getwd()
+						buf.cmd.command = 'Working Directory: ' + os.getwd()
 						buf.logical_cursor = buf.saved_cursor
 					}
 					// open doctor
 					'doc', 'doctor' {
 						buf.mode = .normal
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						buf.logical_cursor = buf.saved_cursor
 						if app.has_stats_opened {
 							for i, buffer in app.buffers {
@@ -116,14 +117,14 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 							}
 						} else {
 							if app.stats.len == 0 {
-								go fn [mut app] () {
+								go fn [mut buf] () {
 									// temp := buf.path
 									// buf.path = 'Error: Stats not available'
 									// time.sleep(2 * time.second)
 									// buf.path = temp
-									app.cmd_buffer.command = 'Error: Stats not available'
+									buf.cmd.command = 'Error: Stats not available'
 									time.sleep(2 * time.second)
-									app.cmd_buffer.command = ''
+									buf.cmd.command = ''
 								}()
 								return
 							}
@@ -134,17 +135,17 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					}
 					// fuzzy finder
 					'fzf', 'fuzzy-find' {
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						buf.open_fuzzy_find(app.working_dir, .file)
 					}
 					'btype', 'buffer-type' {
 						buf.mode = .normal
-						app.cmd_buffer.command = 'Buffer type: ${buf.type}'
+						buf.cmd.command = 'Buffer type: ${buf.type}'
 						buf.logical_cursor = buf.saved_cursor
 					}
 					'encoding' {
 						buf.mode = .normal
-						app.cmd_buffer.command = buf.encoding.str()
+						buf.cmd.command = buf.encoding.str()
 						buf.logical_cursor = buf.saved_cursor
 					}
 					else {}
@@ -153,14 +154,14 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			// delete character
 			.backspace {
 				// remove char before index
-				if app.cmd_buffer.command.len > 2 {
-					app.cmd_buffer.remove_char(app.cmd_buffer.command.len - 1)
+				if buf.cmd.command.len > 2 {
+					buf.cmd.remove_char(buf.cmd.command.len - 1)
 				}
 			}
 			// add character
 			else {
 				ch := u8(key).ascii_str()
-				app.cmd_buffer.command += ch
+				buf.cmd.command += ch
 			}
 		}
 	}

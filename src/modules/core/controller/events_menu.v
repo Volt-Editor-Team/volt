@@ -26,7 +26,7 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						buf.mode = .search
 					}
 					.q {
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						if buf.p_mode == .directory {
 							app.has_directory_buffer = false
 						}
@@ -48,7 +48,7 @@ pub fn handle_menu_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 			.fuzzy {
 				match key {
 					.q {
-						app.cmd_buffer.command = ''
+						buf.cmd.command = ''
 						if buf.p_mode == .directory {
 							app.has_directory_buffer = false
 						}

@@ -1,5 +1,7 @@
 module viewport
 
+import cursor { LogicalCursor }
+
 pub struct Viewport {
 pub mut:
 	col_offset           int
@@ -7,6 +9,11 @@ pub mut:
 	height               int
 	width                int
 	visual_wraps         int
+
+	row_offset     int
+	visible_lines  [][]rune
+	line_wraps     []int
+	logical_cursor LogicalCursor
 pub:
 	margin int
 }

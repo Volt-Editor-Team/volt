@@ -36,12 +36,13 @@ pub mut:
 	buffer   BufferInterface = ListBuffer.from_path('')
 	cur_line []rune
 	// cursor         CursorInterface
+	cmd            CommandBuffer
 	saved_cursor   LogicalCursor
 	logical_cursor LogicalCursor
 	file_ch        chan string
 	// other important attributes
-	tabsize      int
-	row_offset   int
+	tabsize int
+	// row_offset   int
 	menu_state   bool
 	needs_render bool = true
 }

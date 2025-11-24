@@ -3,6 +3,7 @@ module controller
 pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
+	mut view := &app.viewport
 	if event == .key_down {
 		match app.os {
 			'windows' {
@@ -25,8 +26,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						if buf.p_mode != .fuzzy {
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
 								buf.tabsize)
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
 							buf.menu_state = false
@@ -35,8 +35,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.h {
 						if buf.p_mode != .fuzzy {
 							buf.logical_cursor.move_to_x(buf.cur_line, 0, buf.tabsize)
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
 							buf.menu_state = false
@@ -52,8 +51,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 								index++
 							}
 							buf.logical_cursor.move_to_x(buf.cur_line, index, buf.tabsize)
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
 							buf.menu_state = false
@@ -75,8 +73,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 								buf.tabsize)
 						}
 						buf.logical_cursor.update_desired_col(app.viewport.width)
-						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							app.viewport.margin)
+						view.update_offset(buf.logical_cursor.y)
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 						buf.mode = .normal
 						buf.menu_state = false
@@ -84,25 +81,16 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.e {
 						if buf.p_mode == .fuzzy {
 							buf.logical_cursor.y = buf.temp_data.len - 1
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
-							// line := buf.buffer.line_at(buf.logical_cursor.y)
 							buf.logical_cursor.x = 0
 							buf.logical_cursor.update_desired_col(app.viewport.width)
-							mut visual_wraps := 0
-							mut cur_index := buf.logical_cursor.y - 1
-							for cur_index + visual_wraps > buf.logical_cursor.y - app.viewport.height - app.viewport.margin
-								&& cur_index >= 0 {
-								visual_wraps += buf.buffer.line_at(cur_index).len / app.viewport.width
-								cur_index--
-							}
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							buf.logical_cursor.flat_index = buf.buffer.len() - (buf.cur_line.len - 1)
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x,
 								buf.tabsize)
-							buf.update_offset(visual_wraps, app.viewport.height, app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						buf.mode = .normal
@@ -119,26 +107,16 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.e {
 						if buf.p_mode == .fuzzy {
 							buf.logical_cursor.y = buf.temp_data.len - 1
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
-							// line := buf.buffer.line_at(buf.logical_cursor.y)
 							buf.logical_cursor.x = 0
-							// buf.logical_cursor.update_desired_col(app.viewport.width)
-							mut visual_wraps := 0
-							mut cur_index := buf.logical_cursor.y - 1
-							for cur_index + visual_wraps > buf.logical_cursor.y - app.viewport.height - app.viewport.margin
-								&& cur_index >= 0 {
-								visual_wraps += buf.buffer.line_at(cur_index).len / app.viewport.width
-								cur_index--
-							}
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							buf.logical_cursor.flat_index = buf.buffer.len() - (buf.cur_line.len - 1)
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
 								buf.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
-							buf.update_offset(visual_wraps, app.viewport.height, app.viewport.margin)
+							view.update_offset(buf.logical_cursor.y)
 						}
 						buf.mode = .normal
 						buf.menu_state = false

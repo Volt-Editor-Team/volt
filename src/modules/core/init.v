@@ -1,6 +1,6 @@
 module core
 
-import buffer { Buffer, CommandBuffer }
+import buffer { Buffer }
 // import buffer.list { ListBuffer }
 import viewport { Viewport }
 import ui { ColorScheme }
@@ -15,10 +15,9 @@ pub mut:
 	swap_map      map[int]Buffer
 	active_buffer int
 	// prev_mode     Mode
-	cmd_buffer CommandBuffer
-	viewport   Viewport
-	theme      ColorScheme
-	stats      []string
+	viewport Viewport
+	theme    ColorScheme
+	stats    []string
 	// tracking for single buffer
 	has_directory_buffer bool
 	has_stats_opened     bool

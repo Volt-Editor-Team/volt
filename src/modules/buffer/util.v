@@ -1,7 +1,6 @@
 module buffer
 
 import os
-import math
 import util.fuzzy
 import fs
 import time
@@ -11,25 +10,25 @@ pub enum SearchType {
 	directory
 }
 
-pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int) bool {
-	// Compute the cursor's relative position inside the viewport
-	rel_pos := buf.logical_cursor.y - buf.row_offset + visual_wraps
+// pub fn (mut buf Buffer) update_offset(visual_wraps int, height int, margin int, mut row_offset int) bool {
+// 	// Compute the cursor's relative position inside the viewport
+// 	rel_pos := buf.logical_cursor.y - row_offset + visual_wraps
 
-	// Check if cursor is past the bottom margin
-	if rel_pos >= height - margin {
-		// Scroll so the cursor is `margin` lines from the bottom
-		buf.row_offset = buf.logical_cursor.y + visual_wraps - (height - margin) + 1
-		return true
-	}
-	// Check if cursor is above the top margin
-	else if buf.logical_cursor.y - buf.row_offset + visual_wraps <= margin {
-		// Scroll so the cursor is `margin` lines from the top
-		buf.row_offset = math.max(0, buf.logical_cursor.y + visual_wraps - margin)
-		return true
-	}
+// 	// Check if cursor is past the bottom margin
+// 	if rel_pos >= height - margin {
+// 		// Scroll so the cursor is `margin` lines from the bottom
+// 		row_offset = buf.logical_cursor.y + visual_wraps - (height - margin) + 1
+// 		return true
+// 	}
+// 	// Check if cursor is above the top margin
+// 	else if buf.logical_cursor.y - row_offset + visual_wraps <= margin {
+// 		// Scroll so the cursor is `margin` lines from the top
+// 		row_offset = math.max(0, buf.logical_cursor.y + visual_wraps - margin)
+// 		return true
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 	// if fuzzy is already running, return
@@ -50,7 +49,7 @@ pub fn (mut buf Buffer) open_fuzzy_find(path string, search_type SearchType) {
 
 	// buf.logical_cursor.x = 0
 	// buf.logical_cursor.y = 0
-	buf.row_offset = 0
+	// row_offset = 0
 	// // buf.update_visual_cursor(app.viewport.width)
 
 	// walk path

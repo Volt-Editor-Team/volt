@@ -8,6 +8,7 @@ import math
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
 	mut buf := &app.buffers[app.active_buffer]
+	mut view := &app.viewport
 	// global normal mode
 	if event == .key_down {
 		match app.os {
@@ -24,52 +25,46 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 			}
 		}
-		if app.cmd_buffer.command.len > 0 {
-			app.cmd_buffer.command = ''
+		if buf.cmd.command.len > 0 {
+			buf.cmd.command = ''
 		}
 		match key {
 			.f {
-				buf.prev_mode = buf.mode
-				buf.mode = .search
-				buf.menu_state = true
+				buf.change_mode(.search, true)
 			}
 			.space {
-				buf.prev_mode = buf.mode
-				buf.mode = .menu
-				buf.menu_state = true
+				buf.change_mode(.menu, true)
 			}
 			.g {
-				buf.prev_mode = buf.mode
-				buf.mode = .goto
-				buf.menu_state = true
+				buf.change_mode(.goto, true)
 			}
 			.i {
-				buf.prev_mode = buf.mode
-				buf.mode = .insert
-				buf.menu_state = false
+				buf.change_mode(.insert, false)
 			}
 			.colon {
-				buf.prev_mode = buf.mode
-				buf.saved_cursor = buf.logical_cursor
-				buf.mode = .command
-				app.cmd_buffer.command = ': '
-				buf.menu_state = false
+				buf.change_mode(.command, false)
 			}
-			.b {
-				if app.buffers.len > 1 {
-					if app.active_buffer == 0 {
-						app.active_buffer = app.buffers.len - 1
-					} else {
-						app.active_buffer -= 1
+			.comma {
+				if mod == .alt {
+					if app.buffers.len > 1 {
+						if app.active_buffer == 0 {
+							app.active_buffer = app.buffers.len - 1
+						} else {
+							app.active_buffer -= 1
+						}
+						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
 					}
 				}
 			}
-			.n {
-				if app.buffers.len > 1 {
-					if app.active_buffer == app.buffers.len - 1 {
-						app.active_buffer = 0
-					} else {
-						app.active_buffer += 1
+			.period {
+				if mod == .alt {
+					if app.buffers.len > 1 {
+						if app.active_buffer == app.buffers.len - 1 {
+							app.active_buffer = 0
+						} else {
+							app.active_buffer += 1
+						}
+						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
 					}
 				}
 			}
@@ -84,18 +79,16 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.d {
 					// currently just deletes one character
 					// will need to be changed when selections are supported
-					buf.buffer.delete(buf.logical_cursor.flat_index, 1) or { return }
-					buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+					buf.delete(1)
 				}
 				.l, .right {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer,
-						buf.tabsize)
+					buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
+						view.visible_lines, buf.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 
 					if buf.logical_cursor.y != prev_y {
-						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							app.viewport.margin)
+						view.update_offset(buf.logical_cursor.y)
 					}
 				}
 				.h, .left {
@@ -104,8 +97,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 					if buf.logical_cursor.y != prev_y {
-						buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-							app.viewport.margin)
+						view.update_offset(buf.logical_cursor.y)
+						// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
+						// 	app.viewport.margin, app.viewport.row_offset)
 					}
 				}
 				.j, .down {
@@ -134,8 +128,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update viewport offset
-					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-						app.viewport.margin)
+					view.update_offset(buf.logical_cursor.y)
 				}
 				.k, .up {
 					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
@@ -176,8 +169,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update offset
-					buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-						app.viewport.margin)
+					view.update_offset(buf.logical_cursor.y)
 				}
 				else {}
 			}
@@ -235,31 +227,26 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					match key {
 						.escape {
 							// restore settings
-							// buf.path = buf.temp_path
 							buf.p_mode = buf.temp_mode
-							buf.mode = .normal
-							// buf.logical_cursor = buf.temp_cursor
-							buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-								app.viewport.margin)
+							buf.change_mode(.normal, false)
+							view.update_offset(buf.logical_cursor.y)
 
 							// delete temp stuff
-							buf.temp_label = ''
-							buf.temp_data.clear()
+							// buf.temp_label = ''
+							// buf.temp_data.clear()
+							buf.clear_all_temp_data()
 							buf.file_ch.close()
-							buf.menu_state = false
 						}
 						.j, .down {
 							if buf.temp_cursor.y < buf.temp_data.len - 1 {
 								buf.temp_cursor.y++
-								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-									app.viewport.margin)
+								view.update_offset(buf.logical_cursor.y)
 							}
 						}
 						.k, .up {
 							if buf.temp_cursor.y > 0 {
 								buf.temp_cursor.y--
-								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-									app.viewport.margin)
+								view.update_offset(buf.logical_cursor.y)
 							}
 						}
 						// for switch fuzzy search directory
@@ -357,8 +344,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
-									app.viewport.margin)
+								view.update_offset(buf.logical_cursor.y)
 								buf.file_ch.close()
 
 								// delete temp stuff

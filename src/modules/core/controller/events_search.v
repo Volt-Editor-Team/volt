@@ -25,6 +25,7 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			buf.temp_list.clear()
 			buf.temp_cursor.y = 0
 			buf.temp_cursor.x = 0
+			app.viewport.row_offset = 0
 			buf.mode = .insert
 			buf.temp_fuzzy_type = .file
 			buf.open_fuzzy_find(app.working_dir, .file)
@@ -36,6 +37,7 @@ pub fn handle_search_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			buf.temp_list.clear()
 			buf.temp_cursor.y = 0
 			buf.temp_cursor.x = 0
+			app.viewport.row_offset = 0
 			buf.mode = .insert
 			buf.temp_fuzzy_type = .dir
 			buf.open_fuzzy_find(app.working_dir, .directory)

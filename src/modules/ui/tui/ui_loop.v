@@ -33,13 +33,13 @@ fn full_redraw(x voidptr) {
 			ctx.draw_tabs(buffer_names, app.active_buffer, width, tui_app.theme)
 		}
 
-		start_row := buf.row_offset
+		start_row := view.row_offset
 		mut end_row := start_row
 
 		if buf.p_mode == .fuzzy {
-			end_row = math.min(buf.temp_data.len, buf.row_offset + view.height)
+			end_row = math.min(buf.temp_data.len, view.row_offset + view.height)
 		} else {
-			end_row = math.min(buf.buffer.line_count(), buf.row_offset + view.height)
+			end_row = math.min(buf.buffer.line_count(), view.row_offset + view.height)
 		}
 		mut allocated_line_num_width := math.max(buf.buffer.line_count().str().len, 5)
 
@@ -53,7 +53,7 @@ fn full_redraw(x voidptr) {
 			}
 			.fuzzy {
 				view.col_offset = 2
-				end_row = math.min(buf.temp_data.len, buf.row_offset + view.height)
+				end_row = math.min(buf.temp_data.len, view.row_offset + view.height)
 				allocated_line_num_width = 1
 			}
 		}
@@ -359,7 +359,7 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		// ctx.draw_text(width - 90, height - 4, buf.logical_cursor.flat_index.str())
+		// ctx.draw_text(width - 90, height - 4, buf.logical_cursor.visual_x.str())
 		// ctx.draw_text(width - 90, height - 3, buf.cur_line.string())
 		// ctx.draw_text(width - 90, height - 2, 'function: ' +
 		// controller.update_path(buf.path, os.getwd()).str())
@@ -367,7 +367,7 @@ fn full_redraw(x voidptr) {
 		// -- status bar --
 		mut command_bar_y_pos := height
 
-		if buf.mode == .command || app.cmd_buffer.command.len > 2 {
+		if buf.mode == .command || buf.cmd.command.len > 2 {
 			command_bar_y_pos--
 			// draw command menu
 			// draw command bar
@@ -400,7 +400,7 @@ fn full_redraw(x voidptr) {
 
 			// draw command mode prompt
 			// if buf.mode == .command {
-			// 	buf.logical_cursor.x = app.cmd_buffer.command.len + 2
+			// 	buf.logical_cursor.x = buf.cmd.command.len + 2
 			// 	buf.logical_cursor.y = height
 			// }
 
@@ -413,23 +413,23 @@ fn full_redraw(x voidptr) {
 			// ctx.draw_text(0, buf.logical_cursor.y, ':')
 
 			// 3. Draw the command buffer
-			if app.cmd_buffer.command.starts_with('Error') {
+			if buf.cmd.command.starts_with('Error') {
 				ctx.set_color(colors.dark_red)
 			} else {
 				ctx.set_color(colors.white)
 			}
-			ctx.draw_text(2, height, app.cmd_buffer.command)
+			ctx.draw_text(2, height, buf.cmd.command)
 
 			// 4. Draw the cursor block at the right position
-			// cursor_pos := app.cmd_buffer.command.len + 2
+			// cursor_pos := buf.cmd.command.len + 2
 			if buf.mode == util.Mode.command {
-				commands := command_menu.filter(it.name.starts_with(app.cmd_buffer.command[2..])
-					|| it.aliases.any(it.starts_with(app.cmd_buffer.command[2..])))
+				commands := command_menu.filter(it.name.starts_with(buf.cmd.command[2..])
+					|| it.aliases.any(it.starts_with(buf.cmd.command[2..])))
 
-				// if app.cmd_buffer.command.len > 2 {
+				// if buf.cmd.command.len > 2 {
 				// 	mut matching_commands := commands.filter(
-				// 		it.name.starts_with(app.cmd_buffer.command[2..])
-				// 		|| it.aliases.any(it.starts_with(app.cmd_buffer.command[2..])))
+				// 		it.name.starts_with(buf.cmd.command[2..])
+				// 		|| it.aliases.any(it.starts_with(buf.cmd.command[2..])))
 				// 	if matching_commands.len > 0 {
 				// 		commands = unsafe { matching_commands }
 				// 	}
@@ -456,8 +456,7 @@ fn full_redraw(x voidptr) {
 							ctx.draw_text(cmd_x, cmd_y + 2, command.desc)
 						}
 						for offset, ch in command.name.runes_iterator() {
-							if app.cmd_buffer.command.contains(ch.str())
-								&& offset <= app.cmd_buffer.command.len {
+							if buf.cmd.command.contains(ch.str()) && offset <= buf.cmd.command.len {
 								ctx.set_color(colors.lavender_violet)
 							}
 							ctx.draw_text(cmd_x + offset, cmd_y, ch.str())
@@ -469,7 +468,7 @@ fn full_redraw(x voidptr) {
 				}
 
 				ctx.set_bg_color(tui_app.theme.insert_cursor_color)
-				ctx.draw_text(app.cmd_buffer.command.len + 2, height, ' ')
+				ctx.draw_text(buf.cmd.command.len + 2, height, ' ')
 				ctx.reset_bg_color()
 			}
 		} else {
@@ -493,7 +492,7 @@ fn full_redraw(x voidptr) {
 				path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
 					buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
 			}
-			// if app.cmd_buffer.command.starts_with('Error') {
+			// if buf.cmd.command.starts_with('Error') {
 			// 	ctx.set_color(colors.dark_red)
 			// } else {
 			// 	ctx.set_color(colors.white)

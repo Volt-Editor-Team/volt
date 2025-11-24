@@ -1,8 +1,9 @@
 module cursor
 
+import util
 import buffer.common { BufferInterface }
 
-pub fn (mut log_curs LogicalCursor) move_right_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_right_buffer(mut cur_line []rune, buf BufferInterface, mut vp_lines [][]rune, tabsize int) {
 	if log_curs.x < cur_line.len {
 		log_curs.x++
 		log_curs.flat_index++
@@ -12,7 +13,12 @@ pub fn (mut log_curs LogicalCursor) move_right_buffer(mut cur_line []rune, buf B
 		log_curs.y++
 		log_curs.flat_index++
 		cur_line = buf.line_at(log_curs.y) // change cur line sense moving to next line
-		log_curs.set_visual_x(cur_line, tabsize)
+		// log_curs.set_visual_x(cur_line, tabsize)
+		if cur_line.len == 0 {
+			log_curs.visual_x = 1
+		} else {
+			log_curs.visual_x = util.get_char_width(cur_line[0], tabsize)
+		}
 	}
 }
 
