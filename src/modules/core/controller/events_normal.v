@@ -11,20 +11,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 	mut view := &app.viewport
 	// global normal mode
 	if event == .key_down {
-		match app.os {
-			'windows' {
-				if mod == .ctrl && key == .m {
-					buf.menu_state = !buf.menu_state
-					return
-				}
-			}
-			else {
-				if mod == .alt && key == .m {
-					buf.menu_state = !buf.menu_state
-					return
-				}
-			}
-		}
 		if buf.cmd.command.len > 0 {
 			buf.cmd.command = ''
 		}
@@ -44,30 +30,6 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			.colon {
 				buf.change_mode(.command, false)
 			}
-			.comma {
-				if mod == .alt {
-					if app.buffers.len > 1 {
-						if app.active_buffer == 0 {
-							app.active_buffer = app.buffers.len - 1
-						} else {
-							app.active_buffer -= 1
-						}
-						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
-					}
-				}
-			}
-			.period {
-				if mod == .alt {
-					if app.buffers.len > 1 {
-						if app.active_buffer == app.buffers.len - 1 {
-							app.active_buffer = 0
-						} else {
-							app.active_buffer += 1
-						}
-						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
-					}
-				}
-			}
 			else {}
 		}
 	}
@@ -84,7 +46,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.l, .right {
 					prev_y := buf.logical_cursor.y
 					buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
-						view.visible_lines, buf.tabsize)
+						view.visible_lines, view.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 
 					if buf.logical_cursor.y != prev_y {
@@ -94,7 +56,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.h, .left {
 					prev_y := buf.logical_cursor.y
 					buf.logical_cursor.move_left_buffer(mut buf.cur_line, buf.buffer,
-						buf.tabsize)
+						view.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 					if buf.logical_cursor.y != prev_y {
 						view.update_offset(buf.logical_cursor.y)
@@ -108,7 +70,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					// total wraps in the current line
 					mut total_wraps := 0
 					if line.len != 0 {
-						total_wraps = util.char_count_expanded_tabs(line, buf.tabsize) / app.viewport.width
+						total_wraps = util.char_count_expanded_tabs(line, view.tabsize) / app.viewport.width
 					}
 
 					// current wrap index
@@ -117,14 +79,14 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					if cur_wrap < total_wraps {
 						mut perfect_index := util.expand_tabs_to(line#[..buf.logical_cursor.x +
 							app.viewport.width - 1], buf.logical_cursor.x + app.viewport.width - 1,
-							buf.tabsize)
+							view.tabsize)
 						if buf.logical_cursor.x + app.viewport.width - 1 <= line.len {
 							perfect_index++
 						}
-						buf.logical_cursor.move_to_x(buf.cur_line, perfect_index, buf.tabsize)
+						buf.logical_cursor.move_to_x(buf.cur_line, perfect_index, view.tabsize)
 					} else {
 						buf.logical_cursor.move_down_buffer(mut buf.cur_line, buf.buffer,
-							buf.tabsize)
+							view.tabsize)
 					}
 
 					// update viewport offset
@@ -132,7 +94,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.k, .up {
 					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
-						buf.tabsize) / app.viewport.width
+						view.tabsize) / app.viewport.width
 					if cur_wrap == 0 {
 						// line above is NOT the first line
 						if buf.logical_cursor.y - 1 > 0 {
@@ -140,32 +102,32 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 							mut total_wraps := 0
 							if line.len != 0 {
-								total_wraps = util.char_count_expanded_tabs(line, buf.tabsize) / app.viewport.width
+								total_wraps = util.char_count_expanded_tabs(line, view.tabsize) / app.viewport.width
 							}
 							if total_wraps > 0 {
 								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									buf.tabsize)
+									view.tabsize)
 								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index - 1],
-									index - 1, buf.tabsize)
+									index - 1, view.tabsize)
 								buf.logical_cursor.move_to_x(buf.cur_line, perfect_index,
-									buf.tabsize)
+									view.tabsize)
 							} else {
 								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									buf.tabsize)
+									view.tabsize)
 							}
 						} else {
 							buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-								buf.tabsize)
+								view.tabsize)
 						}
 					} else {
 						line := buf.buffer.line_at(buf.logical_cursor.y)
 						index := math.max(cur_wrap * app.viewport.width +
 							buf.logical_cursor.desired_col, buf.logical_cursor.x)
 						next_index := util.expand_tabs_to(line#[..index - app.viewport.width - 1],
-							index - app.viewport.width - 1, buf.tabsize)
+							index - app.viewport.width - 1, view.tabsize)
 						buf.logical_cursor.move_to_x(buf.cur_line, math.min(next_index,
-							buf.logical_cursor.desired_col), buf.tabsize)
+							buf.logical_cursor.desired_col), view.tabsize)
 					}
 
 					// update offset
@@ -183,12 +145,12 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.enter {
 							path := buf.buffer.line_at(buf.logical_cursor.y).string()
 							app.add_new_buffer(
-								name:    os.file_name(path)
-								path:    buf.path + path
-								tabsize: buf.tabsize
-								type:    .gap
-								mode:    .normal
-								p_mode:  .default
+								name: os.file_name(path)
+								path: buf.path + path
+								// tabsize: view.tabsize
+								type:   .gap
+								mode:   .normal
+								p_mode: .default
 							)
 						}
 						.tab {
@@ -370,26 +332,26 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									}
 								}
 								file_list := buf.temp_list.clone()
-								tabsize := buf.tabsize
+								// tabsize := view.tabsize
 
 								for i, paths in file_list {
 									if i == 0 {
 										app.add_new_buffer(
-											name:    os.file_name(paths)
-											path:    paths
-											tabsize: tabsize
-											type:    .gap
-											mode:    .normal
-											p_mode:  .default
+											name: os.file_name(paths)
+											path: paths
+											// tabsize: tabsize
+											type:   .gap
+											mode:   .normal
+											p_mode: .default
 										)
 									} else {
 										app.append_new_buffer(
-											name:    os.file_name(paths)
-											path:    paths
-											tabsize: tabsize
-											type:    .gap
-											mode:    .normal
-											p_mode:  .default
+											name: os.file_name(paths)
+											path: paths
+											// tabsize: tabsize
+											type:   .gap
+											mode:   .normal
+											p_mode: .default
 										)
 									}
 								}

@@ -43,13 +43,13 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							if buf.buffer.line_count() != total_lines {
 								buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
 								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									buf.tabsize)
+									view.tabsize)
 								buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
-									buf.tabsize)
+									view.tabsize)
 							} else {
 								if buf.logical_cursor.x > 0 {
 									buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x - 1,
-										buf.tabsize)
+										view.tabsize)
 								}
 							}
 							buf.logical_cursor.update_desired_col(app.viewport.width)
@@ -69,7 +69,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								return
 							}
 							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1, mut
-								buf.cur_line, buf.buffer, buf.tabsize)
+								buf.cur_line, buf.buffer, view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						else {
@@ -82,7 +82,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 
 							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
-								view.visible_lines, buf.tabsize)
+								view.visible_lines, view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 					}
@@ -235,26 +235,26 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										}
 									}
 									file_list := buf.temp_list.clone()
-									tabsize := buf.tabsize
+									// tabsize := view.tabsize
 
 									for i, paths in file_list {
 										if i == 0 {
 											app.add_new_buffer(
-												name:    os.file_name(paths)
-												path:    paths
-												tabsize: tabsize
-												type:    .gap
-												mode:    .normal
-												p_mode:  .default
+												name: os.file_name(paths)
+												path: paths
+												// tabsize: tabsize
+												type:   .gap
+												mode:   .normal
+												p_mode: .default
 											)
 										} else {
 											app.append_new_buffer(
-												name:    os.file_name(paths)
-												path:    paths
-												tabsize: tabsize
-												type:    .gap
-												mode:    .normal
-												p_mode:  .default
+												name: os.file_name(paths)
+												path: paths
+												// tabsize: tabsize
+												type:   .gap
+												mode:   .normal
+												p_mode: .default
 											)
 										}
 									}

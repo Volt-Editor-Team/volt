@@ -55,13 +55,14 @@ pub fn App.new(width int, height int) &App {
 		width:                view_width
 		line_num_to_text_gap: line_num_to_text_gap
 		margin:               margin
+		tabsize:              default_tabsize
 	}
 
 	mut buffers := []Buffer{}
 	buffers << Buffer.from_path(Buffer{
 		type:       .list
 		menu_state: true
-		tabsize:    default_tabsize
+		// tabsize:    default_tabsize
 	})
 	app.buffers = buffers
 	app.active_buffer = 0

@@ -42,7 +42,44 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 	if e.typ == .key_down {
 		mut tui_app := get_tui(x)
 		mut app := ctl.get_app(tui_app.core)
+		mut view := &app.viewport
 		mut buf := &app.buffers[app.active_buffer]
+
+		// handle menu toggle regardless
+		platform_mod := if app.os == 'windows' { t.Modifiers.ctrl } else { t.Modifiers.alt }
+		if e.modifiers == platform_mod {
+			if e.code == .m {
+				buf.menu_state = !buf.menu_state
+				buf.needs_render = true
+				return
+			}
+			if e.code == .comma {
+				if app.buffers.len > 1 {
+					if app.active_buffer == 0 {
+						app.active_buffer = app.buffers.len - 1
+					} else {
+						app.active_buffer -= 1
+					}
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
+				}
+				buf.needs_render = true
+				return
+			}
+			if e.code == .period {
+				if app.buffers.len > 1 {
+					if app.active_buffer == app.buffers.len - 1 {
+						app.active_buffer = 0
+					} else {
+						app.active_buffer += 1
+					}
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
+				}
+				buf.needs_render = true
+				return
+			}
+		}
+
+		// if not menu toggle, send to event loop
 		event_type := convert_event_type(e.typ)
 		key_code := convert_key_code(e.code)
 		modifier := convert_modifier(e.modifiers)

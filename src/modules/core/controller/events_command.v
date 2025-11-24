@@ -25,9 +25,9 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 		match key {
 			.escape {
 				if buf.prev_mode == .insert {
-					buf.mode = .insert
+					buf.change_mode(.insert, buf.menu_state)
 				} else {
-					buf.mode = .normal
+					buf.change_mode(.normal, buf.menu_state)
 				}
 				buf.cmd.command = ''
 				// buf.logical_cursor = buf.saved_cursor
@@ -41,7 +41,6 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 				match command {
 					// quit
 					'q', 'quit' {
-						buf.cmd.command = ''
 						exit(0)
 					}
 					// write/save file
@@ -102,13 +101,11 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					'pwd', 'print-working-directory' {
 						buf.mode = .normal
 						buf.cmd.command = 'Working Directory: ' + os.getwd()
-						buf.logical_cursor = buf.saved_cursor
 					}
 					// open doctor
 					'doc', 'doctor' {
 						buf.mode = .normal
 						buf.cmd.command = ''
-						buf.logical_cursor = buf.saved_cursor
 						if app.has_stats_opened {
 							for i, buffer in app.buffers {
 								if buffer.name == 'DOCTOR' {
@@ -141,12 +138,10 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 					'btype', 'buffer-type' {
 						buf.mode = .normal
 						buf.cmd.command = 'Buffer type: ${buf.type}'
-						buf.logical_cursor = buf.saved_cursor
 					}
 					'encoding' {
 						buf.mode = .normal
 						buf.cmd.command = buf.encoding.str()
-						buf.logical_cursor = buf.saved_cursor
 					}
 					else {}
 				}

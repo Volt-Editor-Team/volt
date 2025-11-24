@@ -41,7 +41,7 @@ pub mut:
 	logical_cursor LogicalCursor
 	file_ch        chan string
 	// other important attributes
-	tabsize int
+	// tabsize int
 	// row_offset   int
 	menu_state   bool
 	needs_render bool = true
@@ -77,10 +77,10 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
@@ -94,10 +94,10 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 			new_buffer := GapBuffer.prefilled(lines)
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
@@ -111,10 +111,10 @@ pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
 			new_buffer := RopeBuffer.prefilled(lines, GapBuffer.new())
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   buf.encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
@@ -140,10 +140,10 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 			new_buffer := ListBuffer.from_path(buf.path)
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
@@ -157,10 +157,10 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 			new_buffer := GapBuffer.from_path(buf.path)
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)
@@ -174,10 +174,10 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 			new_buffer := RopeBuffer.from_path(buf.path, GapBuffer.new())
 			return Buffer{
 				// label:    if buf.label == 'Scratch' { buf.name } else { buf.label }
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				tabsize:    buf.tabsize
+				label: buf.label
+				name:  buf.name
+				path:  buf.path
+				// tabsize:    buf.tabsize
 				encoding:   encoding
 				buffer:     new_buffer
 				cur_line:   new_buffer.line_at(0)

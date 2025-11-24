@@ -84,7 +84,7 @@ fn full_redraw(x voidptr) {
 					// calculate how many lines that this line requires
 					// (+ 1 since base is 0)
 					total_lines := if line.len > 0 {
-						(util.char_count_expanded_tabs(line, buf.tabsize) / view.width) + 1
+						(util.char_count_expanded_tabs(line, view.tabsize) / view.width) + 1
 					} else {
 						1
 					}
@@ -120,8 +120,8 @@ fn full_redraw(x voidptr) {
 					mut printed := ch
 					if ch == `\t` {
 						printed = ` `
-						char_width = buf.tabsize
-						col += buf.tabsize - (col % buf.tabsize)
+						char_width = view.tabsize
+						col += view.tabsize - (col % view.tabsize)
 					} else {
 						col++
 					}

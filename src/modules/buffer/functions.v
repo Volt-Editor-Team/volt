@@ -2,6 +2,7 @@ module buffer
 
 import cursor { LogicalCursor }
 import util
+import math
 
 pub fn (mut buf Buffer) move_right(vp ?[][]rune, tabsize int) {
 	// buf.logical_cursor.move_right_buffer(mut buf.cur_line, tabsize)
@@ -25,22 +26,19 @@ pub fn (mut buf Buffer) clear_all_temp_data() {
 }
 
 pub fn (mut buf Buffer) change_mode(mode util.Mode, with_menu bool) {
-	if mode == .command {
-		// buf.saved_cursor = buf.logical_cursor
-		buf.cmd.command = ': '
-		buf.prev_mode = buf.mode
-		buf.mode = mode
-	} else if buf.prev_mode == .command {
-		// buf.logical_cursor = buf.saved_cursor
+	// changing from command mode
+	if buf.prev_mode == .command {
 		buf.cmd.command = ''
-		if buf.prev_mode == .insert {
-			buf.mode = .insert
-		} else {
-			buf.mode = .normal
-		}
-	} else {
-		buf.prev_mode = buf.mode
-		buf.mode = mode
+	}
+
+	buf.prev_mode = buf.mode
+	if mode == .command {
+		buf.cmd.command = ': '
+	}
+	buf.mode = mode
+
+	if buf.p_mode == .fuzzy {
+		buf.temp_cursor.y = math.min(buf.temp_data.len - 1, buf.temp_cursor.y)
 	}
 	buf.menu_state = with_menu
 }
