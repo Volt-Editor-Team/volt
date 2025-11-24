@@ -1,13 +1,13 @@
 ## Core - tasks that are vital to Volts processes
-
+- [ ] refactor events into reusable functions. This process will clean codebase and hopefully uncover innefficiencies throughout critical code.
+- [ ] decouple and improve viewport module. right now it doesn't really have a purpose (most of its functions could be done by the buffer). viewport should contain a list of actual buffer line references and a list of the number of wraps per line. this should simplify scroll logic, ui rendering, and performance in general.
+> *^ having line references available would allow accessing visible lines in O(1). this has no real affect for the list buffer but intends to be a great solution to the gap buffer and future buffer types O(n) performance when accessing these lines.*
 - [x] switch to gap buffer -- a data structure much better for real-time editing of text. _this required significant refactoring across codebase_
-  - [ ] switch to rope buffer -- the running plan is to try and setup a rope buffer with gap buffers as the leafs.
-    - we now have that gap buffer as the default, but theres been a bit of difficulty attaching it to rope leaves correctly and it probably still needs to be optimized to really be performant.
+  - [ ] switch to rope buffer -- the running plan is to try and setup a rope buffer with gap buffers as the leafs. we now have that gap buffer as the default, but theres been a bit of difficulty attaching it to rope leaves correctly and it probably still needs to be optimized to really be performant.
 - [ ] fix cursor movement within wrapped text
 - [x] make changes to buffer path and render logic to account for working directory changes.
 - [ ] directory buffer tree -- refactor directory buffer to enable tree view
   - [ ] implement actual directory buffer. changes should be tracked and visually indicated, then executed on save via making new files (which should open as well), making new directories, changing file/directory names, deleting paths, etc.
-
 - [ ] decide on a keystroke philosophy. i haven't adhered to one so far, but the idea is that it is consistent throughout the editor
 
 ## Rendering / Performance
@@ -20,6 +20,7 @@
 
 ## Other
 
+- [ ] added outside project (cur
 - [ ] implement more testing for buffer operations
   - [ ] not sure where but make tests for other modules as well
 - [ ] syntax highlighting
