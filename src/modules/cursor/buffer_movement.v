@@ -1,7 +1,6 @@
 module cursor
 
 import util
-import buffer.common { BufferInterface }
 
 pub fn (mut log_curs LogicalCursor) move_right_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
 	relative_y := log_curs.y - row_offset
@@ -40,19 +39,20 @@ pub fn (mut log_curs LogicalCursor) move_left_buffer(vp_lines [][]rune, row_offs
 	}
 }
 
-pub fn (mut log_curs LogicalCursor) move_down_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_down_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	relative_y := log_curs.y - row_offset
+	mut cur_line := vp_lines[relative_y]
 	// cursor is not on the last line
 	// move curse down and calculate x
-	if log_curs.y < buf.line_count() - 1 {
-		line := buf.line_at(log_curs.y)
+	if relative_y < vp_lines.len - 1 {
+		line := cur_line
 		log_curs.flat_index += line.len + 1 - log_curs.x
 		log_curs.y += 1
-		cur_line = buf.line_at(log_curs.y)
+		cur_line = vp_lines[relative_y + 1]
 		mut column := 0
 		mut closest := 0
 		for i, ch in cur_line {
 			if column >= log_curs.desired_col {
-				// column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
 				break
 			}
 			column += if ch == `\t` { tabsize - (column % tabsize) } else { 1 }
@@ -73,11 +73,13 @@ pub fn (mut log_curs LogicalCursor) move_down_buffer(mut cur_line []rune, buf Bu
 	log_curs.set_visual_x(cur_line, tabsize)
 }
 
-pub fn (mut log_curs LogicalCursor) move_up_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_up_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	relative_y := log_curs.y - row_offset
+	mut cur_line := vp_lines[relative_y]
 	log_curs.flat_index -= log_curs.x
 	if log_curs.y > 0 {
 		log_curs.y -= 1
-		cur_line = buf.line_at(log_curs.y)
+		cur_line = vp_lines[relative_y - 1]
 		mut column := 0
 		mut closest := 0
 		for i, ch in cur_line {
@@ -99,30 +101,31 @@ pub fn (mut log_curs LogicalCursor) move_up_buffer(mut cur_line []rune, buf Buff
 	log_curs.set_visual_x(cur_line, tabsize)
 }
 
-pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
-	log_curs.move_down_buffer(mut cur_line, buf, tabsize)
+pub fn (mut log_curs LogicalCursor) move_to_start_next_line_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	log_curs.move_down_buffer(vp_lines, row_offset, tabsize)
 	prev_x := log_curs.x
 	log_curs.x = 0
 	log_curs.flat_index -= prev_x
-	log_curs.set_visual_x(buf.line_at(log_curs.y), tabsize)
+	log_curs.set_visual_x(vp_lines[log_curs.y - row_offset], tabsize)
 }
 
-pub fn (mut log_curs LogicalCursor) move_to_x_next_line_buffer(x int, mut cur_line []rune, buf BufferInterface, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_to_x_next_line_buffer(x int, vp_lines [][]rune, row_offset int, tabsize int) {
 	// log_curs.move_down_buffer(mut cur_line, buf, tabsize)
 	// prev_x := log_curs.x
 	// line := buf.line_at(log_curs.y)
 	// log_curs.x = line.len
 	// log_curs.flat_index += line.len - prev_x
 	// log_curs.set_visual_x(buf.line_at(log_curs.y), tabsize)
-	log_curs.move_to_start_next_line_buffer(mut cur_line, buf, tabsize)
+	cur_line := vp_lines[log_curs.y - row_offset]
+	log_curs.move_to_start_next_line_buffer(vp_lines, row_offset, tabsize)
 	log_curs.move_to_x(cur_line, x, tabsize)
 }
 
-pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
-	log_curs.move_up_buffer(mut cur_line, buf, tabsize)
+pub fn (mut log_curs LogicalCursor) move_to_end_previous_line_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	log_curs.move_up_buffer(vp_lines, row_offset, tabsize)
 	prev_x := log_curs.x
-	line := buf.line_at(log_curs.y)
+	line := vp_lines[log_curs.y - row_offset]
 	log_curs.x = line.len
 	log_curs.flat_index += log_curs.x - prev_x
-	log_curs.set_visual_x(buf.line_at(log_curs.y), tabsize)
+	log_curs.set_visual_x(line, tabsize)
 }

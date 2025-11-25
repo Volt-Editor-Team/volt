@@ -11,8 +11,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.l {
 						if buf.p_mode != .fuzzy {
 							// shouldn't just exit normally if the line is empty
-							if buf.cur_line.len > 0 {
-								buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
+							cur_line := view.visible_lines[buf.logical_cursor.y - view.row_offset]
+							if cur_line.len > 0 {
+								buf.logical_cursor.move_to_x(cur_line, cur_line.len - 1,
 									view.tabsize)
 								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 									buf.buffer)
@@ -25,7 +26,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					}
 					.h {
 						if buf.p_mode != .fuzzy {
-							buf.logical_cursor.move_to_x(buf.cur_line, 0, view.tabsize)
+							cur_line := view.visible_lines[buf.logical_cursor.y - view.row_offset]
+							buf.logical_cursor.move_to_x(cur_line, 0, view.tabsize)
 							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 								buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
@@ -36,14 +38,15 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					}
 					.s {
 						if buf.p_mode != .fuzzy {
+							cur_line := view.visible_lines[buf.logical_cursor.y - view.row_offset]
 							mut index := 0
-							for ch in buf.cur_line {
+							for ch in cur_line {
 								if !ch.str().is_blank() {
 									break
 								}
 								index++
 							}
-							buf.logical_cursor.move_to_x(buf.cur_line, index, view.tabsize)
+							buf.logical_cursor.move_to_x(cur_line, index, view.tabsize)
 							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 								buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
@@ -54,7 +57,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					}
 					.g {
 						if buf.p_mode == .fuzzy {
-							buf.logical_cursor.y = 0
+							buf.temp_cursor.y = 0
+							view.update_offset_for_temp(buf.temp_cursor.y)
 						} else {
 							buf.logical_cursor.y = 0
 							buf.logical_cursor.x = 0
@@ -77,9 +81,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					}
 					.e {
 						if buf.p_mode == .fuzzy {
-							buf.logical_cursor.y = buf.temp_data.len - 1
-							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								buf.buffer)
+							buf.temp_cursor.y = buf.temp_data.len - 1
+							view.update_offset_for_temp(buf.temp_cursor.y)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
 							buf.logical_cursor.x = 0
@@ -106,9 +109,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				match key {
 					.e {
 						if buf.p_mode == .fuzzy {
-							buf.logical_cursor.y = buf.temp_data.len - 1
-							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								buf.buffer)
+							buf.temp_cursor.y = buf.temp_data.len - 1
+							view.update_offset_for_temp(buf.temp_cursor.y)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
 							buf.logical_cursor.x = 0

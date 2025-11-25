@@ -66,6 +66,9 @@ pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
 		menu_state: b.menu_state
 	}, runes_list)
 
+	app.viewport.fill_visible_lines(new_buf.buffer)
+	app.viewport.update_offset(0, new_buf.buffer)
+
 	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
 		app.buffers[0] = new_buf
 	} else {

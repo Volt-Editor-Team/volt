@@ -364,7 +364,7 @@ fn full_redraw(x voidptr) {
 		// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
 		// 	ctx.draw_text(width - 90, height - 4, view.visible_lines.len.str())
 		// }
-		// ctx.draw_text(width - 90, height - 3, view.row_offset.str())
+		// ctx.draw_text(width - 90, height - 3, (buf.buffer.line_count() - view.row_offset).str())
 		// ctx.draw_text(width - 90, height - 2, buf.buffer.line_count().str())
 
 		// -- status bar --
@@ -396,7 +396,11 @@ fn full_redraw(x voidptr) {
 			}
 			ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 			ctx.reset_color()
-			pos_string := (buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+			pos_string := if buf.p_mode == .fuzzy {
+				(buf.temp_cursor.x + 1).str() + ':' + (buf.temp_cursor.y + 1).str()
+			} else {
+				(buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+			}
 			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
 			ctx.reset_bg_color()
@@ -502,7 +506,11 @@ fn full_redraw(x voidptr) {
 			// }
 			ctx.draw_text(command_str.len + 5 + 2, command_bar_y_pos, path_to_draw)
 			ctx.reset_color()
-			pos_string := (buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+			pos_string := if buf.p_mode == .fuzzy {
+				(buf.temp_cursor.x + 1).str() + ':' + (buf.temp_cursor.y + 1).str()
+			} else {
+				(buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+			}
 			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
 			ctx.reset_bg_color()

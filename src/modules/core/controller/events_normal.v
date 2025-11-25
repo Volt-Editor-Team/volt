@@ -4,6 +4,7 @@ import fs
 import os
 import util
 import math
+import time
 
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -67,7 +68,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 				}
 				.j, .down {
-					line := buf.cur_line
+					line := view.visible_lines[buf.logical_cursor.y - view.row_offset]
 
 					// total wraps in the current line
 					mut total_wraps := 0
@@ -85,9 +86,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						if buf.logical_cursor.x + app.viewport.width - 1 <= line.len {
 							perfect_index++
 						}
-						buf.logical_cursor.move_to_x(buf.cur_line, perfect_index, view.tabsize)
+						buf.logical_cursor.move_to_x(line, perfect_index, view.tabsize)
 					} else {
-						buf.logical_cursor.move_down_buffer(mut buf.cur_line, buf.buffer,
+						buf.logical_cursor.move_down_buffer(view.visible_lines, view.row_offset,
 							view.tabsize)
 					}
 
@@ -96,35 +97,36 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						buf.buffer)
 				}
 				.k, .up {
-					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
+					relative_y := buf.logical_cursor.y - view.row_offset
+					cur_wrap := util.char_count_expanded_tabs(view.visible_lines[relative_y]#[..buf.logical_cursor.x],
 						view.tabsize) / app.viewport.width
 					if cur_wrap == 0 {
 						// line above is NOT the first line
 						if buf.logical_cursor.y - 1 > 0 {
-							line := buf.buffer.line_at(buf.logical_cursor.y - 1)
+							line := view.visible_lines[relative_y - 1]
 
 							mut total_wraps := 0
 							if line.len != 0 {
 								total_wraps = util.char_count_expanded_tabs(line, view.tabsize) / app.viewport.width
 							}
 							if total_wraps > 0 {
-								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									view.tabsize)
+								buf.logical_cursor.move_up_buffer(view.visible_lines,
+									view.row_offset, view.tabsize)
 								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index - 1],
 									index - 1, view.tabsize)
 								buf.logical_cursor.move_to_x(buf.cur_line, perfect_index,
 									view.tabsize)
 							} else {
-								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									view.tabsize)
+								buf.logical_cursor.move_up_buffer(view.visible_lines,
+									view.row_offset, view.tabsize)
 							}
 						} else {
-							buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
+							buf.logical_cursor.move_up_buffer(view.visible_lines, view.row_offset,
 								view.tabsize)
 						}
 					} else {
-						line := buf.buffer.line_at(buf.logical_cursor.y)
+						line := view.visible_lines[relative_y]
 						index := math.max(cur_wrap * app.viewport.width +
 							buf.logical_cursor.desired_col, buf.logical_cursor.x)
 						next_index := util.expand_tabs_to(line#[..index - app.viewport.width - 1],
@@ -197,6 +199,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.change_mode(.normal, false)
 							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 								buf.buffer)
+							view.fill_visible_lines(buf.buffer)
 
 							// delete temp stuff
 							// buf.temp_label = ''
@@ -207,15 +210,13 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.j, .down {
 							if buf.temp_cursor.y < buf.temp_data.len - 1 {
 								buf.temp_cursor.y++
-								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-									buf.buffer)
+								view.update_offset_for_temp(buf.temp_cursor.y)
 							}
 						}
 						.k, .up {
 							if buf.temp_cursor.y > 0 {
 								buf.temp_cursor.y--
-								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-									buf.buffer)
+								view.update_offset_for_temp(buf.temp_cursor.y)
 							}
 						}
 						// for switch fuzzy search directory
@@ -235,6 +236,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_fuzzy_type = .dir
 									// reset and open fuzzy
 									buf.open_fuzzy_find(buf.temp_path, .directory)
+									time.sleep(80 * time.millisecond)
+									buf.temp_cursor.y = math.min(buf.temp_data.len - 1,
+										buf.temp_cursor.y)
+									view.update_offset_for_temp(buf.temp_cursor.y)
 								}
 							}
 						}
@@ -247,6 +252,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_fuzzy_type = .file
 								// reset and open fuzzy
 								buf.open_fuzzy_find(buf.temp_path, .file)
+								time.sleep(80 * time.millisecond)
+								buf.temp_cursor.y = math.min(buf.temp_data.len - 1, buf.temp_cursor.y)
+								view.update_offset_for_temp(buf.temp_cursor.y)
 							} else if buf.temp_fuzzy_type == .file {
 								buf.temp_label = ''
 								buf.temp_data.clear()
@@ -255,6 +263,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_fuzzy_type = .dir
 								// reset and open fuzzy
 								buf.open_fuzzy_find(buf.temp_path, .directory)
+								time.sleep(80 * time.millisecond)
+								buf.temp_cursor.y = math.min(buf.temp_data.len - 1, buf.temp_cursor.y)
+								view.update_offset_for_temp(buf.temp_cursor.y)
 							}
 						}
 						.o {
@@ -270,11 +281,14 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_int = 0
 									buf.temp_data.clear()
 									buf.file_ch.close()
-									buf.temp_cursor.y = 0
 									// reset and open fuzzy
 									buf.p_mode = buf.temp_mode
 									buf.temp_fuzzy_type = .file
 									buf.open_fuzzy_find(buf.temp_path, .file)
+									time.sleep(80 * time.millisecond)
+									buf.temp_cursor.y = math.min(buf.temp_data.len - 1,
+										buf.temp_cursor.y)
+									view.update_offset_for_temp(buf.temp_cursor.y)
 								}
 							}
 						}
@@ -389,6 +403,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_fuzzy_type = .dir
 								// reset and open fuzzy
 								buf.open_fuzzy_find(buf.temp_path, .directory)
+								// buf.temp_cursor.y = 0
+								time.sleep(80 * time.millisecond)
+								buf.temp_cursor.y = math.min(buf.temp_data.len - 1, buf.temp_cursor.y)
+								view.update_offset_for_temp(buf.temp_cursor.y)
 							}
 						}
 						else {}

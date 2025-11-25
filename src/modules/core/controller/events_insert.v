@@ -2,6 +2,7 @@ module controller
 
 import os
 import math
+import time
 
 pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -43,8 +44,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							if buf.buffer.line_count() != total_lines {
 								view.visible_lines.delete(buf.logical_cursor.y - view.row_offset)
 								buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
-								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
-									view.tabsize)
+								buf.logical_cursor.move_up_buffer(view.visible_lines,
+									view.row_offset, view.tabsize)
 								buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
 									view.tabsize)
 							} else {
@@ -70,8 +71,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
 								return
 							}
-							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1, mut
-								buf.cur_line, buf.buffer, view.tabsize)
+							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1,
+								view.visible_lines, view.row_offset, view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						else {
@@ -120,6 +121,10 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_fuzzy_type = .dir
 									// reset and open fuzzy
 									buf.open_fuzzy_find(buf.temp_path, .directory)
+									time.sleep(80 * time.millisecond)
+									// buf.temp_cursor.y = 0
+									buf.temp_cursor.y = 0
+									view.update_offset_for_temp(buf.temp_cursor.y)
 								}
 							}
 							else {}
@@ -156,6 +161,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_fuzzy_type = .file
 									// reset and open fuzzy
 									buf.open_fuzzy_find(buf.temp_path, .file)
+									time.sleep(80 * time.millisecond)
+									buf.temp_cursor.y = 0
+									view.update_offset_for_temp(buf.temp_cursor.y)
 								} else if buf.temp_fuzzy_type == .file {
 									buf.temp_label = ''
 									buf.temp_data.clear()
@@ -164,6 +172,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.temp_fuzzy_type = .dir
 									// reset and open fuzzy
 									buf.open_fuzzy_find(buf.temp_path, .directory)
+									time.sleep(80 * time.millisecond)
+									buf.temp_cursor.y = 0
+									view.update_offset_for_temp(buf.temp_cursor.y)
 								}
 							}
 							.tab {
@@ -182,6 +193,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										buf.temp_fuzzy_type = .dir
 										// reset and open fuzzy
 										buf.open_fuzzy_find(buf.temp_path, .directory)
+										time.sleep(80 * time.millisecond)
+										buf.temp_cursor.y = 0
+										view.update_offset_for_temp(buf.temp_cursor.y)
 									}
 								}
 							}
