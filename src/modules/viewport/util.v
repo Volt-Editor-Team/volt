@@ -43,7 +43,9 @@ pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
 		offset_diff := math.min(view.row_offset - prev_offset, view.height)
 
 		for i in 0 .. offset_diff {
-			view.visible_lines.delete(0)
+			if view.visible_lines.len >= view.height {
+				view.visible_lines.delete(0)
+			}
 			line_index := view.row_offset + view.height - (offset_diff + i)
 			view.visible_lines << buf.line_at(line_index)
 		}
@@ -51,9 +53,11 @@ pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
 	// Scroll up if cursor is above top margin
 	else if rel_pos < view.margin {
 		view.row_offset = math.max(0, y_pos + view.visual_wraps - view.margin)
-		offset_diff := math.min(view.row_offset - prev_offset, view.height)
+		offset_diff := math.min(prev_offset - view.row_offset, view.height)
 		for i in 0 .. offset_diff {
-			view.visible_lines.delete_last()
+			if view.visible_lines.len >= view.height {
+				view.visible_lines.delete_last()
+			}
 			view.visible_lines.prepend(buf.line_at(view.row_offset + i))
 		}
 	}

@@ -45,8 +45,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.l, .right {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
-						view.visible_lines, view.tabsize)
+					buf.logical_cursor.move_right_buffer(view.visible_lines, view.row_offset,
+						view.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 
 					if buf.logical_cursor.y != prev_y {
@@ -56,7 +56,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				}
 				.h, .left {
 					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_left_buffer(mut buf.cur_line, buf.buffer,
+					buf.logical_cursor.move_left_buffer(view.visible_lines, view.row_offset,
 						view.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 					if buf.logical_cursor.y != prev_y {

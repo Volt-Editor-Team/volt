@@ -3,17 +3,17 @@ module cursor
 import util
 import buffer.common { BufferInterface }
 
-pub fn (mut log_curs LogicalCursor) move_right_buffer(mut cur_line []rune, buf BufferInterface, mut vp_lines [][]rune, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_right_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	relative_y := log_curs.y - row_offset
+	cur_line := vp_lines[relative_y]
 	if log_curs.x < cur_line.len {
 		log_curs.x++
 		log_curs.flat_index++
 		log_curs.increment_visual_x(cur_line, tabsize)
-	} else if log_curs.y < buf.line_count() - 1 {
+	} else if relative_y < vp_lines.len - 1 {
 		log_curs.x = 0
 		log_curs.y++
 		log_curs.flat_index++
-		cur_line = buf.line_at(log_curs.y) // change cur line sense moving to next line
-		// log_curs.set_visual_x(cur_line, tabsize)
 		if cur_line.len == 0 {
 			log_curs.visual_x = 1
 		} else {
@@ -22,14 +22,16 @@ pub fn (mut log_curs LogicalCursor) move_right_buffer(mut cur_line []rune, buf B
 	}
 }
 
-pub fn (mut log_curs LogicalCursor) move_left_buffer(mut cur_line []rune, buf BufferInterface, tabsize int) {
+pub fn (mut log_curs LogicalCursor) move_left_buffer(vp_lines [][]rune, row_offset int, tabsize int) {
+	relative_y := log_curs.y - row_offset
+	cur_line := vp_lines[relative_y]
 	if log_curs.x == 0 {
-		if log_curs.y > 0 {
+		if relative_y > 0 {
 			log_curs.y -= 1
-			cur_line = buf.line_at(log_curs.y)
-			log_curs.x = cur_line.len
+			new_cur_line := vp_lines[relative_y - 1]
+			log_curs.x = new_cur_line.len
 			log_curs.flat_index--
-			log_curs.set_visual_x(cur_line, tabsize)
+			log_curs.set_visual_x(new_cur_line, tabsize)
 		}
 	} else {
 		log_curs.x -= 1

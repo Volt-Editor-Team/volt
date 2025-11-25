@@ -84,8 +84,10 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.cur_line
 
-							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
-								view.visible_lines, view.tabsize)
+							// buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
+							// 	view.visible_lines, view.tabsize)
+							buf.logical_cursor.move_right_buffer(view.visible_lines, view.row_offset,
+								view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 					}

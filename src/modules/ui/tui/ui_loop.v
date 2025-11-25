@@ -364,10 +364,8 @@ fn full_redraw(x voidptr) {
 		// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
 		// 	ctx.draw_text(width - 90, height - 4, view.visible_lines.len.str())
 		// }
-		// ctx.draw_text(width - 90, height - 3, (math.min(view.row_offset + view.height,
-		// 	buf.buffer.line_count() - view.row_offset - 1)).str())
-		// ctx.draw_text(width - 90, height - 2, 'function: ' +
-		// controller.update_path(buf.path, os.getwd()).str())
+		// ctx.draw_text(width - 90, height - 3, view.row_offset.str())
+		// ctx.draw_text(width - 90, height - 2, buf.buffer.line_count().str())
 
 		// -- status bar --
 		mut command_bar_y_pos := height
