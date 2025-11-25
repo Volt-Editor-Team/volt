@@ -54,7 +54,6 @@ pub fn (mut app App) append_new_buffer(b Buffer) {
 }
 
 pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
-	runes_list := [][]rune{len: lines.len, init: lines[index].runes()}
 	new_buf := Buffer.prefilled(Buffer{
 		label: b.label
 		name:  b.name
@@ -64,7 +63,7 @@ pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
 		mode:       .normal
 		p_mode:     b.p_mode
 		menu_state: b.menu_state
-	}, runes_list)
+	}, lines)
 
 	app.viewport.fill_visible_lines(new_buf.buffer)
 	app.viewport.update_offset(0, new_buf.buffer)

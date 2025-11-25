@@ -23,6 +23,18 @@ pub fn detect_encoding(path string) Encoding {
 	return .utf8
 }
 
+pub fn detect_data_encoding(data []u8) Encoding {
+	if data.len >= 2 {
+		if data[0] == 0xFF && data[1] == 0xFE {
+			return .utf16le
+		}
+		if data[0] == 0xFE && data[1] == 0xFF {
+			return .utf16be
+		}
+	}
+	return .utf8
+}
+
 fn decode_utf16le(data []u8) []rune {
 	mut runes := []rune{}
 	mut i := 2 // skip 0xFF 0xFE BOM
@@ -70,7 +82,25 @@ fn load_text_file(path string) []rune {
 	}
 }
 
-fn load_text_lines(path string) [][]rune {
+fn load_text_string_lines(path string) []string {
+	bytes := os.read_bytes(path) or { [] }
+
+	encoding := detect_data_encoding(bytes)
+
+	return match encoding {
+		.utf16le {
+			decode_utf16le(bytes).string().split_into_lines()
+		}
+		.utf16be {
+			['UTF-16 BE not implemented yet']
+		}
+		.utf8 {
+			bytes.bytestr().split_into_lines()
+		}
+	}
+}
+
+fn load_text_rune_lines(path string) [][]rune {
 	encoding := detect_encoding(path)
 
 	return match encoding {
@@ -119,12 +149,26 @@ pub fn read_file_runes(path string) ![]rune {
 	}
 }
 
-pub fn read_file_lines(path string) ![][]rune {
+pub fn read_file_string_lines(path string) ![]string {
 	abs_path := os.real_path(path)
 
 	if os.exists(abs_path) {
 		if os.is_file(abs_path) && os.is_readable(abs_path) {
-			return load_text_lines(abs_path)
+			return load_text_string_lines(abs_path)
+		} else {
+			return error('Unable to read file')
+		}
+	} else {
+		return error('Could not find file')
+	}
+}
+
+pub fn read_file_rune_lines(path string) ![][]rune {
+	abs_path := os.real_path(path)
+
+	if os.exists(abs_path) {
+		if os.is_file(abs_path) && os.is_readable(abs_path) {
+			return load_text_rune_lines(abs_path)
 		} else {
 			return error('Unable to read file')
 		}

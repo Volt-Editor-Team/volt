@@ -29,8 +29,9 @@ pub fn RopeBuffer.new(b RopeData) RopeBuffer {
 	return rope
 }
 
-pub fn RopeBuffer.prefilled(lines [][]rune, b RopeData) RopeBuffer {
-	data, _ := util.flatten_lines(lines)
+pub fn RopeBuffer.prefilled(lines []string, b RopeData) RopeBuffer {
+	// data, _ := util.flatten_lines(lines)
+	data := lines
 	mut rope := RopeBuffer{}
 	rope.root = &RopeNode{
 		data: b

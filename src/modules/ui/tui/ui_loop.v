@@ -67,8 +67,8 @@ fn full_redraw(x voidptr) {
 				// i is the row index of the actual renders screen
 				// y_index is the position in the buffer
 				y_index := start_row + i
-				line := buf.buffer.line_at(y_index)
-				// line := if view.visible_lines.len > 0 { view.visible_lines[i] } else { [] }
+				// line := buf.buffer.line_at(y_index)
+				line := if view.visible_lines.len > 0 { view.visible_lines[i].string() } else { '' }
 
 				// values necessary for rendering aligned line numbers
 
@@ -84,8 +84,8 @@ fn full_redraw(x voidptr) {
 				if y_index == buf.logical_cursor.y {
 					// calculate how many lines that this line requires
 					// (+ 1 since base is 0)
-					total_lines := if line.len > 0 {
-						(util.char_count_expanded_tabs(line, view.tabsize) / view.width) + 1
+					total_lines := if line.len_utf8() > 0 {
+						(line.expand_tabs(view.tabsize).len_utf8() / view.width) + 1
 					} else {
 						1
 					}
@@ -116,7 +116,7 @@ fn full_redraw(x voidptr) {
 				mut char_width := 1
 				mut visual_cache := map[int]int{}
 				mut col := 0
-				for x_index, ch in line {
+				for x_index, ch in line.runes_iterator() {
 					visual_cache[x_index] = col
 					mut printed := ch
 					if ch == `\t` {
@@ -360,11 +360,11 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		if view.visible_lines.len > 0 {
-			// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
-			ctx.draw_text(width - 90, height - 4, view.visible_lines[buf.logical_cursor.y - view.row_offset].str())
-		}
-		ctx.draw_text(width - 90, height - 3, buf.logical_cursor.flat_index.str())
+		// if view.visible_lines.len > 0 {
+		// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
+		// 	ctx.draw_text(width - 90, height - 4, view.visible_lines[buf.logical_cursor.y - view.row_offset].str())
+		// }
+		// ctx.draw_text(width - 90, height - 3, buf.logical_cursor.flat_index.str())
 		// ctx.draw_text(width - 90, height - 2, buf.buffer.line_count().str())
 
 		// -- status bar --

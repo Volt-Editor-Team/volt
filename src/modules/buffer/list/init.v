@@ -1,22 +1,22 @@
 module list
 
-import fs { read_file_lines }
+import fs { read_file_string_lines }
 import buffer.common { InsertValue }
 
 pub struct ListBuffer {
 pub mut:
-	lines [][]rune = [][]rune{len: 1}
+	lines []string
 }
 
 pub fn ListBuffer.from_path(path string) ListBuffer {
-	lines := read_file_lines(path) or { [][]rune{len: 1} }
+	lines := read_file_string_lines(path) or { [''] }
 	mut buf := ListBuffer{
 		lines: lines
 	}
 	return buf
 }
 
-pub fn ListBuffer.prefilled(lines [][]rune) ListBuffer {
+pub fn ListBuffer.prefilled(lines []string) ListBuffer {
 	mut buf := ListBuffer{
 		lines: lines
 	}
@@ -76,13 +76,13 @@ pub fn (mut buf ListBuffer) delete(curs int, n int) ! {
 }
 
 pub fn (buf ListBuffer) to_string() string {
-	return buf.lines.map(it.string()).join('\n')
+	return buf.lines.join('\n')
 }
 
 pub fn (buf ListBuffer) len() int {
 	mut res := 0
 	for line in buf.lines {
-		res += line.len
+		res += line.len_utf8()
 	}
 	return res + buf.lines.len - 1
 }
@@ -92,7 +92,7 @@ pub fn (buf ListBuffer) line_count() int {
 }
 
 pub fn (buf ListBuffer) line_at(i int) []rune {
-	return buf.lines[i]
+	return buf.lines[i].runes()
 }
 
 pub fn (buf ListBuffer) char_at(i int) rune {
@@ -112,5 +112,5 @@ pub fn (buf ListBuffer) line_col_to_index(line int, col int) int {
 }
 
 pub fn (mut buf ListBuffer) replace_with_temp(lines [][]rune) {
-	buf.lines = lines
+	buf.lines = lines.map(it.string())
 }

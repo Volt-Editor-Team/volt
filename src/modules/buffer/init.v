@@ -71,7 +71,7 @@ pub mut:
 	command string
 }
 
-pub fn Buffer.prefilled(buf Buffer, lines [][]rune) Buffer {
+pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
 	match buf.type {
 		.list {
 			new_buffer := ListBuffer.prefilled(lines)

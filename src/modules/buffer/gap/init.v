@@ -3,7 +3,6 @@ module gap
 import math
 import buffer.common { InsertValue, RopeData }
 import fs { read_file_runes }
-import util
 
 // --- initialization ---
 pub struct GapBuffer {
@@ -49,15 +48,16 @@ pub fn GapBuffer.from_path(path string) GapBuffer {
 	}
 }
 
-pub fn GapBuffer.prefilled(lines [][]rune) GapBuffer {
-	data, num_lines := util.flatten_lines(lines)
+pub fn GapBuffer.prefilled(lines []string) GapBuffer {
+	// data, num_lines := util.flatten_lines(lines)
+	data := lines.join_lines().runes()
 	return GapBuffer{
 		data:       []rune{len: data.len, cap: math.min(max_cap, 2 * data.len), init: data[index]}
 		gap:        Gap{
 			start: data.len
 			end:   data.len
 		}
-		line_count: num_lines
+		line_count: data.len
 	}
 }
 
