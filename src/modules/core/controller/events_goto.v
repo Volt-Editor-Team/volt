@@ -88,7 +88,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.logical_cursor.x = 0
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-							buf.logical_cursor.flat_index = buf.buffer.len() - (buf.cur_line.len - 1)
+							buf.logical_cursor.flat_index = (buf.buffer.len() - 1) - (buf.cur_line.len - 1)
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x,
 								view.tabsize)
 							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
@@ -115,7 +115,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
 							buf.logical_cursor.x = 0
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
-							buf.logical_cursor.flat_index = buf.buffer.len() - (buf.cur_line.len - 1)
+							buf.logical_cursor.flat_index = buf.buffer.len() - 1
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
 								view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)

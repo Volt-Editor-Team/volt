@@ -378,6 +378,11 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									}
 								}
 								app.active_buffer = app.buffers.len - 1
+								view.row_offset = 0
+								view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
+								// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								// 	buf.buffer)
+								// view.fill_visible_lines(buf.buffer)
 								buf.temp_list.clear()
 								buf.temp_label = ''
 								buf.temp_int = 0

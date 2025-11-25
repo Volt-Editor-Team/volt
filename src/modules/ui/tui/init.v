@@ -63,6 +63,7 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 						buf.buffer)
 				}
+				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return
 			}
@@ -73,6 +74,7 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					} else {
 						app.active_buffer += 1
 					}
+					view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 						buf.buffer)
 				}

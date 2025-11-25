@@ -39,6 +39,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							total_lines := buf.buffer.line_count()
 							buf.buffer.delete(buf.logical_cursor.flat_index - 1, 1) or { return }
+							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.buffer.line_at(buf.logical_cursor.y)
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 							if buf.buffer.line_count() != total_lines {
@@ -294,6 +295,11 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 											)
 										}
 									}
+									app.active_buffer = app.buffers.len - 1
+									view.row_offset = 0
+									view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
+									// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									// 	buf.buffer)
 									buf.temp_list.clear()
 									buf.temp_label = ''
 									buf.temp_int = 0
