@@ -42,8 +42,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 							if buf.buffer.line_count() != total_lines {
-								view.visible_lines.delete(buf.logical_cursor.y - view.row_offset)
-								buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
+								// buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
+								// buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
+								// 	buf.tabsize)
 								buf.logical_cursor.move_up_buffer(view.visible_lines,
 									view.row_offset, view.tabsize)
 								buf.logical_cursor.move_to_x(buf.cur_line, prev_line_len,
@@ -54,13 +55,15 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										view.tabsize)
 								}
 							}
-							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.cur_line
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
+							view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						.enter {
 							mut previous_indentation := []rune{}
 							previous_indentation << `\n`
-							for i, ch in buf.cur_line {
+							for i, ch in buf.buffer.line_at(buf.logical_cursor.y) {
 								if !ch.str().is_blank() || i == buf.logical_cursor.x {
 									break
 								} else {
@@ -71,8 +74,15 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
 								return
 							}
+							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.buffer.line_at(buf.logical_cursor.y)
 							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1,
 								view.visible_lines, view.row_offset, view.tabsize)
+							view.visible_lines.insert(buf.logical_cursor.y, buf.buffer.line_at(buf.logical_cursor.y))
+							view.visible_lines.delete_last()
+
+							// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+							// 	buf.buffer)
+							// view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						else {

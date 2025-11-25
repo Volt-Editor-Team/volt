@@ -67,8 +67,8 @@ fn full_redraw(x voidptr) {
 				// i is the row index of the actual renders screen
 				// y_index is the position in the buffer
 				y_index := start_row + i
-				// line := buf.buffer.line_at(y_index)
-				line := if view.visible_lines.len > 0 { view.visible_lines[i] } else { [] }
+				line := buf.buffer.line_at(y_index)
+				// line := if view.visible_lines.len > 0 { view.visible_lines[i] } else { [] }
 
 				// values necessary for rendering aligned line numbers
 
@@ -360,11 +360,11 @@ fn full_redraw(x voidptr) {
 		}
 
 		// -- debugging --
-		// if view.visible_lines.len > 0 {
-		// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
-		// 	ctx.draw_text(width - 90, height - 4, view.visible_lines.len.str())
-		// }
-		// ctx.draw_text(width - 90, height - 3, (buf.buffer.line_count() - view.row_offset).str())
+		if view.visible_lines.len > 0 {
+			// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
+			ctx.draw_text(width - 90, height - 4, view.visible_lines[buf.logical_cursor.y - view.row_offset].str())
+		}
+		ctx.draw_text(width - 90, height - 3, buf.logical_cursor.flat_index.str())
 		// ctx.draw_text(width - 90, height - 2, buf.buffer.line_count().str())
 
 		// -- status bar --
