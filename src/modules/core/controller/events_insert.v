@@ -71,17 +71,22 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								}
 							}
 
-							buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
+							buf.buffer.insert(buf.logical_cursor.flat_index - 1, previous_indentation) or {
 								return
 							}
 							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.buffer.line_at(buf.logical_cursor.y)
+							view.visible_lines.insert(buf.logical_cursor.y - view.row_offset,
+								buf.buffer.line_at(buf.logical_cursor.y))
+							if view.visible_lines.len >= view.height
+								&& view.visible_lines.len + view.row_offset < buf.buffer.line_count() {
+								view.visible_lines.delete_last()
+							}
 							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1,
 								view.visible_lines, view.row_offset, view.tabsize)
-							view.visible_lines.insert(buf.logical_cursor.y, buf.buffer.line_at(buf.logical_cursor.y))
-							view.visible_lines.delete_last()
+							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.buffer.line_at(buf.logical_cursor.y)
 
-							// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-							// 	buf.buffer)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}

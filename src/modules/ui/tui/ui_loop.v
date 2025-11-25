@@ -361,10 +361,10 @@ fn full_redraw(x voidptr) {
 
 		// -- debugging --
 		// if view.visible_lines.len > 0 {
-		// ctx.draw_text(width - 90, height - 5, view.visible_lines#[-5..].str())
-		// 	ctx.draw_text(width - 90, height - 4, view.visible_lines[buf.logical_cursor.y - view.row_offset].str())
+		// 	ctx.draw_text(width - 90, height - 6, buf.buffer.line_at(buf.logical_cursor.y).str())
+		// 	ctx.draw_text(width - 90, height - 5, view.visible_lines.len.str())
+		// 	ctx.draw_text(width - 90, height - 4, (view.visible_lines.len + view.row_offset < buf.buffer.line_count()).str())
 		// }
-		// ctx.draw_text(width - 90, height - 3, buf.logical_cursor.flat_index.str())
 		// ctx.draw_text(width - 90, height - 2, buf.buffer.line_count().str())
 
 		// -- status bar --
