@@ -41,6 +41,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 							// delete_result := buf.remove_char(buf.logical_cursor.x, buf.logical_cursor.y)
 							if buf.buffer.line_count() != total_lines {
+								view.visible_lines.delete(buf.logical_cursor.y - view.row_offset)
 								buf.logical_cursor.flat_index += buf.buffer.line_at(buf.logical_cursor.y - 1).len - prev_line_len
 								buf.logical_cursor.move_up_buffer(mut buf.cur_line, buf.buffer,
 									view.tabsize)
@@ -52,6 +53,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										view.tabsize)
 								}
 							}
+							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.cur_line
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						.enter {
@@ -80,6 +82,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 
 							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
 							buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+							view.visible_lines[buf.logical_cursor.y - view.row_offset] = buf.cur_line
 
 							buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
 								view.visible_lines, view.tabsize)
@@ -97,7 +100,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							.enter {}
 							.colon {
 								buf.prev_mode = buf.mode
-								buf.saved_cursor = buf.logical_cursor
+								// buf.saved_cursor = buf.logical_cursor
 								buf.mode = .command
 								buf.cmd.command = ': '
 								buf.menu_state = false
@@ -128,7 +131,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(buf.logical_cursor.y)
+								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									buf.buffer)
 
 								// delete temp stuff
 								buf.temp_label = ''
@@ -209,7 +213,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									// buf.logical_cursor = buf.temp_cursor
-									view.update_offset(buf.logical_cursor.y)
+									view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+										buf.buffer)
 									buf.file_ch.close()
 
 									// delete temp stuff
@@ -272,7 +277,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							.colon {
 								buf.prev_mode = buf.mode
-								buf.saved_cursor = buf.logical_cursor
+								// buf.saved_cursor = buf.logical_cursor
 								buf.mode = .command
 								buf.cmd.command = ': '
 								buf.menu_state = false
@@ -281,7 +286,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_label += rune(int(key)).str()
 								if buf.temp_cursor.y > buf.temp_data.len {
 									buf.temp_cursor.y = 0
-									view.update_offset(buf.logical_cursor.y)
+									view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+										buf.buffer)
 								}
 							}
 						}

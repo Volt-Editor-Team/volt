@@ -10,10 +10,15 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 				match key {
 					.l {
 						if buf.p_mode != .fuzzy {
-							buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
-								view.tabsize)
-							view.update_offset(buf.logical_cursor.y)
-							buf.logical_cursor.update_desired_col(app.viewport.width)
+							// shouldn't just exit normally if the line is empty
+							if buf.cur_line.len > 0 {
+								buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
+									view.tabsize)
+								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									buf.buffer)
+								// view.fill_visible_lines(buf.buffer)
+								buf.logical_cursor.update_desired_col(app.viewport.width)
+							}
 							buf.mode = .normal
 							buf.menu_state = false
 						}
@@ -21,7 +26,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.h {
 						if buf.p_mode != .fuzzy {
 							buf.logical_cursor.move_to_x(buf.cur_line, 0, view.tabsize)
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
+							// view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
 							buf.menu_state = false
@@ -37,7 +44,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 								index++
 							}
 							buf.logical_cursor.move_to_x(buf.cur_line, index, view.tabsize)
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
+							// view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
 							buf.menu_state = false
@@ -59,7 +68,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 								view.tabsize)
 						}
 						buf.logical_cursor.update_desired_col(app.viewport.width)
-						view.update_offset(buf.logical_cursor.y)
+						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+							buf.buffer)
+						view.fill_visible_lines(buf.buffer)
 						buf.logical_cursor.update_desired_col(app.viewport.width)
 						buf.mode = .normal
 						buf.menu_state = false
@@ -67,7 +78,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.e {
 						if buf.p_mode == .fuzzy {
 							buf.logical_cursor.y = buf.temp_data.len - 1
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
 							buf.logical_cursor.x = 0
@@ -76,7 +88,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.logical_cursor.flat_index = buf.buffer.len() - (buf.cur_line.len - 1)
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x,
 								view.tabsize)
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
+							view.fill_visible_lines(buf.buffer)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
 						}
 						buf.mode = .normal
@@ -93,7 +107,8 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 					.e {
 						if buf.p_mode == .fuzzy {
 							buf.logical_cursor.y = buf.temp_data.len - 1
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
 						} else {
 							buf.logical_cursor.y = buf.buffer.line_count() - 1
 							buf.logical_cursor.x = 0
@@ -102,7 +117,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.logical_cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
 								view.tabsize)
 							buf.logical_cursor.update_desired_col(app.viewport.width)
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
+							view.fill_visible_lines(buf.buffer)
 						}
 						buf.mode = .normal
 						buf.menu_state = false

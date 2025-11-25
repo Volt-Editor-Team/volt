@@ -60,7 +60,8 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					} else {
 						app.active_buffer -= 1
 					}
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+						buf.buffer)
 				}
 				buf.needs_render = true
 				return
@@ -72,7 +73,8 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					} else {
 						app.active_buffer += 1
 					}
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y)
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+						buf.buffer)
 				}
 				buf.needs_render = true
 				return

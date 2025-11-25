@@ -50,7 +50,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 
 					if buf.logical_cursor.y != prev_y {
-						view.update_offset(buf.logical_cursor.y)
+						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+							buf.buffer)
 					}
 				}
 				.h, .left {
@@ -59,7 +60,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						view.tabsize)
 					buf.logical_cursor.update_desired_col(app.viewport.width)
 					if buf.logical_cursor.y != prev_y {
-						view.update_offset(buf.logical_cursor.y)
+						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+							buf.buffer)
 						// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						// 	app.viewport.margin, app.viewport.row_offset)
 					}
@@ -90,7 +92,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update viewport offset
-					view.update_offset(buf.logical_cursor.y)
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+						buf.buffer)
 				}
 				.k, .up {
 					cur_wrap := util.char_count_expanded_tabs(buf.buffer.line_at(buf.logical_cursor.y)#[..buf.logical_cursor.x],
@@ -131,7 +134,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update offset
-					view.update_offset(buf.logical_cursor.y)
+					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+						buf.buffer)
 				}
 				else {}
 			}
@@ -191,7 +195,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// restore settings
 							buf.p_mode = buf.temp_mode
 							buf.change_mode(.normal, false)
-							view.update_offset(buf.logical_cursor.y)
+							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+								buf.buffer)
 
 							// delete temp stuff
 							// buf.temp_label = ''
@@ -202,13 +207,15 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.j, .down {
 							if buf.temp_cursor.y < buf.temp_data.len - 1 {
 								buf.temp_cursor.y++
-								view.update_offset(buf.logical_cursor.y)
+								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									buf.buffer)
 							}
 						}
 						.k, .up {
 							if buf.temp_cursor.y > 0 {
 								buf.temp_cursor.y--
-								view.update_offset(buf.logical_cursor.y)
+								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									buf.buffer)
 							}
 						}
 						// for switch fuzzy search directory
@@ -306,7 +313,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(buf.logical_cursor.y)
+								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
+									buf.buffer)
 								buf.file_ch.close()
 
 								// delete temp stuff

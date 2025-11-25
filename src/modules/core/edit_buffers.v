@@ -16,6 +16,8 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		p_mode:     b.p_mode
 		menu_state: b.menu_state
 	)
+	app.viewport.fill_visible_lines(new_buf.buffer)
+	app.viewport.update_offset(0, new_buf.buffer)
 	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
 		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')
 	}
@@ -41,6 +43,8 @@ pub fn (mut app App) append_new_buffer(b Buffer) {
 		p_mode:     b.p_mode
 		menu_state: b.menu_state
 	)
+	app.viewport.fill_visible_lines(new_buf.buffer)
+	app.viewport.update_offset(0, new_buf.buffer)
 
 	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
 		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')

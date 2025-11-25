@@ -36,8 +36,8 @@ pub mut:
 	buffer   BufferInterface = ListBuffer.from_path('')
 	cur_line []rune
 	// cursor         CursorInterface
-	cmd            CommandBuffer
-	saved_cursor   LogicalCursor
+	cmd CommandBuffer
+	// saved_cursor   LogicalCursor
 	logical_cursor LogicalCursor
 	file_ch        chan string
 	// other important attributes
