@@ -349,9 +349,10 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									os.chdir(path) or { return }
 									app.working_dir = path
 								} else {
-									if buf.temp_list.len == 0 {
-										buf.temp_list << path
-									}
+									buf.temp_list << path
+									// if buf.temp_list.len == 0 {
+									// 	buf.temp_list << path
+									// }
 								}
 								file_list := buf.temp_list.clone()
 								// tabsize := view.tabsize

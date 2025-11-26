@@ -46,13 +46,18 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 		mut buf := &app.buffers[app.active_buffer]
 
 		// handle menu toggle regardless
-		platform_mod := if app.os == 'windows' { t.Modifiers.ctrl } else { t.Modifiers.alt }
-		if e.modifiers == platform_mod {
+		if e.modifiers == if app.os == 'windows' {
+			t.Modifiers.ctrl
+		} else {
+			t.Modifiers.alt
+		} {
 			if e.code == .m {
 				buf.menu_state = !buf.menu_state
 				buf.needs_render = true
 				return
 			}
+		}
+		if e.modifiers == t.Modifiers.alt {
 			if e.code == .comma {
 				if app.buffers.len > 1 {
 					if app.active_buffer == 0 {

@@ -68,7 +68,7 @@ fn full_redraw(x voidptr) {
 				// y_index is the position in the buffer
 				y_index := start_row + i
 				// line := buf.buffer.line_at(y_index)
-				line := if view.visible_lines.len > 0 { view.visible_lines[i].string() } else { '' }
+				line := if view.visible_lines.len > 0 { view.visible_lines[i] } else { [] }
 
 				// values necessary for rendering aligned line numbers
 
@@ -84,12 +84,11 @@ fn full_redraw(x voidptr) {
 				if y_index == buf.logical_cursor.y {
 					// calculate how many lines that this line requires
 					// (+ 1 since base is 0)
-					total_lines := if line.len_utf8() > 0 {
-						(line.expand_tabs(view.tabsize).len_utf8() / view.width) + 1
+					total_lines := if line.len > 0 {
+						(util.char_count_expanded_tabs(line, view.tabsize) / view.width) + 1
 					} else {
 						1
 					}
-
 					ctx.set_colors(tui_app.theme.active_line_bg_color, line_num_active_color)
 					for wrap in 0 .. total_lines {
 						active_line_index := i + wrap + wrap_offset + buffer_gap + 1
@@ -116,7 +115,7 @@ fn full_redraw(x voidptr) {
 				mut char_width := 1
 				mut visual_cache := map[int]int{}
 				mut col := 0
-				for x_index, ch in line.runes_iterator() {
+				for x_index, ch in line {
 					visual_cache[x_index] = col
 					mut printed := ch
 					if ch == `\t` {
@@ -363,9 +362,9 @@ fn full_redraw(x voidptr) {
 		// if view.visible_lines.len > 0 {
 		// ctx.draw_text(width - 90, height - 6, buf.buffer.line_at(buf.logical_cursor.y).str())
 		// 	ctx.draw_text(width - 90, height - 5, view.visible_lines.len.str())
-		// 	ctx.draw_text(width - 90, height - 4, (view.visible_lines.len + view.row_offset < buf.buffer.line_count()).str())
+		// ctx.draw_text(width - 90, height - 4, buf.temp_path.str())
 		// }
-		// ctx.draw_text(width - 90, height - 2, buf.logical_cursor.flat_index.str())
+		// ctx.draw_text(width - 90, height - 2, buf.temp_string.str())
 
 		// -- status bar --
 		mut command_bar_y_pos := height
