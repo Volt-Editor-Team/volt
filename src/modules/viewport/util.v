@@ -14,7 +14,7 @@ pub fn (mut view Viewport) fill_visible_lines(buf BufferInterface) {
 		if i >= total_lines {
 			break
 		}
-		view.visible_lines << buf.line_at(i)
+		view.visible_lines << buf.line_at(i).clone()
 	}
 }
 
@@ -47,7 +47,8 @@ pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
 			view.visible_lines.delete(0)
 			if view.visible_lines.len < total_lines - view.row_offset {
 				line_index := view.row_offset + view.height - (offset_diff + i)
-				view.visible_lines << buf.line_at(line_index)
+				new_line := buf.line_at(line_index).clone()
+				view.visible_lines << new_line
 			}
 		}
 	}
@@ -59,7 +60,8 @@ pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
 			if view.visible_lines.len >= view.height {
 				view.visible_lines.delete_last()
 			}
-			view.visible_lines.prepend(buf.line_at(view.row_offset + i))
+			new_line := buf.line_at(view.row_offset + i).clone()
+			view.visible_lines.prepend(new_line)
 		}
 	}
 }

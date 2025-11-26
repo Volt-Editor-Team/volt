@@ -77,7 +77,7 @@ fn load_text_file(path string) []rune {
 			'UTF-16 BE not implemented yet'.runes()
 		}
 		.utf8 {
-			(os.read_file(path) or { '' }).runes()
+			(os.read_file(path) or { '' }).runes().filter(it != `\r`)
 		}
 	}
 }
