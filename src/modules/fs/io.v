@@ -179,29 +179,43 @@ pub fn read_file_rune_lines(path string) ![][]rune {
 
 pub fn write_file(path string, buffer []string) (bool, string) {
 	// build absolute path
-	abs_path := os.abs_path(path)
+	abs_path := if os.is_abs_path(path) { path } else { os.getwd() + os.path_separator + path }
+
+	// split path
+	dir, name, ext := os.split_path(abs_path)
 
 	// create file if it doesn't already exist
 	if !os.exists(abs_path) {
-		os.create(abs_path) or { return false, 'Unable to create file: ${abs_path}' }
+		return false, 'Error: Path does not exist ${name}${ext} '
 	}
 
 	// if path isn't a file, return error message
 	if !os.is_file(abs_path) {
-		return false, 'Path is not a file: ${abs_path}'
+		return false, 'Error: Path is not a file: ${name}${ext}'
 	}
 
-	// if path isn't writable, return error message
-	if !os.is_writable(abs_path) {
-		return false, 'File is not writable: ${abs_path}'
+	// build temperary name
+	temp_path := dir + '.volt_temp.' + name + '.tmp'
+
+	// create temporary file
+	os.create(temp_path) or { return false, 'Error: An error occured during write: ${name}${ext}' }
+
+	// write to temporary file
+	os.write_lines(temp_path, buffer) or {
+		return false, 'Error: Unable to write to file: ${name}${ext}'
 	}
 
-	// write to file
-	// handle error immediately if something went wrong
-	os.write_lines(path, buffer) or { return false, 'Unable to write to file: ${abs_path}' }
+	// flush
+	os.flush()
 
-	// successfully wrote to file. no need to return a message
-	return true, ''
+	// replace original file
+	// this operation is atomic in major os'
+	//
+	// creating the temporary file and only replacing at the end
+	// makes this operation safe from file corruption caused by mid-save crashing
+	os.mv(temp_path, abs_path) or { return false, 'Error finalizing write' }
+
+	return true, 'Success: Successfully wrote to ${name}${ext}'
 }
 
 pub fn get_working_dir() string {

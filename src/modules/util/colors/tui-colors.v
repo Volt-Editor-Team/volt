@@ -131,6 +131,18 @@ pub const dark_red = Color{
 	b: 0
 }
 
+pub const dark_green = Color{
+	r: 0
+	g: 139
+	b: 0
+}
+
+pub const sea_green = Color{
+	r: 46
+	g: 139
+	b: 87
+}
+
 pub const black = Color{
 	r: 0
 	g: 0

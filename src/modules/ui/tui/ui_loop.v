@@ -421,9 +421,12 @@ fn full_redraw(x voidptr) {
 			// 3. Draw the command buffer
 			if buf.cmd.command.starts_with('Error') {
 				ctx.set_color(colors.dark_red)
+			} else if buf.cmd.command.starts_with('Success') {
+				ctx.set_color(colors.sea_green)
 			} else {
 				ctx.set_color(colors.white)
 			}
+
 			ctx.draw_text(2, height, buf.cmd.command)
 
 			// 4. Draw the cursor block at the right position
