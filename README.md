@@ -71,8 +71,8 @@ Volt is REALLY small! Binary sizes may differ between platforms due to OS-specif
 
 | Platform | Binary Size  |
 |----------|--------------|
-| Windows  | ~615 KB      |
-| macOS    | ~506 KB      |
+| Windows  | ~637 KB      |
+| macOS    | ~540 KB      |
 
 ## Planned / Experimental Features
 - Rope buffer for large file editing
