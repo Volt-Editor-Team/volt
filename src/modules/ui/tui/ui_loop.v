@@ -81,7 +81,7 @@ fn full_redraw(x voidptr) {
 
 				// highlight active line and render line numbers
 				// this is rendered first, simulating line highlight over active line
-				if y_index == buf.logical_cursor.y {
+				if y_index == view.cursor.y {
 					// calculate how many lines that this line requires
 					// (+ 1 since base is 0)
 					total_lines := if line.len > 0 {
@@ -135,12 +135,12 @@ fn full_redraw(x voidptr) {
 						break render_lines
 					}
 
-					if x_index == buf.logical_cursor.x && y_index == buf.logical_cursor.y {
+					if x_index == view.cursor.x && y_index == view.cursor.y {
 						view.visual_wraps = wrap_offset
 						ctx.set_colors(cursor_bg_color, cursor_fg_color)
 						ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 						ctx.reset_colors()
-					} else if y_index == buf.logical_cursor.y {
+					} else if y_index == view.cursor.y {
 						ctx.set_colors(tui_app.theme.active_line_bg_color, text_color)
 						ctx.draw_text(x_pos + 1, y_pos + 1, printed.str().repeat(char_width))
 						ctx.reset_colors()
@@ -153,7 +153,7 @@ fn full_redraw(x voidptr) {
 				}
 
 				// Special case: cursor at end of line
-				if buf.logical_cursor.y == y_index && buf.logical_cursor.x == line.len {
+				if view.cursor.y == y_index && view.cursor.x == line.len {
 					// find last column in this line (or 0 if empty)
 					// last_index := line[line.len - 1]
 					last_x := if line.len > 0 {
@@ -360,7 +360,7 @@ fn full_redraw(x voidptr) {
 
 		// -- debugging --
 		// if view.visible_lines.len > 0 {
-		// ctx.draw_text(width - 90, height - 6, buf.buffer.line_at(buf.logical_cursor.y).str())
+		// ctx.draw_text(width - 90, height - 6, buf.buffer.line_at(view.cursor.y).str())
 		// 	ctx.draw_text(width - 90, height - 5, view.visible_lines.len.str())
 		// ctx.draw_text(width - 90, height - 4, buf.temp_path.str())
 		// }
@@ -398,7 +398,7 @@ fn full_redraw(x voidptr) {
 			pos_string := if buf.p_mode == .fuzzy {
 				(buf.temp_cursor.x + 1).str() + ':' + (buf.temp_cursor.y + 1).str()
 			} else {
-				(buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+				(view.cursor.x + 1).str() + ':' + (view.cursor.y + 1).str()
 			}
 			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
@@ -406,8 +406,8 @@ fn full_redraw(x voidptr) {
 
 			// draw command mode prompt
 			// if buf.mode == .command {
-			// 	buf.logical_cursor.x = buf.cmd.command.len + 2
-			// 	buf.logical_cursor.y = height
+			// 	view.cursor.x = buf.cmd.command.len + 2
+			// 	view.cursor.y = height
 			// }
 
 			ctx.set_bg_color(tui_app.theme.background_color)
@@ -416,7 +416,7 @@ fn full_redraw(x voidptr) {
 			ctx.draw_text(0, height, ' '.repeat(width - 1))
 
 			// 2. Draw the ':' prompt
-			// ctx.draw_text(0, buf.logical_cursor.y, ':')
+			// ctx.draw_text(0, view.cursor.y, ':')
 
 			// 3. Draw the command buffer
 			if buf.cmd.command.starts_with('Error') {
@@ -511,14 +511,14 @@ fn full_redraw(x voidptr) {
 			pos_string := if buf.p_mode == .fuzzy {
 				(buf.temp_cursor.x + 1).str() + ':' + (buf.temp_cursor.y + 1).str()
 			} else {
-				(buf.logical_cursor.x + 1).str() + ':' + (buf.logical_cursor.y + 1).str()
+				(view.cursor.x + 1).str() + ':' + (view.cursor.y + 1).str()
 			}
 			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
 
 			ctx.reset_bg_color()
 		}
 
-		// update_cursor(buf.logical_cursor.x, buf.logical_cursor.y, mut ctx)
+		// update_cursor(view.cursor.x, view.cursor.y, mut ctx)
 		ctx.flush()
 		buf.needs_render = false
 	}

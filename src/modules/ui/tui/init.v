@@ -59,30 +59,62 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 		}
 		if e.modifiers == t.Modifiers.alt {
 			if e.code == .comma {
+				view.existing_cursors[app.active_buffer] = view.cursor
+				view.existing_offsets[app.active_buffer] = view.row_offset
 				if app.buffers.len > 1 {
 					if app.active_buffer == 0 {
 						app.active_buffer = app.buffers.len - 1
 					} else {
 						app.active_buffer -= 1
 					}
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-						buf.buffer)
 				}
+
+				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+					view.existing_offsets[app.active_buffer]
+				} else {
+					0
+				}
+				if view.existing_cursors.keys().contains(app.active_buffer) {
+					view.cursor = view.existing_cursors[app.active_buffer]
+				} else {
+					view.cursor.x = 0
+					view.cursor.y = 0
+					view.cursor.flat_index = 0
+					view.cursor.visual_x = 0
+					view.cursor.desired_col = 0
+				}
+
+				view.update_offset(view.cursor.y, buf.buffer)
 				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return
 			}
 			if e.code == .period {
+				view.existing_cursors[app.active_buffer] = view.cursor
+				view.existing_offsets[app.active_buffer] = view.row_offset
 				if app.buffers.len > 1 {
 					if app.active_buffer == app.buffers.len - 1 {
 						app.active_buffer = 0
 					} else {
 						app.active_buffer += 1
 					}
-					view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-						buf.buffer)
 				}
+				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+					view.existing_offsets[app.active_buffer]
+				} else {
+					0
+				}
+				if view.existing_cursors.keys().contains(app.active_buffer) {
+					view.cursor = view.existing_cursors[app.active_buffer]
+				} else {
+					view.cursor.x = 0
+					view.cursor.y = 0
+					view.cursor.flat_index = 0
+					view.cursor.visual_x = 0
+					view.cursor.desired_col = 0
+				}
+				view.update_offset(view.cursor.y, buf.buffer)
+				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return
 			}

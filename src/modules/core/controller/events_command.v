@@ -16,8 +16,8 @@ pub fn handle_command_mode_event(x voidptr, mod Modifier, event EventType, key K
 			// buf.path = buf.temp_path
 			buf.p_mode = buf.temp_mode
 			buf.mode = .normal
-			buf.logical_cursor = buf.temp_cursor
-			view.update_offset(app.buffers[app.active_buffer].logical_cursor.y, buf.buffer)
+			view.cursor = buf.temp_cursor
+			view.update_offset(view.cursor.y, buf.buffer)
 			// delete temp stuff
 			buf.temp_label = ''
 			buf.temp_data.clear()

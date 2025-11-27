@@ -34,26 +34,25 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.backspace {
 							total_lines := buf.buffer.line_count() // grab line_count to determine if a newline is deleted
 							// take the previous lines length
-							prev_line_len := if buf.logical_cursor.y > 0 {
-								buf.buffer.line_at(buf.logical_cursor.y - 1).len
+							prev_line_len := if view.cursor.y > 0 {
+								buf.buffer.line_at(view.cursor.y - 1).len
 							} else {
 								0
 							}
 
 							// delete the character before the cursor
-							buf.buffer.delete(buf.logical_cursor.flat_index - 1, 1) or { return }
+							buf.buffer.delete(view.cursor.flat_index - 1, 1) or { return }
 							// a line was deleted
 							if buf.buffer.line_count() != total_lines {
 								// move cursor
-								buf.logical_cursor.move_up_buffer(view.visible_lines,
-									view.row_offset, view.tabsize)
-								updated_line := buf.buffer.line_at(buf.logical_cursor.y).clone()
-								buf.logical_cursor.move_to_x(updated_line, prev_line_len,
+								view.cursor.move_up_buffer(view.visible_lines, view.row_offset,
 									view.tabsize)
-								view.visible_lines[buf.logical_cursor.y - view.row_offset] = updated_line
+								updated_line := buf.buffer.line_at(view.cursor.y).clone()
+								view.cursor.move_to_x(updated_line, prev_line_len, view.tabsize)
+								view.visible_lines[view.cursor.y - view.row_offset] = updated_line
 
 								// delete merged line
-								view.visible_lines.delete(buf.logical_cursor.y - view.row_offset + 1)
+								view.visible_lines.delete(view.cursor.y - view.row_offset + 1)
 
 								// add new line from data
 								next_line := buf.buffer.line_at(view.row_offset +
@@ -62,27 +61,26 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 							// no line was deleted
 							else {
-								if buf.logical_cursor.x > 0 {
+								if view.cursor.x > 0 {
 									// move cursor
-									buf.logical_cursor.move_to_x(buf.cur_line, buf.logical_cursor.x - 1,
+									view.cursor.move_to_x(buf.cur_line, view.cursor.x - 1,
 										view.tabsize)
 									// update current visible line
-									updated_line := buf.buffer.line_at(buf.logical_cursor.y).clone()
-									view.visible_lines[buf.logical_cursor.y - view.row_offset] = updated_line
+									updated_line := buf.buffer.line_at(view.cursor.y).clone()
+									view.visible_lines[view.cursor.y - view.row_offset] = updated_line
 								}
 							}
-							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								buf.buffer)
+							view.update_offset(view.cursor.y, buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
-							buf.logical_cursor.update_desired_col(app.viewport.width)
+							view.cursor.update_desired_col(app.viewport.width)
 						}
 						.enter {
 							// adopt previous indentation
 							mut previous_indentation := []rune{}
 							previous_indentation << `\n`
-							relative_y := buf.logical_cursor.y - view.row_offset
-							for i, ch in buf.buffer.line_at(buf.logical_cursor.y) {
-								if !ch.str().is_blank() || i == buf.logical_cursor.x {
+							relative_y := view.cursor.y - view.row_offset
+							for i, ch in buf.buffer.line_at(view.cursor.y) {
+								if !ch.str().is_blank() || i == view.cursor.x {
 									break
 								} else {
 									previous_indentation << ch
@@ -90,14 +88,14 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 
 							// edit buffer data
-							buf.buffer.insert(buf.logical_cursor.flat_index, previous_indentation) or {
+							buf.buffer.insert(view.cursor.flat_index, previous_indentation) or {
 								return
 							}
 
 							// update visible lines
-							updated_line := buf.buffer.line_at(buf.logical_cursor.y).clone()
+							updated_line := buf.buffer.line_at(view.cursor.y).clone()
 							view.visible_lines[relative_y] = updated_line
-							next_line := buf.buffer.line_at(buf.logical_cursor.y + 1).clone()
+							next_line := buf.buffer.line_at(view.cursor.y + 1).clone()
 							view.visible_lines.insert(relative_y + 1, next_line)
 
 							// clamp visible buffer if it contains more than viewable lines
@@ -107,15 +105,14 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							}
 
 							// move cursor
-							buf.logical_cursor.move_to_x_next_line_buffer(previous_indentation.len - 1,
+							view.cursor.move_to_x_next_line_buffer(previous_indentation.len - 1,
 								view.visible_lines, view.row_offset, view.tabsize)
 
 							// update viewport offset
-							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								buf.buffer)
+							view.update_offset(view.cursor.y, buf.buffer)
 
 							// update desired column
-							buf.logical_cursor.update_desired_col(app.viewport.width)
+							view.cursor.update_desired_col(app.viewport.width)
 						}
 						else {
 							mut ch := rune(int(key))
@@ -123,15 +120,15 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								ch = ch.to_upper()
 							}
 
-							buf.buffer.insert(buf.logical_cursor.flat_index, ch) or { return }
-							updated_line := buf.buffer.line_at(buf.logical_cursor.y).clone()
-							view.visible_lines[buf.logical_cursor.y - view.row_offset] = updated_line
+							buf.buffer.insert(view.cursor.flat_index, ch) or { return }
+							updated_line := buf.buffer.line_at(view.cursor.y).clone()
+							view.visible_lines[view.cursor.y - view.row_offset] = updated_line
 
-							// buf.logical_cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
+							// view.cursor.move_right_buffer(mut buf.cur_line, buf.buffer, mut
 							// 	view.visible_lines, view.tabsize)
-							buf.logical_cursor.move_right_buffer(view.visible_lines, view.row_offset,
+							view.cursor.move_right_buffer(view.visible_lines, view.row_offset,
 								view.tabsize)
-							buf.logical_cursor.update_desired_col(app.viewport.width)
+							view.cursor.update_desired_col(app.viewport.width)
 						}
 					}
 				}
@@ -145,7 +142,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							.enter {}
 							.colon {
 								buf.prev_mode = buf.mode
-								// buf.saved_cursor = buf.logical_cursor
+								// buf.saved_cursor = view.cursor
 								buf.mode = .command
 								buf.cmd.command = ': '
 								buf.menu_state = false
@@ -179,9 +176,8 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								// buf.path = buf.temp_path
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
-								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-									buf.buffer)
+								// view.cursor = buf.temp_cursor
+								view.update_offset(view.cursor.y, buf.buffer)
 
 								// delete temp stuff
 								buf.temp_label = ''
@@ -271,8 +267,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									// buf.logical_cursor = buf.temp_cursor
-									view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-										buf.buffer)
+									view.update_offset(view.cursor.y, buf.buffer)
+									view.existing_cursors[app.active_buffer] = view.cursor
+									view.existing_offsets[app.active_buffer] = view.row_offset
 									buf.file_ch.close()
 
 									// delete temp stuff
@@ -323,8 +320,21 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										}
 									}
 									app.active_buffer = app.buffers.len - 1
-									view.row_offset = 0
-									view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
+									view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+										view.existing_offsets[app.active_buffer]
+									} else {
+										0
+									}
+									if view.existing_cursors.keys().contains(app.active_buffer) {
+										view.cursor = view.existing_cursors[app.active_buffer]
+									} else {
+										view.cursor.x = 0
+										view.cursor.y = 0
+										view.cursor.flat_index = 0
+										view.cursor.visual_x = 0
+										view.cursor.desired_col = 0
+									}
+									view.fill_visible_lines(buf.buffer)
 									// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 									// 	buf.buffer)
 									buf.temp_list.clear()
@@ -350,8 +360,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_label += rune(int(key)).str()
 								if buf.temp_cursor.y > buf.temp_data.len {
 									buf.temp_cursor.y = 0
-									view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-										buf.buffer)
+									view.update_offset(view.cursor.y, buf.buffer)
 								}
 							}
 						}

@@ -42,33 +42,33 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.d {
 					// currently just deletes one character
 					// will need to be changed when selections are supported
-					buf.delete(1)
+					buf.delete(view.cursor.flat_index, 1)
+					updated_line := buf.buffer.line_at(view.cursor.y).clone()
+					view.visible_lines[view.cursor.y - view.row_offset] = updated_line
 				}
 				.l, .right {
-					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_right_buffer(view.visible_lines, view.row_offset,
+					prev_y := view.cursor.y
+					view.cursor.move_right_buffer(view.visible_lines, view.row_offset,
 						view.tabsize)
-					buf.logical_cursor.update_desired_col(app.viewport.width)
+					view.cursor.update_desired_col(app.viewport.width)
 
-					if buf.logical_cursor.y != prev_y {
-						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-							buf.buffer)
+					if view.cursor.y != prev_y {
+						view.update_offset(view.cursor.y, buf.buffer)
 					}
 				}
 				.h, .left {
-					prev_y := buf.logical_cursor.y
-					buf.logical_cursor.move_left_buffer(view.visible_lines, view.row_offset,
+					prev_y := view.cursor.y
+					view.cursor.move_left_buffer(view.visible_lines, view.row_offset,
 						view.tabsize)
-					buf.logical_cursor.update_desired_col(app.viewport.width)
-					if buf.logical_cursor.y != prev_y {
-						view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-							buf.buffer)
+					view.cursor.update_desired_col(app.viewport.width)
+					if view.cursor.y != prev_y {
+						view.update_offset(view.cursor.y, buf.buffer)
 						// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						// 	app.viewport.margin, app.viewport.row_offset)
 					}
 				}
 				.j, .down {
-					line := view.visible_lines[buf.logical_cursor.y - view.row_offset]
+					line := view.visible_lines[view.cursor.y - view.row_offset]
 
 					// total wraps in the current line
 					mut total_wraps := 0
@@ -77,32 +77,31 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// current wrap index
-					cur_wrap := buf.logical_cursor.visual_x / app.viewport.width
+					cur_wrap := view.cursor.visual_x / app.viewport.width
 
 					if cur_wrap < total_wraps {
-						mut perfect_index := util.expand_tabs_to(line#[..buf.logical_cursor.x +
-							app.viewport.width - 1], buf.logical_cursor.x + app.viewport.width - 1,
+						mut perfect_index := util.expand_tabs_to(line#[..view.cursor.x +
+							app.viewport.width - 1], view.cursor.x + app.viewport.width - 1,
 							view.tabsize)
-						if buf.logical_cursor.x + app.viewport.width - 1 <= line.len {
+						if view.cursor.x + app.viewport.width - 1 <= line.len {
 							perfect_index++
 						}
-						buf.logical_cursor.move_to_x(line, perfect_index, view.tabsize)
+						view.cursor.move_to_x(line, perfect_index, view.tabsize)
 					} else {
-						buf.logical_cursor.move_down_buffer(view.visible_lines, view.row_offset,
+						view.cursor.move_down_buffer(view.visible_lines, view.row_offset,
 							view.tabsize)
 					}
 
 					// update viewport offset
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-						buf.buffer)
+					view.update_offset(view.cursor.y, buf.buffer)
 				}
 				.k, .up {
-					relative_y := buf.logical_cursor.y - view.row_offset
-					cur_wrap := util.char_count_expanded_tabs(view.visible_lines[relative_y]#[..buf.logical_cursor.x],
+					relative_y := view.cursor.y - view.row_offset
+					cur_wrap := util.char_count_expanded_tabs(view.visible_lines[relative_y]#[..view.cursor.x],
 						view.tabsize) / app.viewport.width
 					if cur_wrap == 0 {
 						// line above is NOT the first line
-						if buf.logical_cursor.y - 1 > 0 {
+						if view.cursor.y - 1 > 0 {
 							line := view.visible_lines[relative_y - 1]
 
 							mut total_wraps := 0
@@ -110,34 +109,32 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								total_wraps = util.char_count_expanded_tabs(line, view.tabsize) / app.viewport.width
 							}
 							if total_wraps > 0 {
-								buf.logical_cursor.move_up_buffer(view.visible_lines,
-									view.row_offset, view.tabsize)
-								mut index := total_wraps * app.viewport.width + buf.logical_cursor.x
+								view.cursor.move_up_buffer(view.visible_lines, view.row_offset,
+									view.tabsize)
+								mut index := total_wraps * app.viewport.width + view.cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index - 1],
 									index - 1, view.tabsize)
-								buf.logical_cursor.move_to_x(buf.cur_line, perfect_index,
-									view.tabsize)
+								view.cursor.move_to_x(buf.cur_line, perfect_index, view.tabsize)
 							} else {
-								buf.logical_cursor.move_up_buffer(view.visible_lines,
-									view.row_offset, view.tabsize)
+								view.cursor.move_up_buffer(view.visible_lines, view.row_offset,
+									view.tabsize)
 							}
 						} else {
-							buf.logical_cursor.move_up_buffer(view.visible_lines, view.row_offset,
+							view.cursor.move_up_buffer(view.visible_lines, view.row_offset,
 								view.tabsize)
 						}
 					} else {
 						line := view.visible_lines[relative_y]
-						index := math.max(cur_wrap * app.viewport.width +
-							buf.logical_cursor.desired_col, buf.logical_cursor.x)
+						index := math.max(cur_wrap * app.viewport.width + view.cursor.desired_col,
+							view.cursor.x)
 						next_index := util.expand_tabs_to(line#[..index - app.viewport.width - 1],
 							index - app.viewport.width - 1, view.tabsize)
-						buf.logical_cursor.move_to_x(buf.cur_line, math.min(next_index,
-							buf.logical_cursor.desired_col), view.tabsize)
+						view.cursor.move_to_x(buf.cur_line, math.min(next_index, view.cursor.desired_col),
+							view.tabsize)
 					}
 
 					// update offset
-					view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-						buf.buffer)
+					view.update_offset(view.cursor.y, buf.buffer)
 				}
 				else {}
 			}
@@ -149,7 +146,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.none {
 					match key {
 						.enter {
-							path := buf.buffer.line_at(buf.logical_cursor.y).string()
+							path := buf.buffer.line_at(view.cursor.y).string()
 							app.add_new_buffer(
 								name: os.file_name(path)
 								path: buf.path + path
@@ -160,7 +157,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							)
 						}
 						.tab {
-							path := buf.buffer.line_at(buf.logical_cursor.y).string()
+							path := buf.buffer.line_at(view.cursor.y).string()
 
 							if fs.is_dir(buf.path + path) {
 								parent_dir, paths := fs.get_paths_from_dir(buf.path, path)
@@ -168,9 +165,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
 								buf.buffer.replace_with_temp(replacement_runes)
 
-								buf.logical_cursor.x = 0
-								buf.logical_cursor.y = 0
-								buf.logical_cursor.flat_index = 0
+								view.cursor.x = 0
+								view.cursor.y = 0
+								view.cursor.flat_index = 0
 							}
 						}
 						.backspace {
@@ -179,9 +176,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							replacement_runes := [][]rune{len: paths.len, init: paths[index].runes()}
 							buf.buffer.replace_with_temp(replacement_runes)
 
-							buf.logical_cursor.x = 0
-							buf.logical_cursor.y = 0
-							buf.logical_cursor.flat_index = 0
+							view.cursor.x = 0
+							view.cursor.y = 0
+							view.cursor.flat_index = 0
 						}
 						else {}
 					}
@@ -197,8 +194,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// restore settings
 							buf.p_mode = buf.temp_mode
 							buf.change_mode(.normal, false)
-							view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								buf.buffer)
+							view.update_offset(view.cursor.y, buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 
 							// delete temp stuff
@@ -327,8 +323,9 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-									buf.buffer)
+								view.update_offset(view.cursor.y, buf.buffer)
+								view.existing_cursors[app.active_buffer] = view.cursor
+								view.existing_offsets[app.active_buffer] = view.row_offset
 								buf.file_ch.close()
 
 								// delete temp stuff
@@ -379,10 +376,22 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									}
 								}
 								app.active_buffer = app.buffers.len - 1
-								view.row_offset = 0
+								view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+									view.existing_offsets[app.active_buffer]
+								} else {
+									0
+								}
+								if view.existing_cursors.keys().contains(app.active_buffer) {
+									view.cursor = view.existing_cursors[app.active_buffer]
+								} else {
+									view.cursor.x = 0
+									view.cursor.y = 0
+									view.cursor.flat_index = 0
+									view.cursor.visual_x = 0
+									view.cursor.desired_col = 0
+								}
+
 								view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
-								// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
-								// 	buf.buffer)
 								// view.fill_visible_lines(buf.buffer)
 								buf.temp_list.clear()
 								buf.temp_label = ''

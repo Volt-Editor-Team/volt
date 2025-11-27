@@ -11,10 +11,11 @@ pub mut:
 	visual_wraps         int
 
 	row_offset       int
+	existing_offsets map[int]int
 	visible_lines    [][]rune
 	line_wraps       []int
-	logical_cursor   LogicalCursor
-	existing_cursors []LogicalCursor
+	cursor           LogicalCursor
+	existing_cursors map[int]LogicalCursor
 	tabsize          int
 pub:
 	margin int

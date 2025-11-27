@@ -8,9 +8,10 @@ pub fn (mut buf Buffer) move_right(vp ?[][]rune, tabsize int) {
 	// buf.logical_cursor.move_right_buffer(mut buf.cur_line, tabsize)
 }
 
-pub fn (mut buf Buffer) delete(num_char int) {
-	buf.buffer.delete(buf.logical_cursor.flat_index, num_char) or { return }
-	buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
+pub fn (mut buf Buffer) delete(pos int, num_char int) {
+	// buf.buffer.delete(buf.logical_cursor.flat_index, num_char) or { return }
+	buf.buffer.delete(pos, num_char) or { return }
+	// buf.cur_line = buf.buffer.line_at(buf.logical_cursor.y)
 }
 
 pub fn (mut buf Buffer) clear_all_temp_data() {
