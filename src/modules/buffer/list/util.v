@@ -4,7 +4,7 @@ pub fn (buf ListBuffer) char_index_to_xy(i int) (int, int) {
 	mut y := 0
 	mut x := i
 	for line in buf.lines {
-		line_len := line.len_utf8()
+		line_len := line.runes().len
 		total_len := line_len + 1 // +1 for newline
 		if x < total_len {
 			if x > line_len {
@@ -18,7 +18,7 @@ pub fn (buf ListBuffer) char_index_to_xy(i int) (int, int) {
 	}
 	// index beyond buffer, clamp to last line
 	if buf.lines.len > 0 {
-		last_line_len := buf.lines[buf.lines.len - 1].len_utf8()
+		last_line_len := buf.lines[buf.lines.len - 1].runes().len
 		return last_line_len, buf.lines.len - 1
 	}
 	return 0, 0

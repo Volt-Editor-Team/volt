@@ -82,7 +82,7 @@ pub fn (buf ListBuffer) to_string() string {
 pub fn (buf ListBuffer) len() int {
 	mut res := 0
 	for line in buf.lines {
-		res += line.len_utf8()
+		res += line.runes().len
 	}
 	return res + buf.lines.len - 1
 }

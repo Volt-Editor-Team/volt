@@ -334,7 +334,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 										view.cursor.visual_x = 0
 										view.cursor.desired_col = 0
 									}
-									view.fill_visible_lines(buf.buffer)
+									view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 									// view.update_offset(app.buffers[app.active_buffer].logical_cursor.y,
 									// 	buf.buffer)
 									buf.temp_list.clear()

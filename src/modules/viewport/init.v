@@ -2,6 +2,7 @@ module viewport
 
 import cursor { LogicalCursor }
 
+@[minify]
 pub struct Viewport {
 pub mut:
 	col_offset           int
