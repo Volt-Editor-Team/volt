@@ -64,6 +64,7 @@ fn full_redraw(x voidptr) {
 			mut wrap_offset := 0
 			mut wraps := 0
 			render_lines: for i in 0 .. end_row - start_row {
+				wraps = 0
 				// i is the row index of the actual renders screen
 				// y_index is the position in the buffer
 				y_index := start_row + i

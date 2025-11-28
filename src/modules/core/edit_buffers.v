@@ -17,7 +17,8 @@ pub fn (mut app App) add_new_buffer(b Buffer) {
 		menu_state: b.menu_state
 	)
 	app.viewport.fill_visible_lines(new_buf.buffer)
-	app.viewport.update_offset(0, new_buf.buffer)
+	app.viewport.cursor.y = 0
+	app.viewport.update_offset(new_buf.buffer)
 	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
 		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')
 	}
@@ -44,7 +45,8 @@ pub fn (mut app App) append_new_buffer(b Buffer) {
 		menu_state: b.menu_state
 	)
 	app.viewport.fill_visible_lines(new_buf.buffer)
-	app.viewport.update_offset(0, new_buf.buffer)
+	app.viewport.cursor.y = 0
+	app.viewport.update_offset(new_buf.buffer)
 
 	if new_buf.path.starts_with(app.working_dir + os.path_separator) {
 		new_buf.path = new_buf.path.replace(app.working_dir + os.path_separator, '')
@@ -66,7 +68,8 @@ pub fn (mut app App) add_prefilled_buffer(b Buffer, lines []string) {
 	}, lines)
 
 	app.viewport.fill_visible_lines(new_buf.buffer)
-	app.viewport.update_offset(0, new_buf.buffer)
+	app.viewport.cursor.y = 0
+	app.viewport.update_offset(new_buf.buffer)
 
 	if app.buffers.len == 1 && app.buffers[app.active_buffer].path == 'Scratch' {
 		app.buffers[0] = new_buf

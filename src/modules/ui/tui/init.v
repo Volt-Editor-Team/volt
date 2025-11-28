@@ -84,7 +84,7 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					view.cursor.desired_col = 0
 				}
 
-				view.update_offset(view.cursor.y, app.buffers[app.active_buffer].buffer)
+				view.update_offset(app.buffers[app.active_buffer].buffer)
 				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return
@@ -113,7 +113,7 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 					view.cursor.visual_x = 0
 					view.cursor.desired_col = 0
 				}
-				view.update_offset(view.cursor.y, app.buffers[app.active_buffer].buffer)
+				view.update_offset(app.buffers[app.active_buffer].buffer)
 				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return

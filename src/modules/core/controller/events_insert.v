@@ -70,7 +70,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									view.visible_lines[view.cursor.y - view.row_offset] = updated_line
 								}
 							}
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
 							view.cursor.update_desired_col(app.viewport.width)
 						}
@@ -109,7 +109,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								view.visible_lines, view.row_offset, view.tabsize)
 
 							// update viewport offset
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 
 							// update desired column
 							view.cursor.update_desired_col(app.viewport.width)
@@ -177,7 +177,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// view.cursor = buf.temp_cursor
-								view.update_offset(view.cursor.y, buf.buffer)
+								view.update_offset(buf.buffer)
 
 								// delete temp stuff
 								buf.temp_label = ''
@@ -267,7 +267,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 									buf.p_mode = buf.temp_mode
 									buf.mode = .normal
 									// buf.logical_cursor = buf.temp_cursor
-									view.update_offset(view.cursor.y, buf.buffer)
+									view.update_offset(buf.buffer)
 									view.existing_cursors[app.active_buffer] = view.cursor
 									view.existing_offsets[app.active_buffer] = view.row_offset
 									buf.file_ch.close()
@@ -360,7 +360,7 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.temp_label += rune(int(key)).str()
 								if buf.temp_cursor.y > buf.temp_data.len {
 									buf.temp_cursor.y = 0
-									view.update_offset(view.cursor.y, buf.buffer)
+									view.update_offset(buf.buffer)
 								}
 							}
 						}

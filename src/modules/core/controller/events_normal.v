@@ -53,7 +53,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					view.cursor.update_desired_col(app.viewport.width)
 
 					if view.cursor.y != prev_y {
-						view.update_offset(view.cursor.y, buf.buffer)
+						view.update_offset(buf.buffer)
 					}
 				}
 				.h, .left {
@@ -62,7 +62,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						view.tabsize)
 					view.cursor.update_desired_col(app.viewport.width)
 					if view.cursor.y != prev_y {
-						view.update_offset(view.cursor.y, buf.buffer)
+						view.update_offset(buf.buffer)
 						// buf.update_offset(app.viewport.visual_wraps, app.viewport.height,
 						// 	app.viewport.margin, app.viewport.row_offset)
 					}
@@ -93,7 +93,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update viewport offset
-					view.update_offset(view.cursor.y, buf.buffer)
+					view.update_offset(buf.buffer)
 				}
 				.k, .up {
 					relative_y := view.cursor.y - view.row_offset
@@ -134,7 +134,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 					}
 
 					// update offset
-					view.update_offset(view.cursor.y, buf.buffer)
+					view.update_offset(buf.buffer)
 				}
 				else {}
 			}
@@ -194,7 +194,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							// restore settings
 							buf.p_mode = buf.temp_mode
 							buf.change_mode(.normal, false)
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 
 							// delete temp stuff
@@ -323,7 +323,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(view.cursor.y, buf.buffer)
+								view.update_offset(buf.buffer)
 								view.existing_cursors[app.active_buffer] = view.cursor
 								view.existing_offsets[app.active_buffer] = view.row_offset
 								buf.file_ch.close()

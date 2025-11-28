@@ -14,7 +14,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							cur_line := view.visible_lines[view.cursor.y - view.row_offset]
 							if cur_line.len > 0 {
 								view.cursor.move_to_x(cur_line, cur_line.len - 1, view.tabsize)
-								view.update_offset(view.cursor.y, buf.buffer)
+								view.update_offset(buf.buffer)
 								// view.fill_visible_lines(buf.buffer)
 								view.cursor.update_desired_col(app.viewport.width)
 							}
@@ -26,7 +26,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						if buf.p_mode != .fuzzy {
 							cur_line := view.visible_lines[view.cursor.y - view.row_offset]
 							view.cursor.move_to_x(cur_line, 0, view.tabsize)
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
 							view.cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
@@ -44,7 +44,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 								index++
 							}
 							view.cursor.move_to_x(cur_line, index, view.tabsize)
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							// view.fill_visible_lines(buf.buffer)
 							view.cursor.update_desired_col(app.viewport.width)
 							buf.mode = .normal
@@ -67,7 +67,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							view.cursor.move_to_x(buf.cur_line, view.cursor.x, view.tabsize)
 						}
 						view.cursor.update_desired_col(app.viewport.width)
-						view.update_offset(view.cursor.y, buf.buffer)
+						view.update_offset(buf.buffer)
 						view.fill_visible_lines(buf.buffer)
 						view.cursor.update_desired_col(app.viewport.width)
 						buf.mode = .normal
@@ -84,7 +84,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							buf.cur_line = buf.buffer.line_at(view.cursor.y)
 							view.cursor.flat_index = (buf.buffer.len() - 1) - (buf.cur_line.len - 1)
 							view.cursor.move_to_x(buf.cur_line, view.cursor.x, view.tabsize)
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 							view.cursor.update_desired_col(app.viewport.width)
 						}
@@ -111,7 +111,7 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							view.cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
 								view.tabsize)
 							view.cursor.update_desired_col(app.viewport.width)
-							view.update_offset(view.cursor.y, buf.buffer)
+							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 						}
 						buf.mode = .normal

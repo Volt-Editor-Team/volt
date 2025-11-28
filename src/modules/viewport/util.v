@@ -33,13 +33,15 @@ pub fn (mut view Viewport) fill_visible_lines(buf BufferInterface) {
 // 		view.row_offset = math.max(0, y_pos + view.visual_wraps - view.margin)
 // 	}
 // }
-pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
+pub fn (mut view Viewport) update_offset(buf BufferInterface) {
 	prev_offset := view.row_offset
-	rel_pos := y_pos - view.row_offset + view.visual_wraps
+	y_pos := view.cursor.y
+	all_wraps := view.visual_wraps + (view.cursor.visual_x / (view.width - 1))
+	rel_pos := y_pos - view.row_offset + all_wraps
 
 	// Scroll down if cursor is below bottom margin
 	if rel_pos >= view.height - view.margin {
-		view.row_offset = y_pos + view.visual_wraps - (view.height - view.margin - 1)
+		view.row_offset = y_pos + all_wraps - (view.height - view.margin - 1)
 		offset_diff := math.min(view.row_offset - prev_offset, view.height)
 		total_lines := buf.line_count()
 
@@ -54,7 +56,7 @@ pub fn (mut view Viewport) update_offset(y_pos int, buf BufferInterface) {
 	}
 	// Scroll up if cursor is above top margin
 	else if rel_pos < view.margin {
-		view.row_offset = math.max(0, y_pos + view.visual_wraps - view.margin)
+		view.row_offset = math.max(0, y_pos + all_wraps - view.margin)
 		offset_diff := math.min(prev_offset - view.row_offset, view.height)
 		for i in 0 .. offset_diff {
 			if view.visible_lines.len >= view.height {
