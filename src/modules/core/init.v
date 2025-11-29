@@ -8,7 +8,8 @@ import os
 
 pub struct App {
 pub:
-	os string = @OS
+	// os string = @OS
+	os string
 pub mut:
 	working_dir   string
 	buffers       []Buffer

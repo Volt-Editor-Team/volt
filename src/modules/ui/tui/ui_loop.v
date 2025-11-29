@@ -465,7 +465,7 @@ fn full_redraw(x voidptr) {
 							ctx.draw_text(cmd_x, cmd_y + 1, command.aliases.str())
 							ctx.draw_text(cmd_x, cmd_y + 2, command.desc)
 						}
-						for offset, ch in command.name.runes_iterator() {
+						for offset, ch in command.name.runes() {
 							if buf.cmd.command.contains(ch.str()) && offset <= buf.cmd.command.len {
 								ctx.set_color(colors.lavender_violet)
 							}
