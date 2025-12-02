@@ -5,6 +5,7 @@ import os
 import util
 import math
 import time
+import events
 
 pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key KeyCode) {
 	mut app := get_app(x)
@@ -17,19 +18,19 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		}
 		match key {
 			.f {
-				buf.change_mode(.search, true)
+				events.change_mode(mut buf, .search, true)
 			}
 			.space {
-				buf.change_mode(.menu, true)
+				events.change_mode(mut buf, .menu, true)
 			}
 			.g {
-				buf.change_mode(.goto, true)
+				events.change_mode(mut buf, .goto, true)
 			}
 			.i {
-				buf.change_mode(.insert, false)
+				events.change_mode(mut buf, .insert, false)
 			}
 			.colon {
-				buf.change_mode(.command, false)
+				events.change_mode(mut buf, .command, false)
 			}
 			else {}
 		}
@@ -42,9 +43,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 				.d {
 					// currently just deletes one character
 					// will need to be changed when selections are supported
-					buf.delete(view.cursor.flat_index, 1)
-					updated_line := buf.buffer.line_at(view.cursor.y).clone()
-					view.visible_lines[view.cursor.y - view.row_offset] = updated_line
+					events.delete_selection(mut buf, mut view, 1)
 				}
 				.l, .right {
 					prev_y := view.cursor.y
@@ -193,7 +192,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 						.escape {
 							// restore settings
 							buf.p_mode = buf.temp_mode
-							buf.change_mode(.normal, false)
+							events.change_mode(mut buf, .normal, false)
 							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 
