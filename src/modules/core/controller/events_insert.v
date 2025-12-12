@@ -32,6 +32,9 @@ pub fn handle_insert_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 			if event == .key_down {
 				if buf.mode != .command {
 					match key {
+						.null {
+							return
+						}
 						.backspace {
 							events.delete_before(mut buf, mut view, 1)
 						}
