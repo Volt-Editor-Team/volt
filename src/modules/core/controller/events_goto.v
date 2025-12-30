@@ -62,9 +62,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							for i in 0 .. view.cursor.y {
 								offset += buf.buffer.line_at(i).len + 1 // +1 for newline
 							}
-							buf.cur_line = buf.buffer.line_at(view.cursor.y)
+							cur_line := buf.buffer.line_at(view.cursor.y)
 							view.cursor.flat_index = offset + view.cursor.x
-							view.cursor.move_to_x(buf.cur_line, view.cursor.x, view.tabsize)
+							view.cursor.move_to_x(cur_line, view.cursor.x, view.tabsize)
 						}
 						view.cursor.update_desired_col(app.viewport.width)
 						view.update_offset(buf.buffer)
@@ -81,9 +81,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 							view.cursor.y = buf.buffer.line_count() - 1
 							view.cursor.x = 0
 							view.cursor.update_desired_col(app.viewport.width)
-							buf.cur_line = buf.buffer.line_at(view.cursor.y)
-							view.cursor.flat_index = (buf.buffer.len() - 1) - (buf.cur_line.len - 1)
-							view.cursor.move_to_x(buf.cur_line, view.cursor.x, view.tabsize)
+							cur_line := buf.buffer.line_at(view.cursor.y)
+							view.cursor.flat_index = (buf.buffer.len() - 1) - (cur_line.len - 1)
+							view.cursor.move_to_x(cur_line, view.cursor.x, view.tabsize)
 							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)
 							view.cursor.update_desired_col(app.viewport.width)
@@ -106,10 +106,9 @@ pub fn handle_goto_mode_event(x voidptr, mod Modifier, event EventType, key KeyC
 						} else {
 							view.cursor.y = buf.buffer.line_count() - 1
 							view.cursor.x = 0
-							buf.cur_line = buf.buffer.line_at(view.cursor.y)
+							cur_line := buf.buffer.line_at(view.cursor.y)
 							view.cursor.flat_index = buf.buffer.len() - 1
-							view.cursor.move_to_x(buf.cur_line, buf.cur_line.len - 1,
-								view.tabsize)
+							view.cursor.move_to_x(cur_line, cur_line.len - 1, view.tabsize)
 							view.cursor.update_desired_col(app.viewport.width)
 							view.update_offset(buf.buffer)
 							view.fill_visible_lines(buf.buffer)

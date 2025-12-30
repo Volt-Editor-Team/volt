@@ -113,7 +113,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								mut index := total_wraps * app.viewport.width + view.cursor.x
 								perfect_index := util.expand_tabs_to(line#[..index - 1],
 									index - 1, view.tabsize)
-								view.cursor.move_to_x(buf.cur_line, perfect_index, view.tabsize)
+								view.cursor.move_to_x(view.visible_lines[view.cursor.y - view.row_offset],
+									perfect_index, view.tabsize)
 							} else {
 								view.cursor.move_up_buffer(view.visible_lines, view.row_offset,
 									view.tabsize)
@@ -128,8 +129,8 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 							view.cursor.x)
 						next_index := util.expand_tabs_to(line#[..index - app.viewport.width - 1],
 							index - app.viewport.width - 1, view.tabsize)
-						view.cursor.move_to_x(buf.cur_line, math.min(next_index, view.cursor.desired_col),
-							view.tabsize)
+						view.cursor.move_to_x(view.visible_lines[view.cursor.y - view.row_offset],
+							math.min(next_index, view.cursor.desired_col), view.tabsize)
 					}
 
 					// update offset

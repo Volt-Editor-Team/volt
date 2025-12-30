@@ -39,7 +39,8 @@ pub fn delete_before(mut buf buffer.Buffer, mut view viewport.Viewport, width in
 	else {
 		if view.cursor.x > 0 {
 			// move cursor
-			view.cursor.move_to_x(buf.cur_line, view.cursor.x - 1, view.tabsize)
+			view.cursor.move_to_x(view.visible_lines[view.cursor.y - view.row_offset],
+				view.cursor.x - 1, view.tabsize)
 			// update current visible line
 			updated_line := buf.buffer.line_at(view.cursor.y).clone()
 			view.visible_lines[view.cursor.y - view.row_offset] = updated_line

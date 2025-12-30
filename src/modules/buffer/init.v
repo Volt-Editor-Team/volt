@@ -32,9 +32,9 @@ pub mut:
 	mode      Mode           = .normal
 	p_mode    PersistantMode = .default
 	// core internal structures
-	type     BufferType      = .gap
-	buffer   BufferInterface = ListBuffer.from_path('')
-	cur_line []rune
+	type   BufferType      = .gap
+	buffer BufferInterface = ListBuffer.from_path('')
+	// // cur_line []rune
 	// cursor         CursorInterface
 	cmd CommandBuffer
 	// saved_cursor   LogicalCursor
@@ -73,12 +73,12 @@ pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
 		.list {
 			new_buffer := ListBuffer.prefilled(lines)
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   buf.encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: buf.encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       buf.type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
@@ -88,12 +88,12 @@ pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
 		.gap {
 			new_buffer := GapBuffer.prefilled(lines)
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   buf.encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: buf.encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       buf.type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
@@ -103,12 +103,12 @@ pub fn Buffer.prefilled(buf Buffer, lines []string) Buffer {
 		.rope {
 			new_buffer := RopeBuffer.prefilled(lines, GapBuffer.new())
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   buf.encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: buf.encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       buf.type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
@@ -130,12 +130,12 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.list {
 			new_buffer := ListBuffer.from_path(buf.path)
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
@@ -145,12 +145,12 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.gap {
 			new_buffer := GapBuffer.from_path(buf.path)
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
@@ -160,12 +160,12 @@ pub fn Buffer.from_path(buf Buffer) Buffer {
 		.rope {
 			new_buffer := RopeBuffer.from_path(buf.path, GapBuffer.new())
 			return Buffer{
-				label:      buf.label
-				name:       buf.name
-				path:       buf.path
-				encoding:   encoding
-				buffer:     new_buffer
-				cur_line:   new_buffer.line_at(0)
+				label:    buf.label
+				name:     buf.name
+				path:     buf.path
+				encoding: encoding
+				buffer:   new_buffer
+				// 			cur_line:   new_buffer.line_at(0)
 				type:       type
 				mode:       buf.mode
 				p_mode:     buf.p_mode
