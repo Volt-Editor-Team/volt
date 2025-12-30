@@ -4,7 +4,7 @@ module viewport
 //
 // Returns true if change is made to viewport offset, otherwise returns false
 pub fn (mut view Viewport) update_width() {
-	view.width -= view.col_offset + view.line_num_to_text_gap
+	// view.width -= view.col_offset + view.line_num_to_text_gap
 }
 
 // pub fn (mut view Viewport) update_offset(row_pos int) bool {

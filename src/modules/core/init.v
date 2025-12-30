@@ -48,12 +48,12 @@ pub fn App.new(width int, height int) &App {
 	view_height := height - 1 // subtract the command area
 	line_num_to_text_gap := 3 // space between line number and code
 	// total width available for code
-	view_width := width - col_offset - line_num_to_text_gap
+	// view_width := width - col_offset - line_num_to_text_gap
 	margin := 8 // lines to edge visible (for scrolling)
 	app.viewport = Viewport{
 		col_offset:           col_offset
 		height:               view_height
-		width:                view_width
+		width:                width // view_width
 		line_num_to_text_gap: line_num_to_text_gap
 		margin:               margin
 		tabsize:              default_tabsize

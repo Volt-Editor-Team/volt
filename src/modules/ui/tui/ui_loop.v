@@ -9,8 +9,6 @@ import math
 import os
 
 fn full_redraw(x voidptr) {
-	width, height := term.get_terminal_size()
-
 	// get app pointer, terminal size, and clear to prep for updates
 	mut tui_app := get_tui(x)
 	mut ctx := tui_app.tui
@@ -19,18 +17,31 @@ fn full_redraw(x voidptr) {
 	// relavent info for rendering
 	mut view := &app.viewport
 	mut buf := &app.buffers[app.active_buffer]
+
+	// update viewport height
+	width, height := term.get_terminal_size()
+	view_width := if width > 0 { width } else { 1 } // minimum width = 1
+	view_height := if height > 1 { height } else { 1 } // minimum height = 1
+	if view.width != view_width || view.height != view_height {
+		view.width = view_width
+		view.height = view_height
+		view.update_offset(buf.buffer)
+		view.fill_visible_lines(buf.buffer)
+		buf.needs_render = true
+	}
+
 	if buf.needs_render || buf.p_mode == .fuzzy {
 		mut command_str := util.mode_str(buf.mode, buf.p_mode, buf.prev_mode)
 
 		// --- draw background ---
-		ctx.draw_background(1, 1, width, height, tui_app.theme.background_color)
+		ctx.draw_background(1, 1, view.width, view.height, tui_app.theme.background_color)
 
 		// --- draw tabs for multiple buffers ---
 		multiple_buffers := app.buffers.len > 1
 		buffer_gap := int(multiple_buffers)
 		if multiple_buffers {
 			buffer_names := []string{len: app.buffers.len, init: ' ' + app.buffers[index].name + ' '}
-			ctx.draw_tabs(buffer_names, app.active_buffer, width, tui_app.theme)
+			ctx.draw_tabs(buffer_names, app.active_buffer, view.width, tui_app.theme)
 		}
 
 		start_row := view.row_offset
@@ -98,7 +109,7 @@ fn full_redraw(x voidptr) {
 							break render_lines
 						}
 						// not sure why +3 on end x
-						ctx.draw_line(0, active_line_index, width - 1, active_line_index)
+						ctx.draw_line(0, active_line_index, view.width - 1, active_line_index)
 						ctx.draw_text(view.col_offset, i + wrap_offset + buffer_gap + 1,
 							line_num_label)
 					}
@@ -188,7 +199,7 @@ fn full_redraw(x voidptr) {
 			ctx.set_bg_color(tui_app.theme.background_color)
 			ctx.draw_text(1, start, input_string)
 			file_count_text := '( walked: ${buf.temp_data.len} / ${buf.temp_int} )'
-			ctx.draw_text(width - file_count_text.len - 2, first_line, file_count_text)
+			ctx.draw_text(view.width - file_count_text.len - 2, first_line, file_count_text)
 
 			start_x := allocated_line_num_width + 2
 
@@ -220,7 +231,7 @@ fn full_redraw(x voidptr) {
 				ctx.draw_text(input_string.len + 1, first_line, ' ')
 				if buf.temp_data.len > 0 {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
-					ctx.draw_line(0, start, width - 1, start)
+					ctx.draw_line(0, start, view.width - 1, start)
 					ctx.draw_text(start_x, start, buf.temp_data[0].string())
 				}
 				ctx.set_bg_color(tui_app.theme.background_color)
@@ -237,7 +248,7 @@ fn full_redraw(x voidptr) {
 				if (buf.mode != .insert && y_index == buf.temp_cursor.y)
 					|| (buf.mode == .insert && i + start_row == 0) {
 					ctx.set_bg_color(tui_app.theme.active_line_bg_color)
-					ctx.draw_line(0, i + start, width - 1, i + start)
+					ctx.draw_line(0, i + start, view.width - 1, i + start)
 				} else {
 					ctx.set_bg_color(tui_app.theme.background_color)
 				}
@@ -322,7 +333,7 @@ fn full_redraw(x voidptr) {
 					}
 				}
 			}
-			menu_top := height / 3
+			menu_top := view.height / 3
 			menu_bottom := menu_top + key_bindings.len + 1
 			mut max_key_length := 0
 			for key in key_bindings.keys() {
@@ -337,7 +348,7 @@ fn full_redraw(x voidptr) {
 				}
 			}
 
-			menu_left := width / 2 - (max_key_length + max_value_length + 6) / 2
+			menu_left := view.width / 2 - (max_key_length + max_value_length + 6) / 2
 			menu_right := menu_left + max_key_length + max_value_length + 6
 			ctx.draw_background(menu_left, menu_top, menu_right, menu_bottom, colors.dark_grey_blue)
 			ctx.set_colors(colors.dark_grey_blue, tui_app.theme.normal_text_color)
@@ -361,21 +372,21 @@ fn full_redraw(x voidptr) {
 
 		// -- debugging --
 		// if view.visible_lines.len > 0 {
-		// ctx.draw_text(width - 90, height - 6, buf.buffer.line_at(view.cursor.y).str())
-		// 	ctx.draw_text(width - 90, height - 5, view.visible_lines.len.str())
-		// ctx.draw_text(width - 90, height - 4, buf.temp_path.str())
+		// ctx.draw_text(view.width - 90,view.height - 6, buf.buffer.line_at(view.cursor.y).str())
+		// 	ctx.draw_text(view.width - 90,view.height - 5, view.visible_lines.len.str())
+		// ctx.draw_text(view.width - 90,view.height - 4, buf.temp_path.str())
 		// }
-		// ctx.draw_text(width - 90, height - 2, buf.temp_string.str())
+		// ctx.draw_text(view.width - 90,view.height - 2, buf.temp_string.str())
 
 		// -- status bar --
-		mut command_bar_y_pos := height
+		mut command_bar_y_pos := view.height
 
 		if buf.mode == .command || buf.cmd.command.len > 2 {
 			command_bar_y_pos--
 			// draw command menu
 			// draw command bar
 			ctx.set_bg_color(tui_app.theme.command_bar_color)
-			ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
+			ctx.draw_line(0, command_bar_y_pos, view.width - 1, command_bar_y_pos)
 
 			ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 			ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
@@ -389,7 +400,7 @@ fn full_redraw(x voidptr) {
 			} else {
 				buf.path
 			}
-			if path_to_draw.len > width - 30 {
+			if path_to_draw.len > view.width - 30 {
 				buf_split := buf.path.split(os.path_separator)
 				path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
 					buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
@@ -401,20 +412,20 @@ fn full_redraw(x voidptr) {
 			} else {
 				(view.cursor.x + 1).str() + ':' + (view.cursor.y + 1).str()
 			}
-			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
+			ctx.draw_text(view.width - pos_string.len, command_bar_y_pos, pos_string)
 
 			ctx.reset_bg_color()
 
 			// draw command mode prompt
 			// if buf.mode == .command {
 			// 	view.cursor.x = buf.cmd.command.len + 2
-			// 	view.cursor.y = height
+			// 	view.cursor.y =view.height
 			// }
 
 			ctx.set_bg_color(tui_app.theme.background_color)
 			// 1. Clear the entire command line with spaces
-			// width is the terminal width
-			ctx.draw_text(0, height, ' '.repeat(width - 1))
+			// view.width is the terminalview.width
+			ctx.draw_text(0, view.height, ' '.repeat(view.width - 1))
 
 			// 2. Draw the ':' prompt
 			// ctx.draw_text(0, view.cursor.y, ':')
@@ -428,7 +439,7 @@ fn full_redraw(x voidptr) {
 				ctx.set_color(colors.white)
 			}
 
-			ctx.draw_text(2, height, buf.cmd.command)
+			ctx.draw_text(2, view.height, buf.cmd.command)
 
 			// 4. Draw the cursor block at the right position
 			// cursor_pos := buf.cmd.command.len + 2
@@ -447,7 +458,7 @@ fn full_redraw(x voidptr) {
 				if commands.len > 0 {
 					left_pad := 3
 					num_sections := 5
-					section_width := (width - left_pad) / num_sections
+					section_width := (view.width - left_pad) / num_sections
 					cmd_menu_top := command_bar_y_pos - if commands.len > 1 {
 						math.min(6, (commands.len / num_sections) + 1)
 					} else {
@@ -455,7 +466,7 @@ fn full_redraw(x voidptr) {
 					}
 					cmd_menu_bottom := command_bar_y_pos - 1
 					ctx.set_bg_color(colors.dark_grey_blue)
-					ctx.draw_rect(0, cmd_menu_top, width - 1, cmd_menu_bottom)
+					ctx.draw_rect(0, cmd_menu_top, view.width - 1, cmd_menu_bottom)
 
 					for i, command in commands {
 						cmd_x := left_pad + (i % num_sections) * section_width
@@ -478,13 +489,13 @@ fn full_redraw(x voidptr) {
 				}
 
 				ctx.set_bg_color(tui_app.theme.insert_cursor_color)
-				ctx.draw_text(buf.cmd.command.len + 2, height, ' ')
+				ctx.draw_text(buf.cmd.command.len + 2, view.height, ' ')
 				ctx.reset_bg_color()
 			}
 		} else {
 			// draw command bar
 			ctx.set_bg_color(tui_app.theme.command_bar_color)
-			ctx.draw_line(0, command_bar_y_pos, width - 1, command_bar_y_pos)
+			ctx.draw_line(0, command_bar_y_pos, view.width - 1, command_bar_y_pos)
 
 			ctx.set_bg_color(util.get_command_bg_color(buf.mode, buf.p_mode))
 			ctx.draw_line(4, command_bar_y_pos, command_str.len + 1 + 4, command_bar_y_pos)
@@ -497,7 +508,7 @@ fn full_redraw(x voidptr) {
 			} else {
 				buf.path
 			}
-			if path_to_draw.len > width - 30 {
+			if path_to_draw.len > view.width - 30 {
 				buf_split := buf.path.split(os.path_separator)
 				path_to_draw = '${buf_split[1] + os.path_separator} .. ${os.path_separator +
 					buf_split[buf_split.len - 3..buf_split.len - 1].join(os.path_separator)}'
@@ -514,7 +525,7 @@ fn full_redraw(x voidptr) {
 			} else {
 				(view.cursor.x + 1).str() + ':' + (view.cursor.y + 1).str()
 			}
-			ctx.draw_text(width - pos_string.len, command_bar_y_pos, pos_string)
+			ctx.draw_text(view.width - pos_string.len, command_bar_y_pos, pos_string)
 
 			ctx.reset_bg_color()
 		}
