@@ -34,12 +34,15 @@ pub enum Mode {
 pub fn mode_str(m Mode, pm PersistantMode, prev_mode Mode) string {
 	return match m {
 		.insert {
-			'INSERT'
+			match pm {
+				.fuzzy { 'FUZZY (INSERT)'}
+				else {'INSERT'}
+			}
 		}
 		.normal {
 			match pm {
 				.directory { 'DIRECTORY' }
-				.fuzzy { 'FUZZY' }
+				.fuzzy { 'FUZZY (NORMAL)' }
 				else { 'NORMAL' }
 			}
 		}

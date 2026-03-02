@@ -272,7 +272,7 @@ fn full_redraw(x voidptr) {
 				// draw actual line characters
 				for j, ch in line_runes {
 					mut char_to_draw := ch.str()
-					if buf.temp_label.contains(ch.str()) {
+					if buf.temp_label.to_lower().contains(ch.str().to_lower()) {
 						ctx.set_color(colors.lavender_violet)
 					}
 					if buf.temp_list.contains(buf.temp_path + os.path_separator +

@@ -2,36 +2,62 @@ module fuzzy
 
 import strings
 import util
-import os
+// import os
 
 // List of directory or file patterns to ignore
 const ignore_patterns = [
-	'.git', // git metadata
-	'node_modules', // node modules
-	'.DS_Store', // macOS metadata
-	'target', // typical Rust build dir
-	'.cache', // cache dirs
-	'.vscode', // editor config
-	'.idea', // JetBrains project files
-	'.tmp', // temp files
+	'.git',                 // git metadata
+	'.git/*',
+	'node_modules',         // node modules
+	'node_modules/*',
+	'.DS_Store',            // macOS metadata
+	'target',               // typical Rust build dir
+	'target/*',
+	'.cache',               // cache dirs
+	'.cache/*',
+	'.vs',
+	'.vs/*'
+	'.idea',                // JetBrains project files
+	'.tmp',                 // temp files
 	'site-packages',
 	'Thumbs.db',
 	'__pycache__',
+	'__pycache__/*',
 	'.next',
 	'.nuxt',
 	'.exe',
+	'venv',
+	'venv/*',
+	'.venv',
+	'.venv/*',
+	'env',
+	'env/*',
+	'.env',
+	'.env/*',
+	'.app',
+	'.app/*',
+	'dist',
+	'dist/*',
+	'build',
+	'build/*',
+	'.pytest_cache',        // Python test cache
+	'.mypy_cache',          // Python type-check cache
+	'__pypackages__',       // PEP 582 local packages
+	'.tox',                 // Python virtual test environments
+	'.eggs',                // Python packaging metadata
+	'.egg-info',            // Python packaging metadata
+	'build',                // build output folders
+	'coverage'              // test coverage output
 ]
 
 // Check if a file path matches any ignore pattern
 pub fn is_ignored(file string) bool {
-	for pattern in ignore_patterns {
-		// Match folder or file anywhere in path
-		if file.contains(os.path_separator + pattern + os.path_separator)
-			|| file.ends_with(os.path_separator + pattern) || file.ends_with(pattern) {
-			return true
-		}
-	}
-	return false
+    for pattern in ignore_patterns {
+        if file.match_glob('**/' + pattern) || file.match_glob(pattern) {
+            return true
+        }
+    }
+    return false
 }
 
 struct FuzzyResult {

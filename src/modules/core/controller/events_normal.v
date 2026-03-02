@@ -323,7 +323,7 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								buf.p_mode = buf.temp_mode
 								buf.mode = .normal
 								// buf.logical_cursor = buf.temp_cursor
-								view.update_offset(buf.buffer)
+								// view.update_offset(buf.buffer)
 								view.existing_cursors[app.active_buffer] = view.cursor
 								view.existing_offsets[app.active_buffer] = view.row_offset
 								buf.file_ch.close()
