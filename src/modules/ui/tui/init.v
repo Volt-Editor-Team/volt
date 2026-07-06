@@ -28,13 +28,13 @@ pub fn (mut tui_app TuiApp) initialize_tui(core voidptr) {
 	app := ctl.get_app(core)
 	tui_app.theme = TuiTheme.new(app.theme)
 	tui_app.tui = t.init(
-		init_fn:        full_redraw
+		init_fn:        redraw_loop
 		user_data:      tui_app
 		event_fn:       event_wrapper
-		frame_fn:       full_redraw
+		frame_fn:       redraw_loop
 		capture_events: true
 		hide_cursor:    true
-		frame_rate:     60
+		frame_rate:     120
 	)
 }
 
@@ -42,79 +42,16 @@ pub fn event_wrapper(e &t.Event, x voidptr) {
 	if e.typ == .key_down {
 		mut tui_app := get_tui(x)
 		mut app := ctl.get_app(tui_app.core)
-		mut view := &app.viewport
 		mut buf := &app.buffers[app.active_buffer]
 
 		// handle menu toggle regardless
-		if e.modifiers == if app.os == 'windows' {
+		if e.modifiers == if @OS == 'windows' {
 			t.Modifiers.ctrl
 		} else {
 			t.Modifiers.alt
 		} {
 			if e.code == .m {
 				buf.menu_state = !buf.menu_state
-				buf.needs_render = true
-				return
-			}
-		}
-		if e.modifiers == t.Modifiers.alt {
-			if e.code == .comma {
-				view.existing_cursors[app.active_buffer] = view.cursor
-				view.existing_offsets[app.active_buffer] = view.row_offset
-				if app.buffers.len > 1 {
-					if app.active_buffer == 0 {
-						app.active_buffer = app.buffers.len - 1
-					} else {
-						app.active_buffer -= 1
-					}
-				}
-
-				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
-					view.existing_offsets[app.active_buffer]
-				} else {
-					0
-				}
-				if view.existing_cursors.keys().contains(app.active_buffer) {
-					view.cursor = view.existing_cursors[app.active_buffer]
-				} else {
-					view.cursor.x = 0
-					view.cursor.y = 0
-					view.cursor.flat_index = 0
-					view.cursor.visual_x = 0
-					view.cursor.desired_col = 0
-				}
-
-				view.update_offset(app.buffers[app.active_buffer].buffer)
-				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
-				buf.needs_render = true
-				return
-			}
-			if e.code == .period {
-				view.existing_cursors[app.active_buffer] = view.cursor
-				view.existing_offsets[app.active_buffer] = view.row_offset
-				if app.buffers.len > 1 {
-					if app.active_buffer == app.buffers.len - 1 {
-						app.active_buffer = 0
-					} else {
-						app.active_buffer += 1
-					}
-				}
-				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
-					view.existing_offsets[app.active_buffer]
-				} else {
-					0
-				}
-				if view.existing_cursors.keys().contains(app.active_buffer) {
-					view.cursor = view.existing_cursors[app.active_buffer]
-				} else {
-					view.cursor.x = 0
-					view.cursor.y = 0
-					view.cursor.flat_index = 0
-					view.cursor.visual_x = 0
-					view.cursor.desired_col = 0
-				}
-				view.update_offset(app.buffers[app.active_buffer].buffer)
-				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
 				buf.needs_render = true
 				return
 			}

@@ -16,6 +16,73 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 		if buf.cmd.command.len > 0 {
 			buf.cmd.command = ''
 		}
+
+		if mod == .shift {
+			if key == .h {
+				view.existing_cursors[app.active_buffer] = view.cursor
+				view.existing_offsets[app.active_buffer] = view.row_offset
+				if app.buffers.len > 1 {
+					if app.active_buffer == 0 {
+						app.active_buffer = app.buffers.len - 1
+					} else {
+						app.active_buffer -= 1
+					}
+				}
+
+				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+					view.existing_offsets[app.active_buffer]
+				} else {
+					0
+				}
+				if view.existing_cursors.keys().contains(app.active_buffer) {
+					view.cursor = view.existing_cursors[app.active_buffer]
+				} else {
+					view.cursor.x = 0
+					view.cursor.y = 0
+					view.cursor.flat_index = 0
+					view.cursor.visual_x = 0
+					view.cursor.desired_col = 0
+				}
+
+				view.update_offset(app.buffers[app.active_buffer].buffer)
+				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
+				buf.needs_render = true
+				return
+			}
+
+			if key == .l {
+				view.existing_cursors[app.active_buffer] = view.cursor
+				view.existing_offsets[app.active_buffer] = view.row_offset
+				if app.buffers.len > 1 {
+					if app.active_buffer == app.buffers.len - 1 {
+						app.active_buffer = 0
+					} else {
+						app.active_buffer += 1
+					}
+				}
+				view.row_offset = if view.existing_offsets.keys().contains(app.active_buffer) {
+					view.existing_offsets[app.active_buffer]
+				} else {
+					0
+				}
+				if view.existing_cursors.keys().contains(app.active_buffer) {
+					view.cursor = view.existing_cursors[app.active_buffer]
+				} else {
+					view.cursor.x = 0
+					view.cursor.y = 0
+					view.cursor.flat_index = 0
+					view.cursor.visual_x = 0
+					view.cursor.desired_col = 0
+				}
+				view.update_offset(app.buffers[app.active_buffer].buffer)
+				view.fill_visible_lines(app.buffers[app.active_buffer].buffer)
+				buf.needs_render = true
+				return
+
+			}
+
+		}
+
 		match key {
 			.f {
 				events.change_mode(mut buf, .search, true)
@@ -155,6 +222,28 @@ pub fn handle_normal_mode_event(x voidptr, mod Modifier, event EventType, key Ke
 								mode:   .normal
 								p_mode: .default
 							)
+						}
+						.o {
+							cur_line := buf.buffer.line_at(view.cursor.y)
+							path := cur_line.string()
+							if fs.is_dir(path) {
+								directory := fs.get_dir_or_parent_dir(path)
+								new_paths := os.ls(directory) or { [] }
+								cursor_save := view.cursor
+								view.cursor.move_to_x(cur_line, cur_line.len, view.tabsize)
+
+								// then insert each path in ls
+								for p in new_paths {
+									mut to_insert := []rune{}
+									to_insert << `\n`
+									to_insert << `\t`
+									to_insert << p.runes()
+									events.insert_many(mut buf, mut view, to_insert)
+								}
+
+								view.cursor = cursor_save
+							}
+
 						}
 						.tab {
 							path := buf.buffer.line_at(view.cursor.y).string()

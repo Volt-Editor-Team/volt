@@ -1,5 +1,6 @@
 module tui
 
+import buffer { Buffer }
 import term
 import term.ui
 import util { Mode, PersistantMode }
@@ -18,23 +19,22 @@ fn (mut ctx TuiContext) draw_background(start_x int, start_y int, end_x int, end
 	ctx.reset_bg_color()
 }
 
-fn (mut ctx TuiContext) draw_tabs(buffer_names []string, active_buffer int, width int, theme TuiTheme) {
+fn (mut ctx TuiContext) draw_tabs(buffers []Buffer, active_buffer int, width int, theme TuiTheme) {
 	ctx.set_bg_color(theme.tab_bar_color)
 	ctx.draw_line(0, 1, width - 1, 1)
 	ctx.reset_colors()
 	mut tab_pos := 1
-	for i, name in buffer_names {
+	for i, buf in buffers {
 		if i == active_buffer {
 			ctx.set_colors(theme.active_tab_color, theme.cursor_text_color)
-			ctx.draw_text(tab_pos + 1, 1, term.bold(name))
-			ctx.reset_colors()
+			ctx.draw_text(tab_pos + 1, 1, " " + term.bold(buf.name) + " ")
 		} else {
-			ctx.set_bg_color(theme.tab_bar_color)
-			ctx.draw_text(tab_pos + 1, 1, name)
-			ctx.reset_colors()
+			ctx.set_colors(theme.tab_bar_color, theme.normal_text_color)
+			ctx.draw_text(tab_pos + 1, 1, " " + buf.name + " ")
 		}
-		tab_pos += name.len
+		tab_pos += buf.name.len + 2
 	}
+	ctx.reset_colors()
 }
 
 fn (mut ctx TuiContext) get_gutter_label_and_colors(cur_path string, cur_line []rune, y_index int, allocated_text_width int, p_mode PersistantMode, theme TuiTheme) (string, ui.Color, ui.Color, ui.Color) {

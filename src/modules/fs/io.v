@@ -36,7 +36,7 @@ pub fn detect_data_encoding(data []u8) Encoding {
 }
 
 fn decode_utf16le(data []u8) []rune {
-	mut runes := []rune{}
+	mut runes := []rune{cap: (data.len / 2) * 3}
 	mut i := 2 // skip 0xFF 0xFE BOM
 
 	for i + 1 < data.len {
@@ -54,13 +54,63 @@ fn decode_utf16le(data []u8) []rune {
 			if unit2 >= 0xDC00 && unit2 <= 0xDFFF {
 				i += 2
 				codepoint := 0x10000 + ((unit - 0xD800) << 10) + (unit2 - 0xDC00)
-				runes << rune(codepoint)
+				cur_rune := rune(codepoint)
+				if cur_rune != `\t` {
+					runes << cur_rune
+				}
 				continue
 			}
 		}
 
 		// Normal BMP character
-		runes << rune(unit)
+		cur_rune := rune(unit)
+		if cur_rune != `\t` {
+			runes << cur_rune
+		}
+	}
+
+	return runes
+}
+
+fn decode_utf16le_rune_list(data []u8) [][]rune {
+	mut runes := [][]rune{cap: (data.len / 502)}
+	mut cur_line := []rune{cap: 1024}
+	mut i := 2 // skip 0xFF 0xFE BOM
+
+	for i + 1 < data.len {
+		low := u16(data[i])
+		high := u16(data[i + 1])
+		unit := (high << 8) | low
+		i += 2
+
+		// Handle surrogate pairs
+		if unit >= 0xD800 && unit <= 0xDBFF && i + 1 < data.len {
+			low2 := u16(data[i])
+			high2 := u16(data[i + 1])
+			unit2 := (high2 << 8) | low2
+
+			if unit2 >= 0xDC00 && unit2 <= 0xDFFF {
+				i += 2
+				codepoint := 0x10000 + ((unit - 0xD800) << 10) + (unit2 - 0xDC00)
+				cur_rune := rune(codepoint)
+				if cur_rune != `\t` {
+					if cur_rune == `\n` {
+						runes << cur_line
+						cur_line.clear()
+					} else {
+						cur_line << cur_rune
+					}
+				}
+				continue
+			}
+		}
+
+		// Normal BMP character
+		cur_rune := rune(unit)
+		if cur_rune != `\t` && cur_rune != `\n` {
+			cur_line << cur_rune
+		}
+		runes << cur_line
 	}
 
 	return runes
@@ -105,26 +155,27 @@ fn load_text_rune_lines(path string) [][]rune {
 
 	return match encoding {
 		.utf16le {
-			mut all_runes := decode_utf16le(os.read_bytes(path) or { [] })
-			mut lines := [][]rune{}
-			mut cur_line := []rune{cap: 200}
+			// mut all_runes := decode_utf16le(os.read_bytes(path) or { [] })
+			// mut lines := [][]rune{}
+			// mut cur_line := []rune{cap: 200}
 
-			for ch in all_runes {
-				if ch == `\r` {
-					continue
-				} else if ch == `\n` {
-					lines << cur_line
-					cur_line.clear()
-				} else {
-					cur_line << ch
-				}
-			}
+			// for ch in all_runes {
+			// 	if ch == `\r` {
+			// 		continue
+			// 	} else if ch == `\n` {
+			// 		lines << cur_line
+			// 		cur_line.clear()
+			// 	} else {
+			// 		cur_line << ch
+			// 	}
+			// }
 
-			if cur_line.len > 0 {
-				lines << cur_line
-			}
+			// if cur_line.len > 0 {
+			// 	lines << cur_line
+			// }
 
-			lines
+			// lines
+			decode_utf16le_rune_list(os.read_bytes(path) or { [] })
 		}
 		.utf16be {
 			['UTF-16 BE not implemented yet'.runes()]
