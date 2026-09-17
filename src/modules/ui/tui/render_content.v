@@ -24,6 +24,7 @@ fn (mut tui_app TuiApp) draw_default_content(buf Buffer, mut view Viewport, mult
 	    else { 5 }
 	allocated_line_num_width := if buf.p_mode == .default { width } else { 1 }
 
+	text_width := view.width - view.col_offset - allocated_line_num_width - 1
 
 	// render loop
 	mut wrap_offset := 0
@@ -51,7 +52,7 @@ fn (mut tui_app TuiApp) draw_default_content(buf Buffer, mut view Viewport, mult
 			// calculate how many lines that this line requires
 			// (+ 1 since base is 0)
 			total_lines := if line.len > 0 {
-				(util.char_count_expanded_tabs(line, view.tabsize) / view.width) + 1
+			    (util.char_count_expanded_tabs(line, view.tabsize) / text_width) + 1
 			} else {
 				1
 			}
@@ -92,9 +93,10 @@ fn (mut tui_app TuiApp) draw_default_content(buf Buffer, mut view Viewport, mult
 				col++
 			}
 			visual_x_index := visual_cache[x_index]
-			wraps = visual_x_index / view.width
-			x_pos := visual_x_index % view.width + view.col_offset +
-				allocated_line_num_width + 1
+
+			wraps = visual_x_index / text_width
+			x_pos := visual_x_index % text_width + view.col_offset +
+			    allocated_line_num_width + 1
 			y_pos := i + wraps + wrap_offset + buffer_gap
 
 			if y_pos > view.height - buffer_gap {
@@ -128,8 +130,8 @@ fn (mut tui_app TuiApp) draw_default_content(buf Buffer, mut view Viewport, mult
 			} else {
 				0
 			}
-			last_wraps := if line.len > 0 { last_x / view.width } else { 0 }
-			cursor_x := last_x % view.width + view.col_offset + allocated_line_num_width + 1
+			last_wraps := if line.len > 0 { last_x / text_width } else { 0 }
+			cursor_x := last_x % text_width + view.col_offset + allocated_line_num_width + 1
 			cursor_y := i + last_wraps + wrap_offset + buffer_gap
 			if cursor_y > view.height - buffer_gap {
 				break render_lines
