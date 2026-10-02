@@ -14,7 +14,6 @@ pub fn convert_modifier(e t.Modifiers) ctl.Modifier {
 
 fn convert_event_type(e t.EventType) ctl.EventType {
 	return match e {
-		.unknown { .unknown }
 		.mouse_down { .mouse_down }
 		.mouse_up { .mouse_up }
 		.mouse_move { .mouse_move }
@@ -22,6 +21,7 @@ fn convert_event_type(e t.EventType) ctl.EventType {
 		.mouse_scroll { .mouse_scroll }
 		.key_down { .key_down }
 		.resized { .resized }
+		else { .unknown }
 	}
 }
 
