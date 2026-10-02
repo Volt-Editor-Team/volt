@@ -3,7 +3,8 @@ module tui
 // import core.controller
 // import term
 
-fn draw_changes(x voidptr) {
+fn draw_changes() {
+//fn draw_changes(x voidptr) {	
 	// width, height := term.get_terminal_size()
 
 	// // get app pointer, terminal size, and clear to prep for updates
